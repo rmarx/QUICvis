@@ -1,6 +1,6 @@
 # quic-visualization
 
-> A Vue.js project
+> A tool to analyze the QUIC protocol  (Developed as part of my Bachelor In Computer Science degree at the university of Hasselt)
 
 ## Build Setup
 
