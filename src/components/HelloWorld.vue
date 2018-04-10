@@ -6,17 +6,17 @@
 
 <script lang="ts">
 import { Component, Prop, Vue } from 'vue-property-decorator';
+import { PcapParser } from '../parser/pcapparser'
 export default {
-  data: new ArrayBuffer(0),
   mounted() {
     let self = this
-    const request = new Request('/pcaps/pcap_test.pcap')
+    const request = new Request('/pcaps/ngtcp2.json')
 
-    fetch(request).then((response) => {return response.arrayBuffer()}).then((data) => { this.data = data})
-
-    var test = Array.prototype.map.call(new Uint8Array(this.data), (x:number) => ('00' + x.toString(16)).slice(-2)).join('');
-
-    console.log("testing");
+    var data = fetch(request).then((response) => {return response.json()})
+    let pcapparser = new PcapParser()
+    data.then((result) => {
+      pcapparser.parse("testing", result)
+    })
   }
 }
 </script>

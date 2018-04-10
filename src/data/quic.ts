@@ -1,18 +1,20 @@
 export interface Trace{
     name: string
-    connection: QuicConnection
+    connection: QuicConnection | null
 }
 
 export interface QuicConnection{
-    ip_addresses: Array<number>
-    ports: Array<number>
-    packets: Array<QuickPacket>
+    packets: Array<QuicPacket>
 }
 
-export interface QuickPacket{
-    headerinfo: Header
-    payloadinfo: Payload
-    timestamp: Date
+export interface QuicPacket{
+    src_ip_address: string
+    src_port_number: number
+    dst_ip_address: string
+    dst_port_number: number
+    headerinfo: Header|null
+    payloadinfo: Payload|null
+    time_delta: number
 }
 
 /**
@@ -21,11 +23,11 @@ export interface QuickPacket{
 export type Header = LongHeader | ShortHeader | VersionHeader;
 
 export interface LongHeader{
-    header_form: boolean
-    long_packet_type: number
-    connection_id: number
-    version: number
-    packet_number: number
+    header_form: boolean|null
+    long_packet_type: number|null
+    connection_id: number|null
+    version: number|null
+    packet_number: number|null
 }
 
 export interface ShortHeader{
@@ -33,8 +35,6 @@ export interface ShortHeader{
     flags: {
         omit_conn_id: boolean
         key_phase: boolean
-        fourth_bit: boolean
-        google_bit: boolean
     }
     short_packet_type: number
     connection_id: number
