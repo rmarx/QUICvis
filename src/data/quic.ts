@@ -62,7 +62,7 @@ export type Frame = Padding | Rst_Stream | Application_Close | Max_Data | Max_St
     Stream_Id_Blocked | New_Connection_Id | Stop_Sending | Ack | Path_Challenge | Path_Response | Stream
 
 export interface Padding{
-
+    length: number
 }
 
 export interface Rst_Stream{
@@ -97,7 +97,7 @@ export interface Max_Stream_Id{
 }
 
 export interface Ping{
-
+    totext: string
 }
 
 export interface Blocked{
@@ -145,6 +145,11 @@ export interface Path_Response{
 }
 
 export interface Stream{
+    type_flags: {
+        off_flag: boolean,
+        len_flag: boolean,
+        fin_flag: boolean
+    }
     stream_id: number
     offset: number
     length: number
