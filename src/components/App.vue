@@ -1,17 +1,17 @@
 <template>
   <div id="app">
-    <img src="./assets/logo.png">
-    <HelloWorld msg="Welcome to Your Vue.js + TypeScript App"/>
+    <img src="../assets/logo.png">
+    <FetchTraces msg="Welcome to Your Vue.js + TypeScript App"/>
   </div>
 </template>
 
 <script lang="ts">
 import { Component, Vue } from 'vue-property-decorator';
-import HelloWorld from './components/HelloWorld.vue';
+import FetchTraces from './filecomponents/FetchTraces.vue';
 
 @Component({
   components: {
-    HelloWorld,
+    FetchTraces,
   },
 })
 export default class App extends Vue {}
