@@ -15,12 +15,12 @@ export default {
   },
   mounted() {
     let self = this
-    const request = new Request('/pcaps/ngtcp2.json')
+    const request = new Request('/pcaps/ngtcp2_multiconn.json')
 
     let data = fetch(request).then((response) => {return response.json()})
     let pcapparser = new PcapParser()
     data.then((result) => {
-      this.traces = pcapparser.parse("testing", result)
+      this.traces = JSON.stringify(pcapparser.parse("testing", result), undefined, 2)
     })
   }
 }

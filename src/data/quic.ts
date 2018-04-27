@@ -1,9 +1,11 @@
 export interface Trace{
     name: string
-    connection: QuicConnection | null
+    connection: Array<QuicConnection> | null
 }
 
 export interface QuicConnection{
+    CID_endpoint1: string|null
+    CID_endpoint2: string|null
     packets: Array<QuicPacket>
 }
 
@@ -20,31 +22,37 @@ export interface QuicPacket{
 /**
  * Header Types
  */
-export type Header = LongHeader | ShortHeader | VersionHeader;
+//export type Header = LongHeader | ShortHeader | VersionHeader;
 
-export interface LongHeader{
+export interface Header {
     header_form: boolean|null
+    dest_connection_id: string|null
+}
+
+export interface LongHeader extends Header{
+    header_form: boolean|null
+    dest_connection_id: string|null
     long_packet_type: number|null
-    connection_id: number|null
+    src_connection_id: string|null
     version: number|null
     packet_number: number|null
 }
 
-export interface ShortHeader{
-    header_form: boolean
+export interface ShortHeader extends Header{
+    header_form: boolean|null
+    dest_connection_id: string|null
     flags: {
         omit_conn_id: boolean
         key_phase: boolean
     }
     short_packet_type: number
-    connection_id: number
     packet_number: number
 }
 
 export interface VersionHeader{
     header_form: boolean
     long_packet_type: number
-    connection_id: number
+    dest_connection_id: number
     version: number
 }
 

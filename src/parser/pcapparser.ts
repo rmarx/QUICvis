@@ -10,9 +10,8 @@ export class PcapParser extends Parser{
     public parse(name: string, tracefile: any): Trace{
         let trace = this.createTraceObject(name)
 
-        let conn: QuicConnection = { packets: this.parseConnection(tracefile) }
+        let conn = this.parseAllPackets(tracefile) ;
         trace.connection = conn
-        console.log(trace)
         return trace
     }
 
@@ -24,19 +23,127 @@ export class PcapParser extends Parser{
         return trace
     }
 
-    private parseConnection(tracefile: any): Array<QuicPacket>{
+    private parseAllPackets(tracefile: any): Array<QuicConnection>{
         let packetnr: any
         let ip_info: any
         let quic_info: any
         let udp_info: any
-        let packets = Array<QuicPacket>()
+        let packet: QuicPacket
+        let connections = Array<QuicConnection>()
         for (packetnr in tracefile){
             ip_info = tracefile[packetnr]._source.layers.ip
             quic_info = tracefile[packetnr]._source.layers.quic
             udp_info = tracefile[packetnr]._source.layers.udp
-            packets.push(this.parsePacket(ip_info, udp_info, quic_info, tracefile[packetnr]._source.layers.frame["frame.time_delta"]))
+            if (!quic_info) continue;
+            packet = this.parsePacket(ip_info, udp_info, quic_info, tracefile[packetnr]._source.layers.frame["frame.time_delta"])
+            this.addPacketToConnection(packet, connections)
         }
-        return packets
+        return connections
+    }
+
+    private addPacketToConnection(packet: QuicPacket, connections: Array<QuicConnection>): void{
+        if (!packet.headerinfo) return
+
+        //If there are no connections, create a new and add the packet to it
+        if (connections.length === 0){
+            this.createConnection(packet, connections)
+            return
+        }
+
+        if (this.addPacketWithDCID(packet, connections))
+            return
+        else if (this.addPacketWithSCID(packet, connections))
+            return
+        else
+            this.createConnection(packet, connections)
+
+    }
+
+    /**
+     * Checks if a connection exists where 1 endpoint has DCID, if so add packet to connection 
+     */
+    private addPacketWithDCID(packet: QuicPacket, connections: Array<QuicConnection>): boolean{
+        if (!packet.headerinfo) return false
+        const headerinfo = packet.headerinfo
+        let isfound = false;
+        let BreakException = {}
+        
+        try {
+            connections.forEach(function(el){
+                if (el.CID_endpoint1 === headerinfo.dest_connection_id) {
+                    isfound = true;
+                    el.packets.push(packet)
+
+                    //check if SCID has changed, if so change value of CID for that endpoint
+                    if (headerinfo.header_form === true && (<LongHeader> headerinfo).src_connection_id !== el.CID_endpoint2) {
+                        el.CID_endpoint2 = (<LongHeader> headerinfo).src_connection_id
+                    }
+
+                    throw BreakException
+                }
+                if (el.CID_endpoint2 === headerinfo.dest_connection_id){
+                    isfound = true;
+                    el.packets.push(packet)
+
+                    //check if SCID has changed, if so change value of CID for that endpoint
+                    if (headerinfo.header_form === true && (<LongHeader> headerinfo).src_connection_id !== el.CID_endpoint1) {
+                        el.CID_endpoint1 = (<LongHeader> headerinfo).src_connection_id
+                    }
+
+                    throw BreakException
+                }
+            })
+        }catch(e){
+            if (e !== BreakException) throw e;
+        }
+
+        return isfound
+    }
+
+    /**
+     * Checks if a connection exists where 1 endpoint has SCID, if so add packet to connection and update to new DCID
+     */
+    private addPacketWithSCID(packet: QuicPacket, connections: Array<QuicConnection>): boolean{
+        if (!packet.headerinfo || packet.headerinfo.header_form === false) return false
+        const headerinfo = <LongHeader> packet.headerinfo
+        let isfound = false;
+        let BreakException = {}
+        
+        try {
+            connections.forEach(function(el){
+                if (el.CID_endpoint1 === headerinfo.src_connection_id) {
+                    isfound = true;
+                    el.packets.push(packet)
+                    el.CID_endpoint2 = headerinfo.dest_connection_id
+                    throw BreakException
+                }
+                if (el.CID_endpoint2 === headerinfo.src_connection_id){
+                    isfound = true;
+                    el.packets.push(packet)
+                    el.CID_endpoint1 = headerinfo.dest_connection_id
+                    throw BreakException
+                }
+            })
+        }catch(e){
+            if (e !== BreakException) throw e;
+        }
+
+        return isfound
+    }
+
+    private createConnection(packet: QuicPacket, connections: Array<QuicConnection>): void{
+        //TODO check if header_form is set to boolean and not string
+        if (!packet.headerinfo || packet.headerinfo.header_form === false)
+            return
+
+        let longheader = <LongHeader> packet.headerinfo    
+        let conn: QuicConnection = {
+            CID_endpoint1: longheader.src_connection_id,
+            CID_endpoint2: longheader.dest_connection_id,
+            packets: Array<QuicPacket>(packet)
+        }
+
+        connections.push(conn)
     }
 
     private parsePacket(ip_info: any, udp_info: any, quic_info: any, time: any): QuicPacket{
@@ -65,7 +172,8 @@ export class PcapParser extends Parser{
                 var noheader: LongHeader = {
                     header_form: null,
                     long_packet_type: null,
-                    connection_id: null,
+                    dest_connection_id: null,
+                    src_connection_id: null,
                     version: null,
                     packet_number: null,  
                 }
@@ -77,7 +185,8 @@ export class PcapParser extends Parser{
         let longheader: LongHeader = {
             header_form: quic_info["quic.header_form"],
             long_packet_type: quic_info["quic.long.packet_type"],
-            connection_id: quic_info["quic.connection_id"],
+            dest_connection_id: quic_info["quic.dcid"],
+            src_connection_id: quic_info["quic.scid"],
             version: quic_info["quic.version"],
             packet_number: quic_info["quic.packet_number_full"],
         } 
@@ -85,17 +194,17 @@ export class PcapParser extends Parser{
     }
 
     private parseShortHeader(quic_info: any): ShortHeader{
-        let longheader: ShortHeader = {
+        let shortheader: ShortHeader = {
             header_form: quic_info["quic.header_form"],
             short_packet_type: quic_info["quic.short.packet_type"],
-            connection_id: quic_info["quic.connection_id"],
+            dest_connection_id: quic_info["quic.dcid"],
             flags: {
                 omit_conn_id: quic_info["quic.short.ocid_flag"] === true,
                 key_phase: quic_info["quic.short.kp_flag"] === true
             },
             packet_number: quic_info["quic.packet_number_full"],
         } 
-        return longheader
+        return shortheader
     }
 
     private parsePayload(quic_info: any) : Array<Frame>{
@@ -143,10 +252,9 @@ export class PcapParser extends Parser{
                 return this.parseNewConnectionId(frame)
             case "12":
                 return this.parseStopSending(frame)
-            //TODO: change ack and path challenge code
-            case "14":
-                return this.parseAck(frame)
             case "13":
+                return this.parseAck(frame)
+            case "14":
                 return this.parsePathChallenge(frame)
             case "15":
                 return this.parsePathResponse(frame)
