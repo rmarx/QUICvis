@@ -1,0 +1,17 @@
+{
+  "name": "apiserver",
+  "version": "1.0.0",
+  "description": "api server to fetch files",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "jonas reynders",
+  "license": "ISC",
+  "devDependencies": {
+    "nodemon": "^1.17.3"
+  },
+  "dependencies": {
+    "express": "^4.16.3"
+  }
+}
