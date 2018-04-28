@@ -6,8 +6,8 @@
 
 <script lang="ts">
 import { Component, Prop, Vue } from 'vue-property-decorator';
-import { PcapParser } from '../../parser/pcapparser'
-import TraceWrapper from '@/components/filecomponents/TraceWrapper';
+import { PcapParser } from './pcapparser'
+import TraceWrapper from '../data/TraceWrapper';
 import axios from 'axios'
 export default {
   computed:{ 
@@ -24,8 +24,12 @@ export default {
       let container = result['filescontainer']
       container.forEach(element => {
         let tracewrap = new TraceWrapper()
-        tracewrap.setTrace(pcapparser.parse(element['filename'], element['filecontent']))
-        this.$store.dispatch('addFile', tracewrap)
+        if (element['fileext'] === '.json') {
+          tracewrap.setTrace(pcapparser.parse(element['filename'], element['filecontent']))
+          this.$store.dispatch('addFile', tracewrap)
+        }
+        else if (element['fileext'] === '.log')
+          console.log(element)
       });
     })
   }

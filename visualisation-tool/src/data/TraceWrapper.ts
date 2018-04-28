@@ -1,4 +1,4 @@
-import { Trace } from "../../data/quic"
+import { Trace } from "./quic"
 
 export default class TraceWrapper{
     private _trace: Trace

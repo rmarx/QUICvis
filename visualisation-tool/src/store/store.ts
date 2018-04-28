@@ -1,6 +1,6 @@
 import Vue from 'vue';
 import Vuex from 'vuex';
-import TraceWrapper from '@/components/filecomponents/TraceWrapper';
+import TraceWrapper from '../data/TraceWrapper';
 
 Vue.use(Vuex);
 
