@@ -1,6 +1,6 @@
 <template>
   <div class="hello">
-    {{ traces }}
+    
   </div>
 </template>
 
@@ -9,6 +9,7 @@ import { Component, Prop, Vue } from 'vue-property-decorator';
 import { PcapParser } from './pcapparser'
 import TraceWrapper from '../data/TraceWrapper';
 import axios from 'axios'
+import { Ngtcp2LogParser } from './Ngtcp2LogParser'
 export default {
   computed:{ 
     traces() {
@@ -20,16 +21,18 @@ export default {
 
     let data = axios.get(request).then((response) => { return response.data})
     let pcapparser = new PcapParser()
+    let ngtcp2parser = new Ngtcp2LogParser()
     data.then((result) => {
       let container = result['filescontainer']
       container.forEach(element => {
         let tracewrap = new TraceWrapper()
-        if (element['fileext'] === '.json') {
+        /*if (element['fileext'] === '.json') {
           tracewrap.setTrace(pcapparser.parse(element['filename'], element['filecontent']))
           this.$store.dispatch('addFile', tracewrap)
-        }
-        else if (element['fileext'] === '.log')
-          console.log(element)
+        }*/
+        if (element['fileext'] === '.log')
+          ngtcp2parser.parse(element['filename'], element['filecontent'])
+          this.$store.dispatch('addFile', tracewrap)
       });
     })
   }
