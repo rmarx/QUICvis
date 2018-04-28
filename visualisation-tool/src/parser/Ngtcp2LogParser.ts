@@ -36,7 +36,7 @@ export class Ngtcp2LogParser extends Parser{
             //check if current line has needed info
             if (partfile[0] === 'I'){
                 splitline = partfile.split(" ")
-                //check if a new is received, if so parse this
+                //check if a new packet is received, if so parse this
                 if (splitline[2] === "con" && splitline[3] === "recv") {
                     if (currentpacket !== ""){
                         //add packet to string array
@@ -47,9 +47,11 @@ export class Ngtcp2LogParser extends Parser{
                     currentpacket = splitfile[i]
                     let isend = false
                     for (i; i < splitfile.length && !isend; i++) {
-                        partfile = splitfile[i]
-                        currentpacket += "\n" + partfile
-                        splitline = partfile.split(" ")
+                        if (splitfile[i][0] === 'I') {
+                            partfile = splitfile[i]
+                            currentpacket += "\n" + partfile
+                            splitline = partfile.split(" ")
+                        }
                         //check is packet is fully processed, if so end loop
                         if (splitline[6] === "left" && splitline[7] === "0") {
                             isend = true
@@ -57,7 +59,9 @@ export class Ngtcp2LogParser extends Parser{
                         }
                     }
                 }
+                //check if it's an outgoing packet
                 else if (splitline[2] === "frm" && splitline[3] === "tx"){
+                    //check if a new packetnr is present, if so start fresh for new packet
                     if (splitline[4] !== currentpacketnr){
                         packetsinstring.push(currentpacket)
                         currentpacketnr = splitline[4]
