@@ -31,48 +31,56 @@ export class PcapParser extends Parser{
         let udp_info: any
         let packet: QuicPacket
         let connections = Array<QuicConnection>()
+        let connindex = -1
         for (packetnr in tracefile){
             ip_info = tracefile[packetnr]._source.layers.ip
             quic_info = tracefile[packetnr]._source.layers.quic
             udp_info = tracefile[packetnr]._source.layers.udp
             if (!quic_info) continue;
             packet = this.parsePacket(ip_info, udp_info, quic_info, tracefile[packetnr]._source.layers.frame["frame.time_delta"])
-            this.addPacketToConnection(packet, connections)
+            connindex = this.addPacketToConnection(packet, connections)
+            if (packet.payloadinfo &&  this.isNewConnectionId(packet.payloadinfo))
+                this.addAditionalConnId(packet, connections, connindex)
         }
         return connections
     }
 
-    private addPacketToConnection(packet: QuicPacket, connections: Array<QuicConnection>): void{
-        if (!packet.headerinfo) return
+    private addPacketToConnection(packet: QuicPacket, connections: Array<QuicConnection>): number{
+        if (!packet.headerinfo) return -1
+        let index = -1
 
         //If there are no connections, create a new and add the packet to it
         if (connections.length === 0){
-            this.createConnection(packet, connections)
-            return
+            index = this.createConnection(packet, connections)
+            return index
         }
-
-        if (this.addPacketWithDCID(packet, connections))
-            return
-        else if (this.addPacketWithSCID(packet, connections))
-            return
-        else
-            this.createConnection(packet, connections)
-
+        index = this.addPacketWithDCID(packet, connections) 
+        if (index !== -1)
+            return index
+        else {
+            index = this.addPacketWithSCID(packet, connections)  
+            if (index !== -1)
+                return index
+            else {
+                index = this.createConnection(packet, connections)
+                return index
+            }
+        }
     }
 
     /**
      * Checks if a connection exists where 1 endpoint has DCID, if so add packet to connection 
      */
-    private addPacketWithDCID(packet: QuicPacket, connections: Array<QuicConnection>): boolean{
-        if (!packet.headerinfo) return false
+    private addPacketWithDCID(packet: QuicPacket, connections: Array<QuicConnection>): number{
+        if (!packet.headerinfo) return -1
         const headerinfo = packet.headerinfo
-        let isfound = false;
+        let foundindex = -1;
         let BreakException = {}
         
         try {
-            connections.forEach(function(el){
+            connections.forEach(function(el, index){
                 if (el.CID_endpoint1!.findIndex(x => x === headerinfo.dest_connection_id) !== -1) {
-                    isfound = true;
+                    foundindex = index;
                     el.packets.push(packet)
 
                     //check if SCID has changed, if so change value of CID for that endpoint
@@ -84,7 +92,7 @@ export class PcapParser extends Parser{
                     throw BreakException
                 }
                 if (el.CID_endpoint2!.findIndex(x => x === headerinfo.dest_connection_id) !== -1){
-                    isfound = true;
+                    foundindex = index;
                     el.packets.push(packet)
 
                     let src_conn_id= (<LongHeader> headerinfo).src_connection_id
@@ -100,29 +108,29 @@ export class PcapParser extends Parser{
             if (e !== BreakException) throw e;
         }
 
-        return isfound
+        return foundindex
     }
 
     /**
      * Checks if a connection exists where 1 endpoint has SCID, if so add packet to connection and update to new DCID
      */
-    private addPacketWithSCID(packet: QuicPacket, connections: Array<QuicConnection>): boolean{
-        if (!packet.headerinfo || packet.headerinfo.header_form === false) return false
+    private addPacketWithSCID(packet: QuicPacket, connections: Array<QuicConnection>): number{
+        if (!packet.headerinfo || packet.headerinfo.header_form === false) return -1
         const headerinfo = <LongHeader> packet.headerinfo
-        let isfound = false;
+        let foundindex = -1;
         let BreakException = {}
         
         try {
-            connections.forEach(function(el){
+            connections.forEach(function(el, index){
                 if (el.CID_endpoint1!.findIndex(x => x === headerinfo.src_connection_id) !== -1) {
-                    isfound = true;
+                    foundindex = index;
                     el.packets.push(packet)
                     if (headerinfo.dest_connection_id)
                         el.CID_endpoint2!.push(headerinfo.dest_connection_id)
                     throw BreakException
                 }
                 if (el.CID_endpoint2!.findIndex(x => x === headerinfo.src_connection_id) !== -1){
-                    isfound = true;
+                    foundindex = -1;
                     el.packets.push(packet)
                     if (headerinfo.dest_connection_id)
                         el.CID_endpoint1!.push(headerinfo.dest_connection_id)
@@ -133,18 +141,19 @@ export class PcapParser extends Parser{
             if (e !== BreakException) throw e;
         }
 
-        return isfound
+        return foundindex
     }
 
-    private createConnection(packet: QuicPacket, connections: Array<QuicConnection>): void{
+    private createConnection(packet: QuicPacket, connections: Array<QuicConnection>): number{
         //TODO check if header_form is set to boolean and not string
         if (!packet.headerinfo || packet.headerinfo.header_form === false)
-            return
+            return -1
 
         let longheader = <LongHeader> packet.headerinfo
         let src_conn_id = longheader.src_connection_id
         let dst_conn_id = longheader.dest_connection_id
-        
+        let index = -1
+
         if (src_conn_id && dst_conn_id) {
             let conn: QuicConnection = {
                 CID_endpoint1: Array(src_conn_id),
@@ -152,8 +161,9 @@ export class PcapParser extends Parser{
                 packets: Array<QuicPacket>(packet)
             }
 
-            connections.push(conn)
+            index = connections.push(conn) - 1
         }
+        return index
     }
 
     private parsePacket(ip_info: any, udp_info: any, quic_info: any, time: any): QuicPacket{
@@ -440,5 +450,21 @@ export class PcapParser extends Parser{
         }
 
         return stream
+    }
+
+    private isNewConnectionId(payload: New_Connection_Id | Payload): payload is New_Connection_Id {
+        return (<New_Connection_Id>payload).connection_id !== undefined;
+    }
+
+    private addAditionalConnId(packet: QuicPacket, connections: Array<QuicConnection>, connindex: number){
+        if (connindex === -1 && packet.payloadinfo && !this.isNewConnectionId(packet.payloadinfo)) return
+
+        let dst_conn_id = packet.headerinfo!.dest_connection_id
+        let conn = connections[connindex]
+        let conn_id_frame = <New_Connection_Id> packet.payloadinfo
+        if (conn.CID_endpoint1!.findIndex(x => x === dst_conn_id) !== -1)
+            conn.CID_endpoint2!.push(conn_id_frame.connection_id.toString())
+        else
+            conn.CID_endpoint1!.push(conn_id_frame.connection_id.toString())
     }
 }
