@@ -183,7 +183,7 @@ export class PcapParser extends Parser{
 
     private parseHeader(quic_info: any): Header{
         let headertype = quic_info["quic.header_form"]
-
+        //TODO add case to parse version negotiation packet
         switch (headertype) {
             case "1":
                 return this.parseLongHeader(quic_info)

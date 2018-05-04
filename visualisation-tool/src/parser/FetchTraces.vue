@@ -26,14 +26,15 @@ export default {
       let container = result['filescontainer']
       container.forEach(element => {
         let tracewrap = new TraceWrapper()
-        console.log(element)
-        if (element['fileext'] === '.json') {
+        
+        /*if (element['fileext'] === '.json') {
           tracewrap.setTrace(pcapparser.parse(element['filename'], element['filecontent']))
           this.$store.dispatch('addFile', tracewrap)
+        }*/
+        if (element['fileext'] === '.log') {
+          ngtcp2parser.parse(element['filename'], element['filecontent'])
+          this.$store.dispatch('addFile', tracewrap)
         }
-        //if (element['fileext'] === '.log')
-          //ngtcp2parser.parse(element['filename'], element['filecontent'])
-          //this.$store.dispatch('addFile', tracewrap)
       });
     })
   }
