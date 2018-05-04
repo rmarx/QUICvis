@@ -7,9 +7,9 @@ import {
 
 
 export interface LogConnectionInfo{
-    CID_endpoint1: Array<string>|null
-    CID_endpoint2: Array<string>|null
-    version: string|null
+    CID_tx: Array<string>|null
+    CID_rx: Array<string>|null
+    version: number|null
 }
 
 
@@ -89,8 +89,8 @@ export class Ngtcp2LogParser extends Parser{
 
     private parseAllPackets(tracefile: Array<string>){
         let connloginfo: LogConnectionInfo = {
-            CID_endpoint1: null,
-            CID_endpoint2: null,
+            CID_rx: null,
+            CID_tx: null,
             version: null,
         }
         let packet: QuicPacket
@@ -108,23 +108,33 @@ export class Ngtcp2LogParser extends Parser{
         let splitline
         let longheader: LongHeader
 
-        content.forEach((el) =>{
+        for (let i = 0; i < content.length; i++) {
+            const el = content[i];
             splitline = el.split(" ")
 
             if (splitline[2] === "frm" && (splitline[3] === "rx" || splitline[3] === "tx")) {
                 let packetnr = splitline[4]
                 let packettype = splitline[5]
                 let frametype = splitline[6]
-                console.log(packetnr, packettype, frametype)
+
                 if (packettype.includes("Initial") || packettype.includes("Handshake")){
-                    
+                    longheader = {
+                        header_form: true,
+                        dest_connection_id: splitline[3] === "rx" ? connloginfo.CID_tx![0] : connloginfo.CID_rx![0],
+                        long_packet_type: parseInt(this.splitOnSymbol(packettype, "(").slice(0, -1)),
+                        src_connection_id: splitline[3] === "rx" ? connloginfo.CID_rx![0] : connloginfo.CID_tx![0],
+                        version: connloginfo.version,
+                        packet_number: parseInt(packetnr)
+                    }
+                    console.log(longheader)
+                    break;
                 }
             }
-        })
+        }
     }
 
-    private splitOnEqual(tosplit: string): string{
-        let split = tosplit.split("=")
+    private splitOnSymbol(tosplit: string, symbol: string): string{
+        let split = tosplit.split(symbol)
         return split[1]
     }
 
@@ -137,11 +147,12 @@ export class Ngtcp2LogParser extends Parser{
         splitline = el.split(" ")
 
         if (splitline[2] === "pkt" && splitline[3] === "rx") {
-            let packettype = this.splitOnEqual(splitline[7]) 
+            let packettype = this.splitOnSymbol(splitline[7], "=") 
             if (packettype.includes("Initial") || packettype.includes("Handshake")){
-                connloginfo.CID_endpoint1 = Array(this.splitOnEqual(splitline[5])),
-                connloginfo.CID_endpoint2 = Array(this.splitOnEqual(splitline[6])),
-                connloginfo.version = "0xFF00000B"
+                connloginfo.CID_tx = Array(this.splitOnSymbol(splitline[5], "=")),
+                connloginfo.CID_rx = Array(this.splitOnSymbol(splitline[6], "=")),
+                connloginfo.CID_tx.push(splitline[1])
+                connloginfo.version = 0xFF00000B
             }
         }
     }
