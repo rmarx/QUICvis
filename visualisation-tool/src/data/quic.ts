@@ -4,8 +4,8 @@ export interface Trace{
 }
 
 export interface QuicConnection{
-    CID_endpoint1: string|null
-    CID_endpoint2: string|null
+    CID_endpoint1: Array<string>|null
+    CID_endpoint2: Array<string>|null
     packets: Array<QuicPacket>
 }
 
@@ -17,6 +17,7 @@ export interface QuicPacket{
     headerinfo: Header|null
     payloadinfo: Payload|null
     time_delta: number
+    serverinfo: ServerInfo | null
 }
 
 /**
@@ -162,4 +163,9 @@ export interface Stream{
     offset: number
     length: number
     stream_data: string
+}
+
+export interface ServerInfo{
+    infotype: string,
+    infocontent: string
 }

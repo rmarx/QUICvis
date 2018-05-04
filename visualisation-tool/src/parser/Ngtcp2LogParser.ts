@@ -11,7 +11,7 @@ export class Ngtcp2LogParser extends Parser{
         let trace = this.createTraceObject(name)
 
         let processed_file = this.processFile(tracefile);
-        console.log(processed_file)
+        //console.log(processed_file)
         return trace
     }
 

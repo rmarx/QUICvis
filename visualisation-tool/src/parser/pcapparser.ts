@@ -12,6 +12,7 @@ export class PcapParser extends Parser{
 
         let conn = this.parseAllPackets(tracefile) ;
         trace.connection = conn
+        //console.log(conn)
         return trace
     }
 
@@ -70,24 +71,26 @@ export class PcapParser extends Parser{
         
         try {
             connections.forEach(function(el){
-                if (el.CID_endpoint1 === headerinfo.dest_connection_id) {
+                if (el.CID_endpoint1!.findIndex(x => x === headerinfo.dest_connection_id) !== -1) {
                     isfound = true;
                     el.packets.push(packet)
 
                     //check if SCID has changed, if so change value of CID for that endpoint
-                    if (headerinfo.header_form === true && (<LongHeader> headerinfo).src_connection_id !== el.CID_endpoint2) {
-                        el.CID_endpoint2 = (<LongHeader> headerinfo).src_connection_id
+                    let src_conn_id= (<LongHeader> headerinfo).src_connection_id
+                    if (headerinfo.header_form === true && src_conn_id && el.CID_endpoint2!.findIndex(x => x === src_conn_id) !== -1) {
+                        el.CID_endpoint2!.push(src_conn_id)
                     }
 
                     throw BreakException
                 }
-                if (el.CID_endpoint2 === headerinfo.dest_connection_id){
+                if (el.CID_endpoint2!.findIndex(x => x === headerinfo.dest_connection_id) !== -1){
                     isfound = true;
                     el.packets.push(packet)
 
+                    let src_conn_id= (<LongHeader> headerinfo).src_connection_id
                     //check if SCID has changed, if so change value of CID for that endpoint
-                    if (headerinfo.header_form === true && (<LongHeader> headerinfo).src_connection_id !== el.CID_endpoint1) {
-                        el.CID_endpoint1 = (<LongHeader> headerinfo).src_connection_id
+                    if (headerinfo.header_form === true && src_conn_id && el.CID_endpoint1!.findIndex(x => x === src_conn_id)) {
+                        el.CID_endpoint1!.push(src_conn_id)
                     }
 
                     throw BreakException
@@ -111,16 +114,18 @@ export class PcapParser extends Parser{
         
         try {
             connections.forEach(function(el){
-                if (el.CID_endpoint1 === headerinfo.src_connection_id) {
+                if (el.CID_endpoint1!.findIndex(x => x === headerinfo.src_connection_id) !== -1) {
                     isfound = true;
                     el.packets.push(packet)
-                    el.CID_endpoint2 = headerinfo.dest_connection_id
+                    if (headerinfo.dest_connection_id)
+                        el.CID_endpoint2!.push(headerinfo.dest_connection_id)
                     throw BreakException
                 }
-                if (el.CID_endpoint2 === headerinfo.src_connection_id){
+                if (el.CID_endpoint2!.findIndex(x => x === headerinfo.src_connection_id) !== -1){
                     isfound = true;
                     el.packets.push(packet)
-                    el.CID_endpoint1 = headerinfo.dest_connection_id
+                    if (headerinfo.dest_connection_id)
+                        el.CID_endpoint1!.push(headerinfo.dest_connection_id)
                     throw BreakException
                 }
             })
@@ -136,14 +141,19 @@ export class PcapParser extends Parser{
         if (!packet.headerinfo || packet.headerinfo.header_form === false)
             return
 
-        let longheader = <LongHeader> packet.headerinfo    
-        let conn: QuicConnection = {
-            CID_endpoint1: longheader.src_connection_id,
-            CID_endpoint2: longheader.dest_connection_id,
-            packets: Array<QuicPacket>(packet)
-        }
+        let longheader = <LongHeader> packet.headerinfo
+        let src_conn_id = longheader.src_connection_id
+        let dst_conn_id = longheader.dest_connection_id
+        
+        if (src_conn_id && dst_conn_id) {
+            let conn: QuicConnection = {
+                CID_endpoint1: Array(src_conn_id),
+                CID_endpoint2: Array(dst_conn_id),
+                packets: Array<QuicPacket>(packet)
+            }
 
-        connections.push(conn)
+            connections.push(conn)
+        }
     }
 
     private parsePacket(ip_info: any, udp_info: any, quic_info: any, time: any): QuicPacket{
@@ -155,7 +165,8 @@ export class PcapParser extends Parser{
             dst_port_number: udp_info["udp.dstport"],
             headerinfo: this.parseHeader(quic_info),
             payloadinfo: payload,
-            time_delta: time
+            time_delta: time,
+            serverinfo: null
         }
         return packet
     }
