@@ -2,7 +2,7 @@ import Parser from "./parser"
 import {
     Trace, QuicConnection, QuicPacket, Header, LongHeader, ShortHeader,
     Payload, Frame, Padding, Rst_Stream, Application_Close, Max_Data, Max_Stream_Data, Max_Stream_Id, Ping, Blocked, Stream_Blocked, 
-    Stream_Id_Blocked, New_Connection_Id, Stop_Sending, Ack, Path_Challenge, Path_Response, Stream, Connection_Close, AckBlock
+    Stream_Id_Blocked, New_Connection_Id, Stop_Sending, Ack, Path_Challenge, Path_Response, Stream, Connection_Close, AckBlock, ServerInfo
 } from "../data/quic"
 
 
@@ -10,11 +10,11 @@ export interface LogConnectionInfo{
     CID_tx: Array<string>|null
     CID_rx: Array<string>|null
     version: number|null
+    packetnr: number|null
 }
 
 
 export class Ngtcp2LogParser extends Parser{
-    //create object which contains info that needs to be stored to proces other packets
     public parse(name: string, tracefile: any): Trace{
         let trace = this.createTraceObject(name)
 
@@ -92,11 +92,11 @@ export class Ngtcp2LogParser extends Parser{
             CID_rx: null,
             CID_tx: null,
             version: null,
+            packetnr: null
         }
         let packet: QuicPacket
         let connections = Array<QuicConnection>()
         this.getInitialInfo(tracefile[0], connloginfo)
-        console.log(connloginfo)
 
         for (let i = 0; i < tracefile.length; i++) {
             this.parsePacket(tracefile[i], connloginfo)
@@ -107,6 +107,7 @@ export class Ngtcp2LogParser extends Parser{
         let content = packetinfo.split("\n")
         let splitline
         let longheader: LongHeader
+        let shortheader: ShortHeader
 
         for (let i = 0; i < content.length; i++) {
             const el = content[i];
@@ -117,7 +118,7 @@ export class Ngtcp2LogParser extends Parser{
                 let packettype = splitline[5]
                 let frametype = splitline[6]
 
-                if (packettype.includes("Initial") || packettype.includes("Handshake")){
+                if (packettype.includes("Handshake")){
                     longheader = {
                         header_form: true,
                         dest_connection_id: splitline[3] === "rx" ? connloginfo.CID_tx![0] : connloginfo.CID_rx![0],
@@ -129,8 +130,63 @@ export class Ngtcp2LogParser extends Parser{
                     console.log(longheader)
                     break;
                 }
+                else if (packettype.includes("Initial")){
+                    longheader = {
+                        header_form: true,
+                        dest_connection_id: splitline[3] === "rx" ? connloginfo.CID_tx![0] : connloginfo.CID_rx![0],
+                        long_packet_type: parseInt(this.splitOnSymbol(packettype, "(").slice(0, -1)),
+                        src_connection_id: splitline[3] === "rx" ? connloginfo.CID_rx![0] : connloginfo.CID_tx![0],
+                        version: connloginfo.version,
+                        packet_number: parseInt(packetnr)
+                    }
+                    let serverinfo = this.getTransportParameters(content)
+                    for (let j = 0; j < serverinfo.length; j++) {
+                        if (serverinfo[i].infotype === "initial_version"){
+                            connloginfo.version = parseInt(serverinfo[i].infocontent)
+                            longheader.version = connloginfo.version
+                            break;
+                        }
+                    }
+                    console.log(longheader)
+                    break;
+                }
+                else {
+                    shortheader = {
+                        header_form: false,
+                        dest_connection_id: splitline[3] === "rx" ? connloginfo.CID_tx![0] : connloginfo.CID_rx![0],
+                        short_packet_type: parseInt(this.splitOnSymbol(packettype, "(").slice(0, -1)),
+                        flags: {
+                            omit_conn_id: false,
+                            key_phase: false
+                        },
+                        packet_number: parseInt(packetnr)
+                    }
+                    console.log(shortheader)
+                    break;
+                }
             }
         }
+    }
+
+    private getTransportParameters(content: Array<string>): Array<ServerInfo>{
+        let infoarray = Array<ServerInfo>()
+        let infoobject: ServerInfo
+        let line: string
+        let splitline: Array<string>
+        for (let i = 0; i < content.length; i++) {
+            line = content[i];
+            splitline = line.split(" ")
+            if (splitline[2] === "cry" && splitline[3] === "remote"){
+                splitline = splitline[5].split("=")
+                infoobject = {
+                    infotype: splitline[0],
+                    infocontent: splitline[1]
+                }
+                infoarray.push(infoobject)
+            }
+        }
+
+        return infoarray
     }
 
     private splitOnSymbol(tosplit: string, symbol: string): string{
@@ -143,7 +199,6 @@ export class Ngtcp2LogParser extends Parser{
         let splitline
 
         let el = content[2]
-        console.log(el)
         splitline = el.split(" ")
 
         if (splitline[2] === "pkt" && splitline[3] === "rx") {
