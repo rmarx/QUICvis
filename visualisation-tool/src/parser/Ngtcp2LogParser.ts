@@ -104,9 +104,22 @@ export class Ngtcp2LogParser extends Parser{
     }
 
     private parsePacket(packetinfo: string, connloginfo: LogConnectionInfo){
+        let packet: QuicPacket
         let content = packetinfo.split("\n")
+        let serverinfo = this.getTransportParameters(content, connloginfo)
         let header = this.parseHeader(content, connloginfo)
-        console.log(header)
+        let framelist = this.parsePayload(content)
+        packet = {
+            src_ip_address: "",
+            src_port_number: -1,
+            dst_ip_address: "",
+            dst_port_number: -1,
+            headerinfo: header,
+            payloadinfo: { framelist: framelist},
+            time_delta: -1,
+            serverinfo: serverinfo
+        }
+        console.log(packet)
         
     }
 
@@ -124,15 +137,15 @@ export class Ngtcp2LogParser extends Parser{
                 let frametype = splitline[6]
 
                 if (packettype.includes("Handshake") || packettype.includes("Initial")){
-                    let serverinfo = this.getTransportParameters(content, connloginfo)
                     header = this.parseLongHeader(splitline[3], packettype, packetnr, connloginfo)
+                    return header
                 }
                 else {
                     header = this.parseShortHeader(splitline[3], packettype, packetnr, connloginfo)
+                    return header
                 }
             }
         }
-        console.log(header)
         return null
     }
 
@@ -209,5 +222,84 @@ export class Ngtcp2LogParser extends Parser{
                 connloginfo.version = 0xFF00000B
             }
         }
+    }
+
+    private parsePayload(content: Array<string>): Array<Frame>{
+        let splitline: Array<string>
+        let framelist = Array<Frame>()
+
+        for (let i = 0; i < content.length; i++) {
+            splitline = content[i].split(" ");
+            if (splitline[2] === "frm" && (splitline[3] === "rx" || splitline[3] === "tx")) {
+                let frameinfo = splitline.slice(6)
+                let frametype = parseInt(this.splitOnSymbol(frameinfo[0], "(").slice(0,-1))
+                
+                switch (frametype) {
+                    case 0: //padding
+                        break;
+                    case 1: //rst_stream
+                        break;
+                    case 2: //connection_close
+                        break;
+                    case 3: //application_close
+                        break;
+                    case 4: //max_data
+                        break;
+                    case 5: //max_stream_data
+                        break;
+                    case 6: //max_stream_id
+                        break;
+                    case 7: //ping
+                        break;
+                    case 8: //blocked
+                        break;
+                    case 9: //stream_blocked
+                        break;
+                    case 10: //stream_id_blocked
+                        break;
+                    case 11: //new_connection_id
+                        break;
+                    case 12: //stop_sending
+                        break;
+                    case 13: //ack
+                        break;
+                    case 14: //path_challenge
+                        break;
+                    case 15: //path_response
+                        break;
+                    case 16:
+                    case 17:
+                    case 18:
+                    case 19:
+                    case 20:
+                    case 21:
+                    case 22:
+                    case 23: //stream
+                        framelist.push(this.parseStream(frameinfo, frametype))
+                        break;
+                    default:
+                        break;
+                }
+            }
+        }
+        return framelist
+    }
+
+    private parseStream(frameinfo: Array<string>, frametype: number): Stream{
+        let off_flag_val = 4
+        let len_flag_val = 2
+        let fin_flag_val = 1
+        let stream: Stream = {
+            stream_id: parseInt(this.splitOnSymbol(frameinfo[1], "=")),
+            offset: parseInt(this.splitOnSymbol(frameinfo[3], "=")),
+            length : parseInt(this.splitOnSymbol(frameinfo[4], "=")),
+            type_flags: {
+                off_flag: (frametype & off_flag_val) ? true : false,
+                fin_flag: (frametype & fin_flag_val) ? true : false,
+                len_flag: (frametype & len_flag_val) ? true : false
+            },
+            stream_data: ""
+        }
+        return stream
     }
 }

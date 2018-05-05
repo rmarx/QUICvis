@@ -17,7 +17,7 @@ export interface QuicPacket{
     headerinfo: Header|null
     payloadinfo: Payload|null
     time_delta: number
-    serverinfo: ServerInfo | null
+    serverinfo: Array<ServerInfo> | null
 }
 
 /**
