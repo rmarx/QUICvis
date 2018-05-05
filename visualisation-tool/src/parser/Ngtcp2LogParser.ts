@@ -263,6 +263,16 @@ export class Ngtcp2LogParser extends Parser{
                     case 12: //stop_sending
                         break;
                     case 13: //ack
+                        let ack_block_count = parseInt(this.splitOnSymbol(frameinfo[3], "="))
+                        let ackblocksinfo = Array<Array<string>>()
+                        for (let j = 1; j < ack_block_count + 1; j++){
+                            i += j;
+                            splitline = content[i].split(" ");
+                            frameinfo = splitline.slice(6)
+                            ackblocksinfo.push(frameinfo)
+                        }
+                        framelist.push(this.parseAck(frameinfo, ackblocksinfo))
+                        i++;
                         break;
                     case 14: //path_challenge
                         framelist.push(this.parsePathChallenge(frameinfo))
@@ -328,5 +338,32 @@ export class Ngtcp2LogParser extends Parser{
         }
 
         return path_response
+    }
+
+    private parseAck(frameinfo: Array<string>, ackblocksinfo: Array<Array<string>>): Ack{
+        let ack_delay = this.splitOnSymbol(frameinfo[2], "=") 
+        let ack: Ack = {
+            largest_ack: parseInt(this.splitOnSymbol(frameinfo[1], "=")),
+            ack_delay: parseInt(this.splitOnSymbol(ack_delay, "(").slice(0, -1)),
+            ack_block_count: parseInt(this.splitOnSymbol(frameinfo[3], "=")),
+            ack_blocks: this.parseAckBlocks(ackblocksinfo),
+        }
+
+        return ack
+    }
+
+    private parseAckBlocks(ackblocksinfo: Array<Array<string>>): Array<AckBlock>{
+        let ackblocks = Array<AckBlock>()
+        let ackblock: AckBlock
+
+        for (let i = 0; i < ackblocksinfo.length; i++) {
+            let blockinfo = ackblocksinfo[i]
+
+            ackblock = {
+                ack_block_field: 0,
+                gap_field: 0
+            }
+        }
+        return ackblocks
     }
 }
