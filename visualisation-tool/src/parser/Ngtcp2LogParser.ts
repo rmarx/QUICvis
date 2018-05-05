@@ -236,6 +236,7 @@ export class Ngtcp2LogParser extends Parser{
                 
                 switch (frametype) {
                     case 0: //padding
+                        framelist.push(this.parsePadding(frameinfo))
                         break;
                     case 1: //rst_stream
                         break;
@@ -301,5 +302,13 @@ export class Ngtcp2LogParser extends Parser{
             stream_data: ""
         }
         return stream
+    }
+
+    private parsePadding(frameinfo: Array<string>): Padding{
+        let padding: Padding = {
+            length: parseInt(this.splitOnSymbol(frameinfo[1], "="))
+        }
+
+        return padding
     }
 }
