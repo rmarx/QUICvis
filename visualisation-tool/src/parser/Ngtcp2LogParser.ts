@@ -105,9 +105,14 @@ export class Ngtcp2LogParser extends Parser{
 
     private parsePacket(packetinfo: string, connloginfo: LogConnectionInfo){
         let content = packetinfo.split("\n")
+        let header = this.parseHeader(content, connloginfo)
+        console.log(header)
+        
+    }
+
+    private parseHeader(content: Array<string>, connloginfo: LogConnectionInfo): Header|null{
+        let header: Header
         let splitline
-        let longheader: LongHeader
-        let shortheader: ShortHeader
 
         for (let i = 0; i < content.length; i++) {
             const el = content[i];
@@ -118,57 +123,46 @@ export class Ngtcp2LogParser extends Parser{
                 let packettype = splitline[5]
                 let frametype = splitline[6]
 
-                if (packettype.includes("Handshake")){
-                    longheader = {
-                        header_form: true,
-                        dest_connection_id: splitline[3] === "rx" ? connloginfo.CID_tx![0] : connloginfo.CID_rx![0],
-                        long_packet_type: parseInt(this.splitOnSymbol(packettype, "(").slice(0, -1)),
-                        src_connection_id: splitline[3] === "rx" ? connloginfo.CID_rx![0] : connloginfo.CID_tx![0],
-                        version: connloginfo.version,
-                        packet_number: parseInt(packetnr)
-                    }
-                    console.log(longheader)
-                    break;
-                }
-                else if (packettype.includes("Initial")){
-                    longheader = {
-                        header_form: true,
-                        dest_connection_id: splitline[3] === "rx" ? connloginfo.CID_tx![0] : connloginfo.CID_rx![0],
-                        long_packet_type: parseInt(this.splitOnSymbol(packettype, "(").slice(0, -1)),
-                        src_connection_id: splitline[3] === "rx" ? connloginfo.CID_rx![0] : connloginfo.CID_tx![0],
-                        version: connloginfo.version,
-                        packet_number: parseInt(packetnr)
-                    }
-                    let serverinfo = this.getTransportParameters(content)
-                    for (let j = 0; j < serverinfo.length; j++) {
-                        if (serverinfo[i].infotype === "initial_version"){
-                            connloginfo.version = parseInt(serverinfo[i].infocontent)
-                            longheader.version = connloginfo.version
-                            break;
-                        }
-                    }
-                    console.log(longheader)
-                    break;
+                if (packettype.includes("Handshake") || packettype.includes("Initial")){
+                    let serverinfo = this.getTransportParameters(content, connloginfo)
+                    header = this.parseLongHeader(splitline[3], packettype, packetnr, connloginfo)
                 }
                 else {
-                    shortheader = {
-                        header_form: false,
-                        dest_connection_id: splitline[3] === "rx" ? connloginfo.CID_tx![0] : connloginfo.CID_rx![0],
-                        short_packet_type: parseInt(this.splitOnSymbol(packettype, "(").slice(0, -1)),
-                        flags: {
-                            omit_conn_id: false,
-                            key_phase: false
-                        },
-                        packet_number: parseInt(packetnr)
-                    }
-                    console.log(shortheader)
-                    break;
+                    header = this.parseShortHeader(splitline[3], packettype, packetnr, connloginfo)
                 }
             }
         }
+        console.log(header)
+        return null
     }
 
-    private getTransportParameters(content: Array<string>): Array<ServerInfo>{
+    private parseLongHeader(origin: string, packettype: string, packetnr: string, connloginfo: LogConnectionInfo): LongHeader{
+        let longheader = {
+            header_form: true,
+            dest_connection_id: origin === "rx" ? connloginfo.CID_tx![0] : connloginfo.CID_rx![0],
+            long_packet_type: parseInt(this.splitOnSymbol(packettype, "(").slice(0, -1)),
+            src_connection_id: origin === "rx" ? connloginfo.CID_rx![0] : connloginfo.CID_tx![0],
+            version: connloginfo.version,
+            packet_number: parseInt(packetnr)
+        }
+        return longheader;
+    }
+
+    private parseShortHeader(origin: string, packettype: string, packetnr: string, connloginfo: LogConnectionInfo): ShortHeader{
+        let shortheader = {
+            header_form: false,
+            dest_connection_id: origin === "rx" ? connloginfo.CID_tx![0] : connloginfo.CID_rx![0],
+            short_packet_type: parseInt(this.splitOnSymbol(packettype, "(").slice(0, -1)),
+            flags: {
+                omit_conn_id: false,
+                key_phase: false
+            },
+            packet_number: parseInt(packetnr)
+        }
+        return shortheader
+    }
+
+    private getTransportParameters(content: Array<string>, connloginfo: LogConnectionInfo): Array<ServerInfo>|null{
         let infoarray = Array<ServerInfo>()
         let infoobject: ServerInfo
         let line: string
@@ -182,11 +176,16 @@ export class Ngtcp2LogParser extends Parser{
                     infotype: splitline[0],
                     infocontent: splitline[1]
                 }
+                if (infoobject.infotype === "initial_version"){
+                    connloginfo.version = parseInt(infoobject.infocontent)
+                }
                 infoarray.push(infoobject)
             }
         }
-
-        return infoarray
+        if (infoarray.length > 0)
+            return infoarray
+        else
+            return null
     }
 
     private splitOnSymbol(tosplit: string, symbol: string): string{
