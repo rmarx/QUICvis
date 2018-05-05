@@ -265,8 +265,10 @@ export class Ngtcp2LogParser extends Parser{
                     case 13: //ack
                         break;
                     case 14: //path_challenge
+                        framelist.push(this.parsePathChallenge(frameinfo))
                         break;
                     case 15: //path_response
+                        framelist.push(this.parsePathResponse(frameinfo))
                         break;
                     case 16:
                     case 17:
@@ -310,5 +312,21 @@ export class Ngtcp2LogParser extends Parser{
         }
 
         return padding
+    }
+
+    private parsePathChallenge(frameinfo: Array<string>): Path_Challenge{
+        let path_challenge: Path_Challenge = {
+            data: this.splitOnSymbol(frameinfo[1], "=")
+        }
+
+        return path_challenge
+    }
+
+    private parsePathResponse(frameinfo: Array<string>): Path_Response{
+        let path_response: Path_Response = {
+            data: this.splitOnSymbol(frameinfo[1], "=")
+        }
+
+        return path_response
     }
 }

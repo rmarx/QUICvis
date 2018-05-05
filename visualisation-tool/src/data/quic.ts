@@ -146,11 +146,11 @@ export interface AckBlock{
 }
 
 export interface Path_Challenge{
-    data: number
+    data: string
 }
 
 export interface Path_Response{
-    data: number
+    data: string
 }
 
 export interface Stream{
