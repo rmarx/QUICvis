@@ -20,7 +20,8 @@ export class Ngtcp2LogParser extends Parser{
 
         let processed_file = this.processFile(tracefile);
         //console.log(processed_file)
-        this.parseAllPackets(processed_file)
+        trace.connection = this.parseAllPackets(processed_file)
+        console.log(trace)
         return trace
     }
 
@@ -87,7 +88,7 @@ export class Ngtcp2LogParser extends Parser{
         return packetsinstring
     }
 
-    private parseAllPackets(tracefile: Array<string>){
+    private parseAllPackets(tracefile: Array<string>): Array<QuicConnection>{
         let connloginfo: LogConnectionInfo = {
             CID_rx: null,
             CID_tx: null,
@@ -96,14 +97,19 @@ export class Ngtcp2LogParser extends Parser{
         }
         let packet: QuicPacket
         let connections = Array<QuicConnection>()
+        let connindex: number
         this.getInitialInfo(tracefile[0], connloginfo)
 
         for (let i = 0; i < tracefile.length; i++) {
-            this.parsePacket(tracefile[i], connloginfo)
+            packet = this.parsePacket(tracefile[i], connloginfo)
+            connindex = this.addPacketToConnection(packet, connections)
+            if (packet.payloadinfo &&  this.isNewConnectionId(packet.payloadinfo))
+                this.addAditionalConnId(packet, connections, connindex)
         }
+        return connections
     }
 
-    private parsePacket(packetinfo: string, connloginfo: LogConnectionInfo){
+    private parsePacket(packetinfo: string, connloginfo: LogConnectionInfo): QuicPacket{
         let packet: QuicPacket
         let content = packetinfo.split("\n")
         let serverinfo = this.getTransportParameters(content, connloginfo)
@@ -119,7 +125,7 @@ export class Ngtcp2LogParser extends Parser{
             time_delta: -1,
             serverinfo: serverinfo
         }
-        console.log(packet)
+        return packet
         
     }
 
@@ -365,5 +371,143 @@ export class Ngtcp2LogParser extends Parser{
             }
         }
         return ackblocks
+    }
+
+    private addPacketToConnection(packet: QuicPacket, connections: Array<QuicConnection>): number{
+        if (!packet.headerinfo) return -1
+        let index = -1
+
+        //If there are no connections, create a new and add the packet to it
+        if (connections.length === 0){
+            index = this.createConnection(packet, connections)
+            return index
+        }
+        index = this.addPacketWithDCID(packet, connections) 
+        if (index !== -1)
+            return index
+        else {
+            index = this.addPacketWithSCID(packet, connections)  
+            if (index !== -1)
+                return index
+            else {
+                index = this.createConnection(packet, connections)
+                return index
+            }
+        }
+    }
+
+    /**
+     * Checks if a connection exists where 1 endpoint has DCID, if so add packet to connection 
+     */
+    private addPacketWithDCID(packet: QuicPacket, connections: Array<QuicConnection>): number{
+        if (!packet.headerinfo) return -1
+        const headerinfo = packet.headerinfo
+        let foundindex = -1;
+        let BreakException = {}
+        
+        try {
+            connections.forEach(function(el, index){
+                if (el.CID_endpoint1!.findIndex(x => x === headerinfo.dest_connection_id) !== -1) {
+                    foundindex = index;
+                    el.packets.push(packet)
+
+                    //check if SCID has changed, if so change value of CID for that endpoint
+                    let src_conn_id= '"' + (<LongHeader> headerinfo).src_connection_id + '"'
+            
+                    if (headerinfo.header_form === true && src_conn_id && el.CID_endpoint2!.findIndex(x => x === src_conn_id) !== -1) {
+                        el.CID_endpoint2!.push(src_conn_id)
+                    }
+
+                    throw BreakException
+                }
+                if (el.CID_endpoint2!.findIndex(x => x === headerinfo.dest_connection_id) !== -1){
+                    foundindex = index;
+                    el.packets.push(packet)
+
+                    let src_conn_id= (<LongHeader> headerinfo).src_connection_id
+                    //check if SCID has changed, if so change value of CID for that endpoint
+                    if (headerinfo.header_form === true && src_conn_id && el.CID_endpoint1!.findIndex(x => x === src_conn_id)) {
+                        el.CID_endpoint1!.push(src_conn_id)
+                    }
+
+                    throw BreakException
+                }
+            })
+        }catch(e){
+            if (e !== BreakException) throw e;
+        }
+
+        return foundindex
+    }
+
+    /**
+     * Checks if a connection exists where 1 endpoint has SCID, if so add packet to connection and update to new DCID
+     */
+    private addPacketWithSCID(packet: QuicPacket, connections: Array<QuicConnection>): number{
+        if (!packet.headerinfo || packet.headerinfo.header_form === false) return -1
+        const headerinfo = <LongHeader> packet.headerinfo
+        let foundindex = -1;
+        let BreakException = {}
+        
+        try {
+            connections.forEach(function(el, index){
+                if (el.CID_endpoint1!.findIndex(x => x === headerinfo.src_connection_id) !== -1) {
+                    foundindex = index;
+                    el.packets.push(packet)
+                    if (headerinfo.dest_connection_id)
+                        el.CID_endpoint2!.push(headerinfo.dest_connection_id)
+                    throw BreakException
+                }
+                if (el.CID_endpoint2!.findIndex(x => x === headerinfo.src_connection_id) !== -1){
+                    foundindex = -1;
+                    el.packets.push(packet)
+                    if (headerinfo.dest_connection_id)
+                        el.CID_endpoint1!.push(headerinfo.dest_connection_id)
+                    throw BreakException
+                }
+            })
+        }catch(e){
+            if (e !== BreakException) throw e;
+        }
+
+        return foundindex
+    }
+
+    private createConnection(packet: QuicPacket, connections: Array<QuicConnection>): number{
+        //TODO check if header_form is set to boolean and not string
+        if (!packet.headerinfo || packet.headerinfo.header_form === false)
+            return -1
+
+        let longheader = <LongHeader> packet.headerinfo
+        let src_conn_id = longheader.src_connection_id
+        let dst_conn_id = longheader.dest_connection_id
+        let index = -1
+
+        if (src_conn_id && dst_conn_id) {
+            let conn: QuicConnection = {
+                CID_endpoint1: Array(src_conn_id),
+                CID_endpoint2: Array(dst_conn_id),
+                packets: Array<QuicPacket>(packet)
+            }
+
+            index = connections.push(conn) - 1
+        }
+        return index
+    }
+
+    private addAditionalConnId(packet: QuicPacket, connections: Array<QuicConnection>, connindex: number){
+        if (connindex === -1 && packet.payloadinfo && !this.isNewConnectionId(packet.payloadinfo)) return
+
+        let dst_conn_id = packet.headerinfo!.dest_connection_id
+        let conn = connections[connindex]
+        let conn_id_frame = <New_Connection_Id> packet.payloadinfo
+        if (conn.CID_endpoint1!.findIndex(x => x === dst_conn_id) !== -1)
+            conn.CID_endpoint2!.push(conn_id_frame.connection_id.toString())
+        else
+            conn.CID_endpoint1!.push(conn_id_frame.connection_id.toString())
+    }
+
+    private isNewConnectionId(payload: New_Connection_Id | Payload): payload is New_Connection_Id {
+        return (<New_Connection_Id>payload).connection_id !== undefined;
     }
 }

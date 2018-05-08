@@ -32,7 +32,7 @@ export default {
           this.$store.dispatch('addFile', tracewrap)
         }*/
         if (element['fileext'] === '.log') {
-          ngtcp2parser.parse(element['filename'], element['filecontent'])
+          tracewrap.setTrace(ngtcp2parser.parse(element['filename'], element['filecontent']))
           this.$store.dispatch('addFile', tracewrap)
         }
       });
