@@ -116,6 +116,7 @@ export class Ngtcp2LogParser extends Parser{
         let framelist = this.parsePayload(content)
         let time_delta = this.splitOnSymbol(content[0].split(" ")[0], "I")
         
+        time_delta = time_delta.substring(0, 5) + "." + time_delta.substring(5, time_delta.length)
         packet = {
             src_ip_address: "",
             src_port_number: -1,
@@ -123,7 +124,7 @@ export class Ngtcp2LogParser extends Parser{
             dst_port_number: -1,
             headerinfo: header,
             payloadinfo: { framelist: framelist},
-            time_delta: -1,
+            time_delta: parseFloat(time_delta),
             serverinfo: serverinfo
         }
         return packet
