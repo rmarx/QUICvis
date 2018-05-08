@@ -4,6 +4,7 @@ import {
     Payload, Frame, Padding, Rst_Stream, Application_Close, Max_Data, Max_Stream_Data, Max_Stream_Id, Ping, Blocked, Stream_Blocked, 
     Stream_Id_Blocked, New_Connection_Id, Stop_Sending, Ack, Path_Challenge, Path_Response, Stream, Connection_Close, AckBlock, ServerInfo
 } from "../data/quic"
+import { TIMEOUT } from "dns";
 
 
 export interface LogConnectionInfo{
@@ -21,7 +22,6 @@ export class Ngtcp2LogParser extends Parser{
         let processed_file = this.processFile(tracefile);
         //console.log(processed_file)
         trace.connection = this.parseAllPackets(processed_file)
-        console.log(trace)
         return trace
     }
 
@@ -98,10 +98,9 @@ export class Ngtcp2LogParser extends Parser{
         let packet: QuicPacket
         let connections = Array<QuicConnection>()
         let connindex: number
-        this.getInitialInfo(tracefile[0], connloginfo)
 
         for (let i = 0; i < tracefile.length; i++) {
-            packet = this.parsePacket(tracefile[i], connloginfo)
+            packet = this.parsePacket(tracefile[i], connloginfo, connections)
             connindex = this.addPacketToConnection(packet, connections)
             if (packet.payloadinfo &&  this.isNewConnectionId(packet.payloadinfo))
                 this.addAditionalConnId(packet, connections, connindex)
@@ -109,12 +108,14 @@ export class Ngtcp2LogParser extends Parser{
         return connections
     }
 
-    private parsePacket(packetinfo: string, connloginfo: LogConnectionInfo): QuicPacket{
+    private parsePacket(packetinfo: string, connloginfo: LogConnectionInfo, connections: Array<QuicConnection>): QuicPacket{
         let packet: QuicPacket
         let content = packetinfo.split("\n")
         let serverinfo = this.getTransportParameters(content, connloginfo)
-        let header = this.parseHeader(content, connloginfo)
+        let header = this.parseHeader(content, connloginfo, connections)
         let framelist = this.parsePayload(content)
+        let time_delta = this.splitOnSymbol(content[0].split(" ")[0], "I")
+        
         packet = {
             src_ip_address: "",
             src_port_number: -1,
@@ -129,25 +130,45 @@ export class Ngtcp2LogParser extends Parser{
         
     }
 
-    private parseHeader(content: Array<string>, connloginfo: LogConnectionInfo): Header|null{
+    private parseHeader(content: Array<string>, connloginfo: LogConnectionInfo, connections: Array<QuicConnection>): Header|null{
         let header: Header
         let splitline
+        let dcid = "0x"
+        let scid = "0x"
+        let checkids = true
+        let longheader: LongHeader
 
         for (let i = 0; i < content.length; i++) {
             const el = content[i];
             splitline = el.split(" ")
 
+            if (checkids) {
+                if (splitline[5].includes("dcid=") && splitline[6].includes("scid=")) {
+                    dcid = this.splitOnSymbol(splitline[5], "=")
+                    scid = this.splitOnSymbol(splitline[6], "=")
+                    checkids = false
+                }
+                else {
+                    dcid = "0x"
+                    scid = "0x"
+                }
+            }
             if (splitline[2] === "frm" && (splitline[3] === "rx" || splitline[3] === "tx")) {
                 let packetnr = splitline[4]
                 let packettype = splitline[5]
-                let frametype = splitline[6]
-
                 if (packettype.includes("Handshake") || packettype.includes("Initial")){
-                    header = this.parseLongHeader(splitline[3], packettype, packetnr, connloginfo)
-                    return header
+                    longheader = this.parseLongHeader(content, i, connloginfo, connections)
+                    if (dcid !== "0x" && scid !== "0x") {
+                        longheader.dest_connection_id = dcid
+                        longheader.src_connection_id = scid
+                    }
+
+                    return longheader
                 }
                 else {
-                    header = this.parseShortHeader(splitline[3], packettype, packetnr, connloginfo)
+                    header = this.parseShortHeader(content, i, connloginfo, connections)
+                    if (dcid !== "0x")
+                        header.dest_connection_id = dcid
                     return header
                 }
             }
@@ -155,28 +176,60 @@ export class Ngtcp2LogParser extends Parser{
         return null
     }
 
-    private parseLongHeader(origin: string, packettype: string, packetnr: string, connloginfo: LogConnectionInfo): LongHeader{
+    private parseLongHeader(content: Array<string>, contentindex: number, connloginfo: LogConnectionInfo, connections: Array<QuicConnection>): LongHeader{
+        let line = content[contentindex].split(" ")
+        let servercid = line[1]
+        let connindex = -1
+        for (let i = 0; i < connections.length; i++) {
+            let el = connections[i]
+            if (el.CID_endpoint1!.findIndex(x => x === servercid) !== -1){
+                connindex = i;
+                break;
+            }
+        }
+
+        if (connindex === -1)
+            connindex = this.createConnection(content, connloginfo, connections)
+
+        let cide1index = connections[connindex].CID_endpoint1!.length - 1
+        let cide2index = connections[connindex].CID_endpoint2!.length - 1
         let longheader = {
             header_form: true,
-            dest_connection_id: origin === "rx" ? connloginfo.CID_tx![0] : connloginfo.CID_rx![0],
-            long_packet_type: parseInt(this.splitOnSymbol(packettype, "(").slice(0, -1)),
-            src_connection_id: origin === "rx" ? connloginfo.CID_rx![0] : connloginfo.CID_tx![0],
+            dest_connection_id: line[3] === "rx" ? connections[connindex].CID_endpoint1![cide1index] : connections[connindex].CID_endpoint2![cide2index],
+            long_packet_type: parseInt(this.splitOnSymbol(line[5], "(").slice(0, -1)),
+            src_connection_id: line[3] === "rx" ? connections[connindex].CID_endpoint2![cide2index] : connections[connindex].CID_endpoint1![cide1index],
             version: connloginfo.version,
-            packet_number: parseInt(packetnr)
+            packet_number: parseInt(line[4])
         }
         return longheader;
     }
 
-    private parseShortHeader(origin: string, packettype: string, packetnr: string, connloginfo: LogConnectionInfo): ShortHeader{
+    private parseShortHeader(content: Array<string>, contentindex: number, connloginfo: LogConnectionInfo, connections: Array<QuicConnection>): ShortHeader{
+        let line = content[contentindex].split(" ")
+        let servercid = line[1]
+        let connindex = -1
+        for (let i = 0; i < connections.length; i++) {
+            let el = connections[i]
+            if (el.CID_endpoint1!.findIndex(x => x === servercid) !== -1){
+                connindex = i;
+                break;
+            }
+        }
+
+        let cide1index = connections[connindex].CID_endpoint1!.length - 1
+        let cide2index = connections[connindex].CID_endpoint2!.length - 1
+        if (connindex === -1)
+            connindex = this.createConnection(content, connloginfo, connections)
+        
         let shortheader = {
             header_form: false,
-            dest_connection_id: origin === "rx" ? connloginfo.CID_tx![0] : connloginfo.CID_rx![0],
-            short_packet_type: parseInt(this.splitOnSymbol(packettype, "(").slice(0, -1)),
+            dest_connection_id: line[3] === "rx" ? connections[connindex].CID_endpoint1![cide1index] : connections[connindex].CID_endpoint2![cide2index],
+            short_packet_type: parseInt(this.splitOnSymbol(line[5], "(").slice(0, -1)),
             flags: {
                 omit_conn_id: false,
                 key_phase: false
             },
-            packet_number: parseInt(packetnr)
+            packet_number: parseInt(line[4])
         }
         return shortheader
     }
@@ -210,24 +263,6 @@ export class Ngtcp2LogParser extends Parser{
     private splitOnSymbol(tosplit: string, symbol: string): string{
         let split = tosplit.split(symbol)
         return split[1]
-    }
-
-    private getInitialInfo(packetinfo: string, connloginfo: LogConnectionInfo){
-        let content = packetinfo.split("\n")
-        let splitline
-
-        let el = content[2]
-        splitline = el.split(" ")
-
-        if (splitline[2] === "pkt" && splitline[3] === "rx") {
-            let packettype = this.splitOnSymbol(splitline[7], "=") 
-            if (packettype.includes("Initial") || packettype.includes("Handshake")){
-                connloginfo.CID_tx = Array(this.splitOnSymbol(splitline[5], "=")),
-                connloginfo.CID_rx = Array(this.splitOnSymbol(splitline[6], "=")),
-                connloginfo.CID_tx.push(splitline[1])
-                connloginfo.version = 0xFF00000B
-            }
-        }
     }
 
     private parsePayload(content: Array<string>): Array<Frame>{
@@ -377,22 +412,12 @@ export class Ngtcp2LogParser extends Parser{
         if (!packet.headerinfo) return -1
         let index = -1
 
-        //If there are no connections, create a new and add the packet to it
-        if (connections.length === 0){
-            index = this.createConnection(packet, connections)
-            return index
-        }
         index = this.addPacketWithDCID(packet, connections) 
         if (index !== -1)
             return index
         else {
             index = this.addPacketWithSCID(packet, connections)  
-            if (index !== -1)
-                return index
-            else {
-                index = this.createConnection(packet, connections)
-                return index
-            }
+            return index
         }
     }
 
@@ -424,10 +449,11 @@ export class Ngtcp2LogParser extends Parser{
                     foundindex = index;
                     el.packets.push(packet)
 
-                    let src_conn_id= (<LongHeader> headerinfo).src_connection_id
+                    let src_conn_id= '"' + (<LongHeader> headerinfo).src_connection_id + '"'
                     //check if SCID has changed, if so change value of CID for that endpoint
-                    if (headerinfo.header_form === true && src_conn_id && el.CID_endpoint1!.findIndex(x => x === src_conn_id)) {
+                    if (headerinfo.header_form === true && src_conn_id && el.CID_endpoint1!.findIndex(x => x === src_conn_id) !== -1) {
                         el.CID_endpoint1!.push(src_conn_id)
+                        console.log(src_conn_id)
                     }
 
                     throw BreakException
@@ -473,26 +499,19 @@ export class Ngtcp2LogParser extends Parser{
         return foundindex
     }
 
-    private createConnection(packet: QuicPacket, connections: Array<QuicConnection>): number{
-        //TODO check if header_form is set to boolean and not string
-        if (!packet.headerinfo || packet.headerinfo.header_form === false)
-            return -1
+    private createConnection(packetinfo: Array<string>, connloginfo: LogConnectionInfo, connections: Array<QuicConnection>): number{
+        let splitline
+        let connection: QuicConnection
 
-        let longheader = <LongHeader> packet.headerinfo
-        let src_conn_id = longheader.src_connection_id
-        let dst_conn_id = longheader.dest_connection_id
-        let index = -1
-
-        if (src_conn_id && dst_conn_id) {
-            let conn: QuicConnection = {
-                CID_endpoint1: Array(src_conn_id),
-                CID_endpoint2: Array(dst_conn_id),
-                packets: Array<QuicPacket>(packet)
-            }
-
-            index = connections.push(conn) - 1
+        let el = packetinfo[2]
+        splitline = el.split(" ")
+        connloginfo.version = 0xFF00000B
+        connection = {
+            CID_endpoint1: Array(this.splitOnSymbol(splitline[5], "="), splitline[1]),
+            CID_endpoint2: Array(this.splitOnSymbol(splitline[6], "=")),
+            packets: Array<QuicPacket>()
         }
-        return index
+        return connections.push(connection) - 1
     }
 
     private addAditionalConnId(packet: QuicPacket, connections: Array<QuicConnection>, connindex: number){
