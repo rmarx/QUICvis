@@ -111,10 +111,14 @@ export class Ngtcp2LogParser extends Parser{
     private parsePacket(packetinfo: string, connloginfo: LogConnectionInfo, connections: Array<QuicConnection>): QuicPacket{
         let packet: QuicPacket
         let content = packetinfo.split("\n")
-        let serverinfo = this.getTransportParameters(content, connloginfo)
+        let serverinfo = this.getExtraServerInfo(content)
+        let transportparams = this.getTransportParameters(content, connloginfo)
         let header = this.parseHeader(content, connloginfo, connections)
         let framelist = this.parsePayload(content)
         let time_delta = this.splitOnSymbol(content[0].split(" ")[0], "I")
+
+        if (transportparams && serverinfo)
+            serverinfo.concat(transportparams)
         
         time_delta = time_delta.substring(0, 5) + "." + time_delta.substring(5, time_delta.length)
         packet = {
@@ -125,7 +129,7 @@ export class Ngtcp2LogParser extends Parser{
             headerinfo: header,
             payloadinfo: { framelist: framelist},
             time_delta: parseFloat(time_delta),
-            serverinfo: serverinfo
+            serverinfo: serverinfo ? serverinfo : transportparams
         }
         return packet
         
@@ -189,7 +193,7 @@ export class Ngtcp2LogParser extends Parser{
             }
         }
 
-        if (connindex === -1)
+        if (connindex === -1) 
             connindex = this.createConnection(content, connloginfo, connections)
 
         let cide1index = connections[connindex].CID_endpoint1!.length - 1
@@ -253,6 +257,34 @@ export class Ngtcp2LogParser extends Parser{
                     connloginfo.version = parseInt(infoobject.infocontent)
                 }
                 infoarray.push(infoobject)
+            }
+        }
+        if (infoarray.length > 0)
+            return infoarray
+        else
+            return null
+    }
+
+    private getExtraServerInfo(content: Array<string>): Array<ServerInfo>|null{
+        let infoarray = Array<ServerInfo>()
+        let infoobject: ServerInfo
+        let line: string
+        let splitline: Array<string>
+        for (let i = 0; i < content.length; i++) {
+            line = content[i];
+            splitline = line.split(" ")
+            if (splitline[2] === "rcv" && !splitline[3].includes("loss_detection_alarm")){
+                let subarr = splitline.slice(3)
+                for (let j = 0; j < subarr.length; j++) {
+                    splitline = subarr[j].split("=")
+                    if (splitline.length === 2) {
+                        infoobject = {
+                            infotype: splitline[0],
+                            infocontent: splitline[1]
+                        }
+                        infoarray.push(infoobject)
+                    }
+                }
             }
         }
         if (infoarray.length > 0)
