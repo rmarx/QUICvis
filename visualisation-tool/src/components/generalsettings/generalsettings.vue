@@ -19,10 +19,10 @@
 
 <script lang="ts">
 import { Component, Prop, Vue } from 'vue-property-decorator';
-import { PcapParser } from './pcapparser'
-import TraceWrapper from '../data/TraceWrapper';
+import { PcapParser } from '../..//parser/pcapparser'
+import TraceWrapper from '../../data/TraceWrapper';
 import axios from 'axios'
-import { Ngtcp2LogParser } from './Ngtcp2LogParser'
+import { Ngtcp2LogParser } from '../../parser/Ngtcp2LogParser'
 export default {
   computed:{ 
     traces() {

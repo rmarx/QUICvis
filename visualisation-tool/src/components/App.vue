@@ -1,13 +1,10 @@
 <template>
-  <div id="app">
-    <img src="../assets/logo.png">
-    <FetchTraces msg="Welcome to Your Vue.js + TypeScript App"/>
-  </div>
+    <FetchTraces />
 </template>
 
 <script lang="ts">
 import { Component, Vue } from 'vue-property-decorator';
-import FetchTraces from '../parser/FetchTraces';
+import FetchTraces from './generalsettings/generalsettings';
 
 @Component({
   components: {
