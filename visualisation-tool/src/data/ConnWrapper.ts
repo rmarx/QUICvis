@@ -29,4 +29,12 @@ export default class ConnWrapper{
     public setConn(newconn: QuicConnection): void{
         this._conn = newconn;
     }
+
+    public getIsFiltered(): boolean{
+        return this._isfilteredout;
+    }
+
+    public invertIsFiltered(){
+        this._isfilteredout = this._isfilteredout === false ? true : false
+    }
 }

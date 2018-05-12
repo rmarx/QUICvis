@@ -10,7 +10,7 @@
       </div>
       <div id="datasettings" class="collapse" aria-labelledby="headingsettings" data-parent="generalsettings">
         <div class="card-body">
-          {{ traces }}
+          <FileSettings />
         </div>
       </div>
     </div>
@@ -23,12 +23,13 @@ import { PcapParser } from '../..//parser/pcapparser'
 import TraceWrapper from '../../data/TraceWrapper';
 import axios from 'axios'
 import { Ngtcp2LogParser } from '../../parser/Ngtcp2LogParser'
+import FileSettings from './FileSettings'
 
 export default {
-  computed:{ 
-    traces() {
-      return this.$store.getters.getFilesSettings;
-  }}
+  name: "GeneralSettings",
+  components: {
+    FileSettings
+  }
 }
 </script>
 

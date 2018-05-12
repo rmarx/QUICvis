@@ -1,17 +1,19 @@
 <template>
-    <FetchTraces />
+    <GeneralSettings />
 </template>
 
 <script lang="ts">
 import { Component, Vue } from 'vue-property-decorator';
-import FetchTraces from './generalsettings/generalsettings';
+import GeneralSettings from './generalsettings/GeneralSettings';
 
 @Component({
   components: {
-    FetchTraces,
+    GeneralSettings,
   },
 })
-export default class App extends Vue {}
+export default class App extends Vue {
+  name: 'App'
+}
 </script>
 
 <style lang="scss">

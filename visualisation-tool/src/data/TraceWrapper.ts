@@ -46,4 +46,16 @@ export default class TraceWrapper{
     public getTraceName(): string{
         return this._trace.name
     }
+
+    public getConnFilters(): Array<boolean>{
+        let filters = Array<boolean>()
+        this._conns.forEach((el) => {
+                filters.push(el.getIsFiltered())
+        })
+        return filters
+    }
+
+    public getConn(index: number): ConnWrapper{
+        return this._conns[index]
+    }
 }

@@ -2,13 +2,14 @@ import Vue from 'vue';
 import Vuex from 'vuex';
 import VisSettings from '@/data/VisSettings';
 import TraceWrapper from '@/data/TraceWrapper'
+import { stat } from 'fs';
 
 Vue.use(Vuex);
 
 export interface File{
   filename: string
   fileindex: number
-  amountconns: number
+  conns: Array<boolean>
 }
 
 export default new Vuex.Store({
@@ -19,6 +20,10 @@ export default new Vuex.Store({
     addFile(state, tracewrap: TraceWrapper) {
       state.settings.addFile(tracewrap)
     },
+    filterConn(state, data){
+      let file = state.settings.getFile(data.fileindex)
+      file.getConn(data.connindex).invertIsFiltered()
+    }
   },
   getters: {
     getFiles(state): Array<TraceWrapper>{
@@ -32,7 +37,7 @@ export default new Vuex.Store({
         filesettings = {
           filename: filedata[i].getTraceName(),
           fileindex: i,
-          amountconns: filedata[i].getAmountConns()
+          conns: filedata[i].getConnFilters()
         }
         files.push(filesettings)
       }
@@ -43,6 +48,9 @@ export default new Vuex.Store({
   actions: {
     addFile(context, tracewrap: TraceWrapper){
       context.commit('addFile', tracewrap)
+    },
+    filterConn(context, data){
+      context.commit('filteConn', data)
     }
   }
 });
