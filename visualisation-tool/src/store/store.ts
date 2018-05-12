@@ -23,6 +23,9 @@ export default new Vuex.Store({
     filterConn(state, data){
       let file = state.settings.getFile(data.fileindex)
       file.getConn(data.connindex).invertIsFiltered()
+    },
+    removeFile(state, index){
+      state.settings.removeFile(index)
     }
   },
   getters: {
@@ -50,7 +53,10 @@ export default new Vuex.Store({
       context.commit('addFile', tracewrap)
     },
     filterConn(context, data){
-      context.commit('filteConn', data)
+      context.commit('filterConn', data)
+    },
+    removeFile(context, index){
+      context.commit('removeFile', index)
     }
   }
 });

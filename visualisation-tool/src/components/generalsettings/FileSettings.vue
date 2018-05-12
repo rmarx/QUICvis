@@ -2,7 +2,7 @@
     <div id="filesettings" class="container w-50 float-left">
         <div v-for="(file, fileindex) in traces" class="card card-body w-50">
             <div v-bind:id="file.filename + '-span'">
-            <button v-bind:id="file.filename + '-close'" class="btn btn-danger btn-sm">x</button>
+            <button v-bind:id="file.filename + '-close'" class="btn btn-danger btn-sm" @click="removeFile(file.fileindex)">x</button>
             <button class="btn btn-light" type="button" data-toggle="collapse" v-bind:data-target="'#' + file.filename + '-conns'" aria-expanded="false" v-bind:aria-controls="file.filename + '-conns'">
                 {{ file.filename}}
             </button>
@@ -34,7 +34,10 @@ export default {
               fileindex,
               connindex
           }
-          this.$store.commit('filterConn', data)
+          this.$store.dispatch('filterConn', data)
+      },
+      removeFile(fileindex){
+          this.$store.dispatch('removeFile', fileindex)
       }
   }
 }
