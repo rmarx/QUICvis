@@ -1,6 +1,19 @@
 <template>
-  <div class="hello">
-    {{ traces }}
+  <div id="generalsettings">
+    <div class="card">
+      <div class="card-header">
+        <h5 class="mb-0">
+          <button id="headingsettings" class="btn btn-link" data-toggle="collapse" data-target="#datasettings" aria-expanded="true" aria-controls="collapseOne">
+            View general settings
+          </button>
+        </h5>
+      </div>
+      <div id="datasettings" class="collapse" aria-labelledby="headingsettings" data-parent="generalsettings">
+        <div class="card-body">
+          {{ traces }}
+        </div>
+      </div>
+    </div>
   </div>
 </template>
 
@@ -14,30 +27,7 @@ export default {
   computed:{ 
     traces() {
     return this.$store.getters.getFiles;
-  }},
-  mounted() {
-    let self = this
-    const request = 'http://localhost:8040/gettestfiles'
-
-    let data = axios.get(request).then((response) => { return response.data})
-    let pcapparser = new PcapParser()
-    let ngtcp2parser = new Ngtcp2LogParser()
-    data.then((result) => {
-      let container = result['filescontainer']
-      container.forEach(element => {
-        let tracewrap = new TraceWrapper()
-        
-        /*if (element['fileext'] === '.json') {
-          tracewrap.setTrace(pcapparser.parse(element['filename'], element['filecontent']))
-          this.$store.dispatch('addFile', tracewrap)
-        }*/
-        if (element['fileext'] === '.log') {
-          tracewrap.setTrace(ngtcp2parser.parse(element['filename'], element['filecontent']))
-          this.$store.dispatch('addFile', tracewrap)
-        }
-      });
-    })
-  }
+  }}
 }
 </script>
 
