@@ -23,10 +23,11 @@ import { PcapParser } from '../..//parser/pcapparser'
 import TraceWrapper from '../../data/TraceWrapper';
 import axios from 'axios'
 import { Ngtcp2LogParser } from '../../parser/Ngtcp2LogParser'
+
 export default {
   computed:{ 
     traces() {
-    return this.$store.getters.getFiles;
+      return this.$store.getters.getFilesSettings;
   }}
 }
 </script>

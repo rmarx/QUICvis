@@ -38,4 +38,12 @@ export default class TraceWrapper{
     public getConns(): Array<ConnWrapper>{
         return this._conns;
     }
+
+    public getAmountConns(): number{
+        return this._conns.length
+    }
+
+    public getTraceName(): string{
+        return this._trace.name
+    }
 }
