@@ -1,20 +1,19 @@
 <template>
-  <div id="app">
-    <img src="../assets/logo.png">
-    <FetchTraces msg="Welcome to Your Vue.js + TypeScript App"/>
-  </div>
+    <GeneralSettings />
 </template>
 
 <script lang="ts">
 import { Component, Vue } from 'vue-property-decorator';
-import FetchTraces from '../parser/FetchTraces';
+import GeneralSettings from './generalsettings/GeneralSettings';
 
 @Component({
   components: {
-    FetchTraces,
+    GeneralSettings,
   },
 })
-export default class App extends Vue {}
+export default class App extends Vue {
+  name: 'App'
+}
 </script>
 
 <style lang="scss">
