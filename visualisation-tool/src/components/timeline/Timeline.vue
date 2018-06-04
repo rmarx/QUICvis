@@ -1,7 +1,7 @@
 <template>
-  <div id="timeline" class="w-75">
-      <TimeScale />
-  </div>
+    <div>
+        <TimeScale />
+    </div>
 </template>
 
 <script lang="ts">
@@ -10,11 +10,11 @@ import TimeScale from "./TimeScale";//timescale component
     //connectiontimeline component
         //connectionsettings component
         //connectiondiagram component
-
+import * as d3 from 'd3';
 export default {
   name: "timeline",
   components: {
       TimeScale
-  }
+  },
 }
 </script>
