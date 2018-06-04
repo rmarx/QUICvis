@@ -1,14 +1,19 @@
 <template>
+  <div>
     <GeneralSettings />
+    <Timeline />
+  </div>
 </template>
 
 <script lang="ts">
 import { Component, Vue } from 'vue-property-decorator';
 import GeneralSettings from './generalsettings/GeneralSettings';
+import Timeline from "./timeline/Timeline";
 
 @Component({
   components: {
     GeneralSettings,
+    Timeline
   },
 })
 export default class App extends Vue {
