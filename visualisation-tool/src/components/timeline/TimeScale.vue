@@ -2,7 +2,7 @@
   <div class="w-75 timelinecontainer">
     <div class="float-left col">
       <input type="number" id="startscale" @change="onfieldschange" value="0">
-      <input type="number" id="endscale" @change="onfieldschange" value="100">
+      <input type="number" id="endscale" @change="onfieldschange" value="100" min="0">
     </div>
     <div id="timeline" class="float-left w-100"></div>
   </div>
@@ -46,10 +46,14 @@ export default {
     onfieldschange: function (){
       let startscale = parseInt((<HTMLInputElement> document.getElementById("startscale")).value)
       let endscale = parseInt((<HTMLInputElement> document.getElementById("endscale")).value)
-      
-      this.timescale.domain([startscale, endscale])
+      if (endscale <= startscale) {
+        alert("End of domain needs to be larger than start of domain")
+      }
+      else {
+        this.timescale.domain([startscale, endscale])
 
-      d3.select(".timeaxis").call(this.zoom.transform, d3.zoomIdentity).call(this.timeaxis)
+        d3.select(".timeaxis").call(this.zoom.transform, d3.zoomIdentity).call(this.timeaxis)
+      }
     },
     zoomed: function(){
       this.gaxis.call(this.timeaxis.scale(d3.event.transform.rescaleX(this.timescale)))
