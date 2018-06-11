@@ -9,74 +9,99 @@
 </template>
 
 <script lang="ts">
-import * as d3 from 'd3';
-import { svg } from 'd3';
+import * as d3 from "d3";
+import { svg } from "d3";
 export default {
   name: "timescale",
+  computed:{ 
+    timescale() {
+      return this.$store.getters.getTimeScale();
+  }},
   data() {
     return {
-      timeaxis: '',
-      timescale: '',
-      gaxis: '',
-      zoom: '',
-    }
+      timeaxis: "",
+      gaxis: "",
+      zoom: ""
+    };
   },
   mounted() {
-    let svgcont = d3.select('#timeline').append('svg')
-    .attr('width', '100%')
-    .attr('height', '100%')
-    .attr('class', 'col')
-    .attr('id','timelinesvg')
-    let width = document.getElementById("timeline")!.clientWidth - 30
+    let svgcont = d3
+      .select("#timeline")
+      .append("svg")
+      .attr("width", "100%")
+      .attr("height", "100%")
+      .attr("class", "col")
+      .attr("id", "timelinesvg");
+    let width = document.getElementById("timeline")!.clientWidth - 30;
 
-    this.timescale = d3.scaleLinear().range([0, width]).domain([0,100])
-    this.timeaxis = d3.axisBottom(this.timescale)
+    let data = {
+      maxwidth: width,
+      startdom: 0,
+      enddom: 100
+    };
+    this.$store.dispatch("initScale", data);
+    let timescale = this.$store.state.timesettings.getScale()
+    this.timeaxis = d3.axisBottom(timescale);
 
-    this.zoom = d3.zoom()
+    this.zoom = d3
+      .zoom()
       .scaleExtent([1, 40])
-      .translateExtent([[-10,0], [width + 90, 500]])
-      .on('zoom', this.zoomed)
-
-    this.gaxis = svgcont.append("g")
+      .translateExtent([[-10, 0], [width + 90, 500]])
+      .on("zoom", this.zoomed);
+    this.gaxis = svgcont
+      .append("g")
       .attr("class", "timeaxis")
-      .call(this.timeaxis)
-    svgcont.call(this.zoom)
+      .call(this.timeaxis);
+    svgcont.call(this.zoom);
   },
   methods: {
-    onfieldschange: function (){
-      let startscale = parseInt((<HTMLInputElement> document.getElementById("startscale")).value)
-      let endscale = parseInt((<HTMLInputElement> document.getElementById("endscale")).value)
+    onfieldschange: function() {
+      let startscale = parseInt(
+        (<HTMLInputElement>document.getElementById("startscale")).value
+      );
+      let endscale = parseInt(
+        (<HTMLInputElement>document.getElementById("endscale")).value
+      );
       if (endscale <= startscale) {
-        alert("End of domain needs to be larger than start of domain")
-      }
-      else {
-        this.timescale.domain([startscale, endscale])
+        alert("End of domain needs to be larger than start of domain");
+      } else {
+        let data = {
+          startdom: startscale,
+          enddom: endscale
+        };
+        this.$store.dispatch("setDomain", data);
 
-        d3.select(".timeaxis").call(this.zoom.transform, d3.zoomIdentity).call(this.timeaxis)
+        let timescale = this.$store.getters.getTimeScale();
+        d3.select(".timeaxis")
+          .call(this.zoom.transform, d3.zoomIdentity)
+          .call(this.timeaxis);
       }
     },
-    zoomed: function(){
-      this.gaxis.call(this.timeaxis.scale(d3.event.transform.rescaleX(this.timescale)))
+    zoomed: function() {
+      let timescale = this.$store.state.timesettings.getScale();
+      this.gaxis.call(
+        this.timeaxis.scale(d3.event.transform.rescaleX(timescale))
+      );
+      //console.log(this.timeaxis.scale().domain())
     }
   }
-}
+};
 </script>
 
 <style>
-
-#startscale{
+#startscale {
   width: 60px;
   height: 20px;
   float: left;
 }
 
-#endscale{
+#endscale {
   width: 60px;
   height: 20px;
   float: right;
 }
 
-.timelinecontainer{
+.timelinecontainer {
   overflow: auto;
 }
 </style>
