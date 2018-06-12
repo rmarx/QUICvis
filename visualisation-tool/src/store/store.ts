@@ -46,7 +46,7 @@ export default new Vuex.Store({
       }
 
       return files
-    }
+    },
   },
   actions: {
     addFile(context, tracewrap: TraceWrapper){

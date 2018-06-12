@@ -1,11 +1,10 @@
 <template>
-  <div class="w-75 timelinecontainer">
-    <div class="float-left col">
-      <input type="number" id="startscale" @change="onfieldschange" value="0">
-      <input type="number" class="text-right" id="endscale" @change="onfieldschange" value="100" min="0">
+    <div>
+      <div class="float-left col">
+        <input type="number" id="startscale" @change="onfieldschange" value="0">
+        <input type="number" class="text-right" id="endscale" @change="onfieldschange" value="100" min="0">
+      </div>
     </div>
-    <div id="timeline" class="float-left w-100"></div>
-  </div>
 </template>
 
 <script lang="ts">
@@ -23,12 +22,7 @@ export default {
   },
   mounted() {
     let svgcont = d3
-      .select("#timeline")
-      .append("svg")
-      .attr("width", "100%")
-      .attr("height", "100%")
-      .attr("class", "col")
-      .attr("id", "timelinesvg");
+      .select("#timelinesvg")
     let width = document.getElementById("timeline")!.clientWidth - 30;
     this.timescale = this._scale = d3.scaleLinear().range([0, width]).domain([0,100])
     this.timeaxis = d3.axisBottom(this.timescale);
