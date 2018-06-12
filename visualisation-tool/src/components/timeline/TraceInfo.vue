@@ -1,14 +1,18 @@
 <template>
     <div>
-        <div class="" v-bind:style="{ height: height + 'px', width: compwidth + 'px'}">
-            <div class="tracename h-100">
+        <div class="tracecontainer" v-bind:style="{ height: height + 'px', width: compwidth + 'px'}">
+            <div class="tracename border h-100 float-left">
                 {{ trace._trace.name}}
+            </div>
+            <div class="h-100 float-left">
+                <ConnInfo v-for="n in amountconns" v-bind:traceid="traceid" v-bind:connid="n" />
             </div>
         </div>
     </div>
 </template>
 <script lang="ts">
 import Vue from 'vue'
+import ConnInfo from './ConnInfo'
 export default {
     name: "traceinfo",
     props: ['traceid'],
@@ -24,7 +28,13 @@ export default {
         },
         height() {
             return this.$store.getters.getAmountConnsInFile(this.traceid) * this.compheight;
+        },
+        amountconns() {
+            return this.$store.getters.getAmountConnsInFile(this.traceid)
         }
+    },
+    components: {
+        ConnInfo
     }
 }
 </script>
@@ -35,5 +45,8 @@ export default {
     -ms-transform: rotate(180deg);
     -moz-transform: rotate(180deg);
     text-align: center;
+}
+.tracecontainer{
+    display: flex;
 }
 </style>
