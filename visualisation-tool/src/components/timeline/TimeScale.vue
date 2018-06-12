@@ -2,7 +2,7 @@
   <div class="w-75 timelinecontainer">
     <div class="float-left col">
       <input type="number" id="startscale" @change="onfieldschange" value="0">
-      <input type="number" id="endscale" @change="onfieldschange" value="100" min="0">
+      <input type="number" class="text-right" id="endscale" @change="onfieldschange" value="100" min="0">
     </div>
     <div id="timeline" class="float-left w-100"></div>
   </div>
@@ -13,15 +13,12 @@ import * as d3 from "d3";
 import { svg } from "d3";
 export default {
   name: "timescale",
-  computed:{ 
-    timescale() {
-      return this.$store.getters.getTimeScale();
-  }},
   data() {
     return {
       timeaxis: "",
       gaxis: "",
-      zoom: ""
+      zoom: "",
+      timescale: "",
     };
   },
   mounted() {
@@ -33,15 +30,8 @@ export default {
       .attr("class", "col")
       .attr("id", "timelinesvg");
     let width = document.getElementById("timeline")!.clientWidth - 30;
-
-    let data = {
-      maxwidth: width,
-      startdom: 0,
-      enddom: 100
-    };
-    this.$store.dispatch("initScale", data);
-    let timescale = this.$store.state.timesettings.getScale()
-    this.timeaxis = d3.axisBottom(timescale);
+    this.timescale = this._scale = d3.scaleLinear().range([0, width]).domain([0,100])
+    this.timeaxis = d3.axisBottom(this.timescale);
 
     this.zoom = d3
       .zoom()
@@ -65,24 +55,19 @@ export default {
       if (endscale <= startscale) {
         alert("End of domain needs to be larger than start of domain");
       } else {
-        let data = {
-          startdom: startscale,
-          enddom: endscale
-        };
-        this.$store.dispatch("setDomain", data);
-
-        let timescale = this.$store.getters.getTimeScale();
+        this.timescale.domain([startscale, endscale])
         d3.select(".timeaxis")
           .call(this.zoom.transform, d3.zoomIdentity)
           .call(this.timeaxis);
       }
     },
     zoomed: function() {
-      let timescale = this.$store.state.timesettings.getScale();
       this.gaxis.call(
-        this.timeaxis.scale(d3.event.transform.rescaleX(timescale))
+        this.timeaxis.scale(d3.event.transform.rescaleX(this.timescale))
       );
-      //console.log(this.timeaxis.scale().domain())
+      let newdomain = this.timeaxis.scale().domain();
+      (<HTMLInputElement>document.getElementById("startscale")).value = newdomain[0];
+      (<HTMLInputElement>document.getElementById("endscale")).value = newdomain[1];
     }
   }
 };
