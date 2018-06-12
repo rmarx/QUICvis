@@ -47,6 +47,9 @@ export default new Vuex.Store({
 
       return files
     },
+    getFileByIndex(state) {
+      return fileindex => state.vissettings.getFile(fileindex)
+    }
   },
   actions: {
     addFile(context, tracewrap: TraceWrapper){

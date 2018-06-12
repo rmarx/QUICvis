@@ -1,19 +1,22 @@
 <template>
     <div>
-        <div v-for="(file, fileindex) in traces" class="container border w-100 float-left">
-            {{ file._trace.name}}
+        <div v-for="(file, fileindex) in traces" class="w-100 float-left">
+            <TraceInfo v-bind:traceid="fileindex" />
         </div>
     </div>
 </template>
 <script lang="ts">
 import Vue from 'vue'
+import TraceInfo from './TraceInfo'
 export default {
     name: "connectioninfolist",
     computed: {
         traces() {
-            console.log(this.$store.getters.getFiles)
             return this.$store.getters.getFiles;   
         }
+    },
+    components: {
+        TraceInfo
     }
 }
 </script>
