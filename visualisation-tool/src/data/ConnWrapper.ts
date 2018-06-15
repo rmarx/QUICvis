@@ -13,6 +13,8 @@ export default class ConnWrapper{
 
     private _showStreams: boolean;
 
+    private _streamstofilter: Array<{streamnr: number, filtered: boolean}>
+
     public constructor(conn: QuicConnection){
         this._conn = conn
         this._isfilteredout = false
@@ -20,6 +22,19 @@ export default class ConnWrapper{
         this._filteredstreams = Array()
         this._selectedPacket = null
         this._showStreams = false
+        this._streamstofilter = new Array()
+        this._streamstofilter.push({ streamnr: 0, filtered: false})
+        this.addStreamsToFilter()
+    }
+
+    private addStreamsToFilter(){
+        this._conn.packets.forEach((packet) => {
+            if (packet.payloadinfo)
+                packet.payloadinfo.framelist.forEach((frame) => {
+                    if (frame.hasOwnProperty('stream_id') && !this._streamstofilter.hasOwnProperty(frame['stream_id']))
+                        this._streamstofilter.push({streamnr: frame['stream_id'], filtered: false})
+                })
+        })
     }
 
     public getConn(): QuicConnection{
@@ -44,5 +59,13 @@ export default class ConnWrapper{
 
     public setBgColor(value: string){
         this._backgroundcolour = value
+    }
+
+    public getStreamFilters(): Array<{streamnr: number, filtered: boolean}> { 
+        return this._streamstofilter
+    }
+
+    public setStreamFilters() {
+
     }
 }

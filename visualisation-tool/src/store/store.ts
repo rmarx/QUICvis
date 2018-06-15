@@ -62,6 +62,9 @@ export default new Vuex.Store({
     getConnByIndex(state){
       return fileindex => connindex => state.vissettings.getFile(fileindex).getConn(connindex)
     },
+    getStreamFilters(state){
+      return fileindex => connindex => state.vissettings.getFile(fileindex).getConn(connindex).getStreamFilters()
+    }
   },
   actions: {
     addFile(context, tracewrap: TraceWrapper){
