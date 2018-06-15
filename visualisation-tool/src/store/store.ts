@@ -50,8 +50,8 @@ export default new Vuex.Store({
     getFileByIndex(state) {
       return fileindex => state.vissettings.getFile(fileindex)
     },
-    getAmountConnsInFile(state) {
-      return fileindex => state.vissettings.getFile(fileindex).getAmountConns()
+    getFilteredConnsInFile(state) {
+      return fileindex => state.vissettings.getFile(fileindex).getFilteredConns()
     },
     getConnByIndex(state){
       return fileindex => connindex => state.vissettings.getFile(fileindex).getConn(connindex)

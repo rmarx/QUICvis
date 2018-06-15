@@ -2,7 +2,7 @@
     <div>
         <div class="" v-bind:style="{ height: compheight + 'px', width: compwidth + 'px'}">
             <div class="conn_name h-100 float-left border">
-                {{ 'conn' + connid}}
+                {{ 'conn' + (connid + 1)}}
             </div>
         </div>
     </div>
