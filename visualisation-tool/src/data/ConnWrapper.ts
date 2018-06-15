@@ -16,7 +16,7 @@ export default class ConnWrapper{
     public constructor(conn: QuicConnection){
         this._conn = conn
         this._isfilteredout = false
-        this._backgroundcolour = "#ffffff"
+        this._backgroundcolour = "#ff00ff"
         this._filteredstreams = Array()
         this._selectedPacket = null
         this._showStreams = false
@@ -36,5 +36,13 @@ export default class ConnWrapper{
 
     public invertIsFiltered(){
         this._isfilteredout = this._isfilteredout === false ? true : false
+    }
+
+    public getBgColor(): string{
+        return this._backgroundcolour
+    }
+
+    public setBgColor(value: string){
+        this._backgroundcolour = value
     }
 }

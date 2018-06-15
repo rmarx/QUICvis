@@ -1,8 +1,15 @@
 <template>
     <div>
-        <div class="" v-bind:style="{ height: compheight + 'px', width: compwidth + 'px'}">
+        <div class="d-flex" v-bind:style="{ height: compheight + 'px', width: compwidth + 'px'}">
             <div class="conn_name h-100 float-left border">
                 {{ 'conn' + (connid + 1)}}
+                <button class="btn btn-sm btn-primary" 
+                type="button" data-toggle="collapse" v-bind:data-target="'#connsettings' + traceid + connid" aria-expanded="false" v-bind:aria-controls="'connsettings' + traceid + connid">
+                &lt;&lt;
+                </button>
+            </div>
+            <div class="h-100 float-left border collapse" v-bind:id="'connsettings' + traceid + connid">
+                <input type="color" class="colorpicker" v-bind:id="'backgroundcolor' + traceid + connid" v-model="colorvalue" @change="setBgColor">
             </div>
         </div>
     </div>
@@ -15,13 +22,27 @@ export default {
     data() {
         return {
             compheight: 120,
-            compwidth: 25
+            compwidth: 25,
+            colorvalue: ''
         }
     },
     computed: {
-        conn() {
-            return this.$store.getters.getConnByIndex(this.traceid, this.connid);   
-        },
+        bgcolor() {
+            return this.$store.state.vissettings.getFile(this.traceid).getConn(this.connid).getBgColor();
+        }
+    },
+    methods: {
+        setBgColor: function(){
+            let data = {
+                traceid: this.traceid,
+                connid: this.connid,
+                color: this.colorvalue
+            }
+            this.$store.dispatch('setBgColor', data)
+        }
+    },
+    mounted() {
+        this.colorvalue = this.bgcolor
     }
 }
 </script>
@@ -32,5 +53,10 @@ export default {
     -ms-transform: rotate(180deg);
     -moz-transform: rotate(180deg);
     text-align: center;
+}
+
+.colorpicker{
+    width: 50px;
+    height: 20px;
 }
 </style>
