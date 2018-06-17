@@ -54,7 +54,16 @@ export default {
             this.streamoptions = tempoptions
         },
         setSelectStreamFilters(selectedoptions){
-            console.log(selectedoptions)
+            let tofilter = new Array<number>()
+            selectedoptions.forEach((el) => {
+                tofilter.push(el['streamnr'])
+            })
+            let data = {
+                traceid: this.traceid,
+                connid: this.connid,
+                tofilter: tofilter
+            }
+            this.$store.dispatch('setFilteredStreams', data)
         }
     },
     mounted() {

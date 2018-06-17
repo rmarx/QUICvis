@@ -29,6 +29,9 @@ export default new Vuex.Store({
     },
     setBgColor(state, data){
       state.vissettings.getFile(data.traceid).getConn(data.connid).setBgColor(data.color)
+    },
+    setFilteredStreams(state, data){
+      state.vissettings.getFile(data.traceid).getConn(data.connid).setStreamFilters(data.tofilter)
     }
   },
   getters: {
@@ -78,6 +81,9 @@ export default new Vuex.Store({
     },
     setBgColor(context, data) {
       context.commit('setBgColor', data)
+    },
+    setFilteredStreams(context, data) {
+      context.commit('setFilteredStreams', data)
     }
   }
 });
