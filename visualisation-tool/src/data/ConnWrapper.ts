@@ -81,7 +81,6 @@ export default class ConnWrapper{
                 }
             }
         }
-        console.log(this._streamstofilter)
     }
 
     private initializeStreamFilters(basevalue: boolean){

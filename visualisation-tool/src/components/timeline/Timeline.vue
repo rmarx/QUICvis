@@ -5,9 +5,10 @@
         </div>
         <div class="w-75 timelinecontainer">
             <TimeScale />
-            <div id="timeline" class="float-left w-100">
+            <div id="timeline">
                 <svg id="timelinesvg">
                 </svg>
+                <ConnectionTimelineList />
             </div>
         </div>
     </div>
@@ -15,16 +16,16 @@
 
 <script lang="ts">
 import TimeScale from "./TimeScale";//timescale component
-import ConnectionInfoList from "./ConnectionInfoList"//connectionsettings component
-    //connectioninfo component
-//connectionstimeline component
+import ConnectionInfoList from "./ConnectionInfoList"//connectionsettings component //connectioninfo component
+import ConnectionTimelineList from './ConnectionTimelineList' //connection timeline list component
     //connectiondiagram component
 import * as d3 from 'd3';
 export default {
   name: "timeline",
   components: {
       ConnectionInfoList,
-      TimeScale
+      TimeScale,
+      ConnectionTimelineList
   },
 }
 </script>
@@ -36,6 +37,6 @@ export default {
   padding-left: 15px;
   overflow: visible !important;
   width: 100%;
-  height: 100%;
+  height: 1px;
 }
 </style>
