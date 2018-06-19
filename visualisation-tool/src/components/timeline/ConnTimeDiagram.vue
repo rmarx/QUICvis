@@ -27,14 +27,14 @@ export default {
         let lowersvgcont = d3.select('#conn-svgdiagram-' + this.traceid + this.connid).append("svg")
             .attr("class", "svgcont-trace").attr("height", this.svgheight).attr("style", "background-color: " + this.bgcolor + " ;")
         this.packets.forEach((packet) => {
-            let rect = uppersvgcont.append("rect").attr("height", "5").attr("width", "5").attr("transform", "translate(" + counter + ", "
-             + this.svgheight/2 + ")")
-            counter += 6
-        })
-        counter = 0
-        this.packets.forEach((packet) => {
-            let rect = lowersvgcont.append("rect").attr("height", "5").attr("width", "5").attr("transform", "translate(" + counter + ", "
-             + this.svgheight/2 + ")")
+            if (packet.isclient) {
+                uppersvgcont.append("rect").attr("height", "5").attr("width", "5").attr("transform", "translate(" + counter + ", "
+                + this.svgheight/2 + ")")
+            }
+            else {
+                lowersvgcont.append("rect").attr("height", "5").attr("width", "5").attr("transform", "translate(" + counter + ", "
+                + this.svgheight/2 + ")")
+            }
             counter += 6
         })
     },

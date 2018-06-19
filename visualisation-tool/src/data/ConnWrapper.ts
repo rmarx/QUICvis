@@ -2,7 +2,7 @@ import { QuicConnection, QuicPacket } from "@/data/quic";
 
 export interface TimelinePacket {
     timestamp: number,
-    sender: boolean,
+    isclient: boolean,
     frametype: number|null
 }
 
@@ -98,21 +98,34 @@ export default class ConnWrapper{
     public getTimelinePackets(): Array<TimelinePacket>{
         let packets = new Array<TimelinePacket>()
         let frametype: number|null
+        let client: boolean
         this._conn.packets.forEach((packet) => {
-            if (packet.payloadinfo){
-                console.log(packet.payloadinfo.framelist[0])
-                frametype = 0x0
+            if (packet.payloadinfo && packet.payloadinfo.framelist.length > 0){
+                frametype = packet.payloadinfo.framelist[0]['frametype']
             }
             else
                 frametype = null
+
+            if (packet.headerinfo && packet.headerinfo.dest_connection_id){
+                client = this.checkIfClient(packet.headerinfo.dest_connection_id)
+            }
+            else 
+                client = true
             let timelinepacket: TimelinePacket = {
                 timestamp: packet.time_delta,
-                sender: true,
+                isclient: client,
                 frametype: frametype
             }
 
             packets.push(timelinepacket)
         })
         return packets
+    }
+
+    private checkIfClient(dcid: string): boolean{
+        if (this._conn.CID_endpoint1 && this._conn.CID_endpoint1.indexOf(dcid) > -1)
+            return true
+        else
+            return false
     }
 }
