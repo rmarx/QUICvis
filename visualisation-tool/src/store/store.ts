@@ -67,6 +67,9 @@ export default new Vuex.Store({
     },
     getStreamFilters(state){
       return fileindex => connindex => state.vissettings.getFile(fileindex).getConn(connindex).getStreamFilters()
+    },
+    getPacketsByConn(state){
+      return fileindex => connindex => state.vissettings.getFile(fileindex).getConn(connindex).getConn().packets
     }
   },
   actions: {

@@ -1,6 +1,10 @@
 <template>
     <div>
-        <ConnTimeDiagram v-for="(file, fileindex) in traces" v-bind:traceid="fileindex" />
+        <div v-for="(file, fileindex) in traces">
+            <div v-for="(conn) in filteredconns(fileindex)" v-bind:id="'conn-svgdiagram-' + fileindex + conn">
+                <ConnTimeDiagram  v-bind:traceid="fileindex" v-bind:connid="conn" />
+            </div>
+        </div>
     </div>
 </template>
 <script lang="ts">
@@ -16,6 +20,11 @@ export default {
     components: {
         ConnTimeDiagram
     },
+    methods: {
+        filteredconns: function(traceid: number) {
+            return this.$store.getters.getFilteredConnsInFile(traceid)
+        }
+    }
 }
 </script>
 <style>

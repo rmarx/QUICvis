@@ -1,5 +1,11 @@
 import { QuicConnection, QuicPacket } from "@/data/quic";
 
+export interface TimelinePacket {
+    timestamp: number,
+    sender: boolean,
+    frametype: number|null
+}
+
 export default class ConnWrapper{
     private _conn: QuicConnection;
 
@@ -87,5 +93,25 @@ export default class ConnWrapper{
         for (let j = 0; j < this._streamstofilter.length; j++) {
             this._streamstofilter[j].filtered = basevalue
         }
+    }
+
+    public getTimelinePackets(): Array<TimelinePacket>{
+        let packets = new Array<TimelinePacket>()
+        let frametype: number|null
+        this._conn.packets.forEach((packet) => {
+            if (packet.payloadinfo){
+                frametype = 0x0
+            }
+            else
+                frametype = null
+            let timelinepacket: TimelinePacket = {
+                timestamp: packet.time_delta,
+                sender: true,
+                frametype: frametype
+            }
+
+            packets.push(timelinepacket)
+        })
+        return packets
     }
 }

@@ -1,8 +1,4 @@
 <template>
-    <div>
-        <svg height="120" class="svgcont-trace" v-for="(conn, connindex) in filteredconns">
-        </svg>
-    </div>
 </template>
 <script lang="ts">
 import Vue from 'vue'
@@ -10,20 +6,38 @@ import * as d3 from "d3";
 import { svg } from "d3";
 export default {
     name: "conntimediagram",
-    props: ['traceid'],
+    props: ['traceid', 'connid'],
+    data() {
+        return {
+            svgheight: 60
+        }
+    },
     computed: {
-        filteredconns() {
-            return this.$store.getters.getFilteredConnsInFile(this.traceid)
+        packets() {
+            return this.$store.state.vissettings.getFile(this.traceid).getConn(this.connid).getTimelinePackets()
+        },
+        bgcolor() {
+            return this.$store.state.vissettings.getFile(this.traceid).getConn(this.connid).getBgColor()
         }
     },
     mounted() {
-        /*let conns = this.filteredconns
-        let cont = d3.select("#timelinediagram-trace-" + this.traceid)
-        conns.forEach(element => {
-            let svgcont = cont.append("div").append("svg").attr("height", "60").attr("class", "svgdiagramcont")
-            let rect = svgcont.append("rect").attr("height", "5").attr("width", "5")
-        });*/
-    }
+        let counter = 0;
+        let uppersvgcont = d3.select('#conn-svgdiagram-' + this.traceid + this.connid).append("svg")
+            .attr("class", "svgcont-trace").attr("height", this.svgheight).attr("style", "background-color: " + this.bgcolor + " ;")
+        let lowersvgcont = d3.select('#conn-svgdiagram-' + this.traceid + this.connid).append("svg")
+            .attr("class", "svgcont-trace").attr("height", this.svgheight).attr("style", "background-color: " + this.bgcolor + " ;")
+        this.packets.forEach((packet) => {
+            let rect = uppersvgcont.append("rect").attr("height", "5").attr("width", "5").attr("transform", "translate(" + counter + ", "
+             + this.svgheight/2 + ")")
+            counter += 6
+        })
+        counter = 0
+        this.packets.forEach((packet) => {
+            let rect = lowersvgcont.append("rect").attr("height", "5").attr("width", "5").attr("transform", "translate(" + counter + ", "
+             + this.svgheight/2 + ")")
+            counter += 6
+        })
+    },
 }
 </script>
 <style>
