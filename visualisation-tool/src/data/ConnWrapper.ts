@@ -100,6 +100,7 @@ export default class ConnWrapper{
         let frametype: number|null
         this._conn.packets.forEach((packet) => {
             if (packet.payloadinfo){
+                console.log(packet.payloadinfo.framelist[0])
                 frametype = 0x0
             }
             else

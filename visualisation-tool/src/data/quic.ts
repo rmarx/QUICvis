@@ -67,73 +67,77 @@ export interface Payload{
 /**
  * Frame Types
  */
-export type Frame = Padding | Rst_Stream | Application_Close | Max_Data | Max_Stream_Data | Max_Stream_Id | Ping | Blocked | Stream_Blocked | 
-    Stream_Id_Blocked | New_Connection_Id | Stop_Sending | Ack | Path_Challenge | Path_Response | Stream
 
-export interface Padding{
+export interface Frame{
+    frametype: number
+}
+//export type Frame = Padding | Rst_Stream | Application_Close | Max_Data | Max_Stream_Data | Max_Stream_Id | Ping | Blocked | Stream_Blocked | 
+    //Stream_Id_Blocked | New_Connection_Id | Stop_Sending | Ack | Path_Challenge | Path_Response | Stream
+
+export interface Padding extends Frame{
     length: number
 }
 
-export interface Rst_Stream{
+export interface Rst_Stream extends Frame{
     stream_id: number
     application_error_code: number
     final_offset: number
 }
 
-export interface Connection_Close{
+export interface Connection_Close extends Frame{
     error_code: number
     phrase_length: number
     reason_phrase: string
 }
 
-export interface Application_Close{
+export interface Application_Close extends Frame{
     error_code: number
     phrase_length: number
     reason_phrase: string
 }
 
-export interface Max_Data{
+export interface Max_Data extends Frame{
     maximum_data: number
 }
 
-export interface Max_Stream_Data{
+export interface Max_Stream_Data extends Frame{ 
     stream_id: number
     maximum_data: number
 }
 
-export interface Max_Stream_Id{
+export interface Max_Stream_Id extends Frame{
     maximum_stream_id: number
 }
 
-export interface Ping{
+export interface Ping extends Frame{
     totext: string
 }
 
-export interface Blocked{
+export interface Blocked extends Frame{
     offset: number
 }
 
-export interface Stream_Blocked{
+export interface Stream_Blocked extends Frame{
     stream_id: number
     offset: number
 }
 
-export interface Stream_Id_Blocked{
+export interface Stream_Id_Blocked extends Frame{
     stream_id: number
 }
 
-export interface New_Connection_Id{
+export interface New_Connection_Id extends Frame{
     sequence: number
     connection_id: number
     stateless_rst_token: number
 }
 
-export interface Stop_Sending{
+export interface Stop_Sending extends Frame{
     stream_id: number
     application_error_code: number
 }
 
-export interface Ack{  
+export interface Ack extends Frame{  
     largest_ack: number
     ack_delay: number
     ack_block_count: number
@@ -145,15 +149,15 @@ export interface AckBlock{
     gap_field: number
 }
 
-export interface Path_Challenge{
+export interface Path_Challenge extends Frame{
     data: string
 }
 
-export interface Path_Response{
+export interface Path_Response extends Frame{
     data: string
 }
 
-export interface Stream{
+export interface Stream extends Frame{
     type_flags: {
         off_flag: boolean,
         len_flag: boolean,
