@@ -9,35 +9,39 @@ export default {
     props: ['traceid', 'connid'],
     data() {
         return {
-            svgheight: 60
+            svgheight: 60,
+            packetsize: 8
         }
     },
     computed: {
         packets() {
             return this.$store.state.vissettings.getFile(this.traceid).getConn(this.connid).getTimelinePackets()
         },
-        bgcolor() {
-            return this.$store.state.vissettings.getFile(this.traceid).getConn(this.connid).getBgColor()
-        }
     },
     mounted() {
         let counter = 0;
         let uppersvgcont = d3.select('#conn-svgdiagram-' + this.traceid + this.connid).append("svg")
-            .attr("class", "svgcont-trace").attr("height", this.svgheight).attr("style", "background-color: " + this.bgcolor + " ;")
+            .attr("class", "svgcont-trace").attr("height", this.svgheight)
         let lowersvgcont = d3.select('#conn-svgdiagram-' + this.traceid + this.connid).append("svg")
-            .attr("class", "svgcont-trace").attr("height", this.svgheight).attr("style", "background-color: " + this.bgcolor + " ;")
+            .attr("class", "svgcont-trace").attr("height", this.svgheight)
         this.packets.forEach((packet) => {
             if (packet.isclient) {
-                uppersvgcont.append("rect").attr("height", "5").attr("width", "5").attr("transform", "translate(" + counter + ", "
+                uppersvgcont.append("rect").attr("height", this.packetsize).attr("width", this.packetsize).attr("transform", "translate(" + counter + ", "
                 + this.svgheight/2 + ")")
             }
             else {
-                lowersvgcont.append("rect").attr("height", "5").attr("width", "5").attr("transform", "translate(" + counter + ", "
+                lowersvgcont.append("rect").attr("height", this.packetsize).attr("width", this.packetsize).attr("transform", "translate(" + counter + ", "
                 + this.svgheight/2 + ")")
             }
-            counter += 6
+            counter += 9
         })
     },
+    methods: {
+        //TODO get fill color of packet
+        getFillOfPacket(frametype: number){
+
+        }
+    }
 }
 </script>
 <style>
