@@ -139,4 +139,12 @@ export default class VisSettings{
     public getAllFiles(): Array<TraceWrapper>{
         return this._files
     }
+
+    public getFrameColour(frametype: number): string{
+        for (let i = 0; i < this._framecolours.length; i++) {
+            if (this._framecolours[i].framecode === frametype)
+                return this._framecolours[i].colour
+        }
+        return '#ffffff'
+    }
 }

@@ -27,19 +27,19 @@ export default {
         this.packets.forEach((packet) => {
             if (packet.isclient) {
                 uppersvgcont.append("rect").attr("height", this.packetsize).attr("width", this.packetsize).attr("transform", "translate(" + counter + ", "
-                + this.svgheight/2 + ")")
+                + this.svgheight/2 + ")").attr('fill', this.getFillOfPacket(packet.frametype))
             }
             else {
                 lowersvgcont.append("rect").attr("height", this.packetsize).attr("width", this.packetsize).attr("transform", "translate(" + counter + ", "
-                + this.svgheight/2 + ")")
+                + this.svgheight/2 + ")").attr('fill', this.getFillOfPacket(packet.frametype))
             }
             counter += 9
         })
     },
     methods: {
-        //TODO get fill color of packet
+        //TODO: make sure the color updates when it is changed in general settings
         getFillOfPacket(frametype: number){
-
+            return this.$store.state.vissettings.getFrameColour(frametype)
         }
     }
 }
