@@ -3,6 +3,7 @@ import Vuex from 'vuex';
 import VisSettings from '@/data/VisSettings';
 import TraceWrapper from '@/data/TraceWrapper'
 import { stat } from 'fs';
+import TimeScaleState from '@/data/TimeScaleState';
 
 Vue.use(Vuex);
 
@@ -15,6 +16,7 @@ export interface File{
 export default new Vuex.Store({
   state: {
     vissettings: new VisSettings(),
+    timescalestate: new TimeScaleState()
   },
   mutations: {
     addFile(state, tracewrap: TraceWrapper) {
@@ -32,6 +34,12 @@ export default new Vuex.Store({
     },
     setFilteredStreams(state, data){
       state.vissettings.getFile(data.traceid).getConn(data.connid).setStreamFilters(data.tofilter)
+    },
+    setTimeScaleRange(state, data){
+      state.timescalestate.setDimensions(data.width, data.height)
+    },
+    setTimeScaleDomain(state, data){
+      state.timescalestate.setDomain(data.start, data.end)
     }
   },
   getters: {
@@ -87,6 +95,12 @@ export default new Vuex.Store({
     },
     setFilteredStreams(context, data) {
       context.commit('setFilteredStreams', data)
+    },
+    setTimeScaleRange(context, data){
+      context.commit('setTimeScaleRange', data)
+    },
+    setTimeScaleDomain(context, data){
+      context.commit('setTimeScaleDomain',data)
     }
   }
 });

@@ -10,6 +10,7 @@
 <script lang="ts">
 import * as d3 from "d3";
 import { svg } from "d3";
+import TimeScaleState from './../../data/TimeScaleState';
 export default {
   name: "timescale",
   data() {
@@ -20,11 +21,21 @@ export default {
       timescale: "",
     };
   },
+  computed: {
+    scale(){
+      return this.$store.state.timescalestate.getScale()
+    },
+    refzoom() {
+      return this.$store.state.timescalestate.getZoom()
+    }
+  },
   mounted() {
+    let scalestate = new TimeScaleState()
     let svgcont = d3
       .select("#timelinesvg")
     let width = document.getElementById("timeline")!.clientWidth - 30;
-    this.timescale = this._scale = d3.scaleLinear().range([0, width]).domain([0,100])
+    this.updateDimensions(width, 500)
+    this.timescale = this.scale
     this.timeaxis = d3.axisBottom(this.timescale);
 
     this.zoom = d3
@@ -49,7 +60,8 @@ export default {
       if (endscale <= startscale) {
         alert("End of domain needs to be larger than start of domain");
       } else {
-        this.timescale.domain([startscale, endscale])
+        this.updateDomain(startscale, endscale)
+        this.timescale = this.scale
         d3.select(".timeaxis")
           .call(this.zoom.transform, d3.zoomIdentity)
           .call(this.timeaxis);
@@ -62,6 +74,20 @@ export default {
       let newdomain = this.timeaxis.scale().domain();
       (<HTMLInputElement>document.getElementById("startscale")).value = newdomain[0];
       (<HTMLInputElement>document.getElementById("endscale")).value = newdomain[1];
+    },
+    updateDimensions: function(width: number, height: number){
+      let data = {
+        width: width,
+        height: height
+      }
+      this.$store.dispatch('setTimeScaleRange', data)
+    },
+    updateDomain: function(start: number, end: number) {
+      let data = {
+        start: start,
+        end: end
+      }
+      this.$store.dispatch('setTimeScaleDomain', data)
     }
   }
 };

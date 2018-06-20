@@ -49,5 +49,6 @@ export default {
     display: block;
     width: 100%;
     float: left;
+    border: 1px solid black;
 }
 </style>
