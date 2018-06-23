@@ -40,8 +40,14 @@ export default class TimeScaleState{
             .select("#timelinesvg")
         this._timeaxis = d3.axisBottom(this._scale);
         this._zoom = d3.zoom().scaleExtent([1,400]).on("zoom", () => {
+            this._zoomTransform = d3.event.transform;
+            this._scale = this._zoomTransform.rescaleX(this._refscale)
             this._timeaxis!.scale(d3.event.transform.rescaleX(this._scale));
             this._gaxis.call(this._timeaxis);
+
+            let newdomain = this._timeaxis!.scale().domain()
+            this._start = newdomain[0];
+            this._end = newdomain[1];
         })
         this._gaxis = svgcont
             .append("g")
@@ -87,11 +93,7 @@ export default class TimeScaleState{
         return this._scale.domain()[1]
     }
 
-    /**
-     * TODO: expand this to include transform methods on all svg containers
-     */
-    public Zoom(){
-        this._zoomTransform = d3.event.transform;
-        this._scale = this._zoomTransform.rescaleX(this._refscale);
+    public calcTranslateX(time: number): number{
+        return this._scale(time - this._start)
     }
 }

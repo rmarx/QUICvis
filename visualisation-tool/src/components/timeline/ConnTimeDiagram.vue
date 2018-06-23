@@ -4,6 +4,7 @@
 import Vue from 'vue'
 import * as d3 from "d3";
 import { svg } from "d3";
+import PacketBlock from "./PacketBlock"
 export default {
     name: "conntimediagram",
     props: ['traceid', 'connid'],
@@ -17,30 +18,44 @@ export default {
         packets() {
             return this.$store.state.vissettings.getFile(this.traceid).getConn(this.connid).getTimelinePackets()
         },
+        zoom() {
+            return this.$store.state.timescalestate.getZoom()
+        }
     },
     mounted() {
-        let counter = 0;
-        let uppersvgcont = d3.select('#conn-svgdiagram-' + this.traceid + this.connid).append("svg")
-            .attr("class", "svgcont-trace").attr("height", this.svgheight)
-        let lowersvgcont = d3.select('#conn-svgdiagram-' + this.traceid + this.connid).append("svg")
-            .attr("class", "svgcont-trace").attr("height", this.svgheight)
+        let compclass = Vue.extend(PacketBlock)
+        d3.select('#conn-svgdiagram-' + this.traceid + this.connid).append("svg")
+            .attr("class", "svgcont-trace").attr("height", this.svgheight).call(this.zoom)
+        d3.select('#conn-svgdiagram-' + this.traceid + this.connid).append("svg")
+            .attr("class", "svgcont-trace").attr("height", this.svgheight).call(this.zoom)
+        
+        let uppersvgcont = document.getElementById('conn-svgdiagram-' + this.traceid + this.connid).children[1]
+        let lowersvgcont = document.getElementById('conn-svgdiagram-' + this.traceid + this.connid).children[2]
         this.packets.forEach((packet) => {
             if (packet.isclient) {
-                uppersvgcont.append("rect").attr("height", this.packetsize).attr("width", this.packetsize).attr("transform", "translate(" + counter + ", "
-                + this.svgheight/2 + ")").attr('fill', this.getFillOfPacket(packet.frametype))
+                let packetinstance = new compclass({
+                    store: this.$store,
+                    propsData: {
+                        packetinfo: packet
+                    }
+                })
+                packetinstance.$mount()
+                uppersvgcont.appendChild(packetinstance.$el)
             }
             else {
-                lowersvgcont.append("rect").attr("height", this.packetsize).attr("width", this.packetsize).attr("transform", "translate(" + counter + ", "
-                + this.svgheight/2 + ")").attr('fill', this.getFillOfPacket(packet.frametype))
+                let packetinstance = new compclass({
+                    store: this.$store,
+                    propsData: {
+                        packetinfo: packet
+                    }
+                })
+                packetinstance.$mount()
+                lowersvgcont.appendChild(packetinstance.$el)
             }
-            counter += 9
         })
     },
-    methods: {
-        //TODO: make sure the color updates when it is changed in general settings
-        getFillOfPacket(frametype: number){
-            return this.$store.state.vissettings.getFrameColour(frametype)
-        }
+    components: {
+        PacketBlock
     }
 }
 </script>
