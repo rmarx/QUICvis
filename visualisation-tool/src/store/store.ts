@@ -40,6 +40,9 @@ export default new Vuex.Store({
     },
     setTimeScaleDomain(state, data){
       state.timescalestate.setDomain(data.start, data.end)
+    },
+    setZoom(state){
+      state.timescalestate.setZoom();
     }
   },
   getters: {
@@ -78,7 +81,7 @@ export default new Vuex.Store({
     },
     getPacketsByConn(state){
       return fileindex => connindex => state.vissettings.getFile(fileindex).getConn(connindex).getConn().packets
-    }
+    },
   },
   actions: {
     addFile(context, tracewrap: TraceWrapper){
@@ -101,6 +104,9 @@ export default new Vuex.Store({
     },
     setTimeScaleDomain(context, data){
       context.commit('setTimeScaleDomain',data)
+    },
+    setZoom(context){
+      context.commit('setZoom')
     }
   }
 });

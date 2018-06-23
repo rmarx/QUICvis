@@ -1,5 +1,6 @@
 import * as d3 from 'd3';
 import { runInContext } from 'vm';
+import Vue from 'vue';
 
 export default class TimeScaleState{
     private _width: number;
@@ -8,11 +9,14 @@ export default class TimeScaleState{
     private _start: number;
     private _end: number;
 
-    private _zoom: d3.ZoomBehavior<Element, {}>;
+    private _zoom: d3.ZoomBehavior<Element, {}>|null;
     private _zoomTransform: d3.ZoomTransform;
 
     private _refscale: d3.ScaleLinear<number, number>;
     private _scale: d3.ScaleLinear<number, number>;
+
+    private _timeaxis: d3.Axis<d3.AxisDomain>|null;
+    private _gaxis: d3.Selection<d3.BaseType, {}, HTMLElement, any>|null;
 
     constructor(){
         this._width = 0;
@@ -25,10 +29,25 @@ export default class TimeScaleState{
         this._scale = this._refscale;
 
         this._zoomTransform = d3.zoomIdentity;
+        this._zoom = null
+
+        this._timeaxis = null
+        this._gaxis = null
+    }
+
+    public setZoom(){
+        let svgcont = d3
+            .select("#timelinesvg")
+        this._timeaxis = d3.axisBottom(this._scale);
         this._zoom = d3.zoom().scaleExtent([1,400]).on("zoom", () => {
-            this._zoomTransform = d3.event.transform;
-            this._scale = this._zoomTransform.rescaleX(this._refscale);
+            this._timeaxis!.scale(d3.event.transform.rescaleX(this._scale));
+            this._gaxis.call(this._timeaxis);
         })
+        this._gaxis = svgcont
+            .append("g")
+            .attr("class", "timeaxis")
+            .call(this._timeaxis);
+            svgcont.call(this._zoom);
     }
 
     public setDimensions(width: number, height: number) {
@@ -40,13 +59,14 @@ export default class TimeScaleState{
         this._refscale.range([0, width]);
         this._scale = this._zoomTransform.rescaleX(this._refscale);
         this._zoom.extent([[0, 0], [width, height]]).translateExtent([[0, 0], [width, height]]);
+        this._gaxis.call(this._zoom.transform, d3.zoomIdentity)
     }
 
     public getScale(): d3.ScaleLinear<number, number>{
         return this._scale
     }
 
-    public getZoom(): d3.ZoomBehavior<Element, {}>{
+    public getZoom(): d3.ZoomBehavior<Element, {}>|null{
         return this._zoom
     }
 
@@ -56,9 +76,22 @@ export default class TimeScaleState{
 
         this._refscale.domain([start, end])
         this._scale = this._zoomTransform.rescaleX(this._refscale);
+        this._gaxis.call(this._zoom.transform, d3.zoomIdentity)
     }
 
-    public getDomain(): Array<number>{
-        return [this._start, this._end]
+    public getStartDomain(): number{
+        return this._scale.domain()[0]
+    }
+
+    public getEndDomain(): number{
+        return this._scale.domain()[1]
+    }
+
+    /**
+     * TODO: expand this to include transform methods on all svg containers
+     */
+    public Zoom(){
+        this._zoomTransform = d3.event.transform;
+        this._scale = this._zoomTransform.rescaleX(this._refscale);
     }
 }
