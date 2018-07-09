@@ -18,7 +18,7 @@ export default {
     props: ['traceid'],
     data() {
         return {
-            compheight: 120,
+            compheight: 122,
             compwidth: 25
         }
     },

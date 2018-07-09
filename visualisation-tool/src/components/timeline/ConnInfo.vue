@@ -8,7 +8,7 @@
                 &lt;&lt;
                 </button>
             </div>
-            <div class="h-100 w-100 float-left border collapse" v-bind:id="'connsettings' + traceid + connid">
+            <div class="float-left border collapse overlap" v-bind:id="'connsettings' + traceid + connid">
                 <input type="color" class="colorpicker" v-bind:id="'backgroundcolor' + traceid + connid" v-model="colorvalue" @change="setBgColor">
                 <multiselect v-model="selectedstreams" :options="streamoptions" :multiple="true" :close-on-select="false" label="streamnr" track-by="streamnr" @close="setSelectStreamFilters"/>
             </div>
@@ -23,7 +23,7 @@ export default {
     props: ['traceid', 'connid'],
     data() {
         return {
-            compheight: 120,
+            compheight: 122,
             colorvalue: '',
             selectedstreams: null,
             streamoptions: []
@@ -89,8 +89,12 @@ export default {
     height: 20px;
 }
 
-.conncontainer{
-    width: 258px;
+.overlap{
+    position: absolute;
+    width: 256px;
+    margin-left: 50px;
+    background-color: black;
+    height: 100px;
 }
 </style>
 

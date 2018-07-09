@@ -1,12 +1,12 @@
 <template>
-    <div class="w-75 timelinecontainer">
-        <div class="w-25 timelinecontainer float-left">
+    <div v-bind:style="{width: containerwidth + 'px', height: containerheight + 'px', overflow: 'auto', position: 'relative'}">
+        <div class="conninfocontainer float-left">
             <ConnectionInfoList />
         </div>
-        <div class="w-75 timelinecontainer">
+        <div class="timelinecontainer">
             <TimeScale />
             <div id="timeline">
-                <svg id="timelinesvg">
+                <svg id="timelinesvg" class="pt-3">
                 </svg>
                 <ConnectionTimelineList />
             </div>
@@ -22,6 +22,14 @@ import ConnectionTimelineList from './ConnectionTimelineList' //connection timel
 import * as d3 from 'd3';
 export default {
   name: "timeline",
+  computed: {
+      containerwidth() {
+          return window.innerWidth * (4/5)
+      },
+      containerheight() {
+          return window.innerHeight * (3/5)
+      },
+  },
   components: {
       ConnectionInfoList,
       TimeScale,
@@ -30,13 +38,20 @@ export default {
 }
 </script>
 <style>
+.conninfocontainer {
+  width: 70px;
+  margin-top: 44px;
+  overflow: hidden !important;
+}
+
 .timelinecontainer {
-  overflow: auto;
+    overflow: auto;
 }
 #timelinesvg{
-  padding-left: 15px;
   overflow: visible !important;
   width: 100%;
   height: 1px;
+  padding-left: 3px; 
 }
+
 </style>

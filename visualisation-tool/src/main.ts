@@ -35,10 +35,10 @@ data.then((result) => {
   container.forEach(element => {
     let tracewrap = new TraceWrapper()
     
-    /*if (element['fileext'] === '.json') {
+    if (element['fileext'] === '.json') {
       tracewrap.setTrace(pcapparser.parse(element['filename'], element['filecontent']))
-      this.$store.dispatch('addFile', tracewrap)
-    }*/
+      store.dispatch('addFile', tracewrap)
+    }
     if (element['fileext'] === '.log') {
       tracewrap.setTrace(ngtcp2parser.parse(element['filename'], element['filecontent']))
       store.dispatch('addFile', tracewrap)

@@ -1,6 +1,6 @@
 <template>
     <div>
-      <div class="float-left col">
+      <div class="float-left w-100">
         <input type="number" id="startscale" @change="onfieldschange" value="0" v-model="startdom">
         <input type="number" class="text-right" id="endscale" @change="onfieldschange" value="100" min="0">
       </div>
@@ -21,7 +21,7 @@ export default {
   mounted() {
     let svgcont = d3
       .select("#timelinesvg")
-    let width = document.getElementById("timeline")!.clientWidth - 30;
+    let width = document.getElementById("timeline")!.clientWidth - 12;
     this.$store.state.timescalestate.setZoom()
     this.updateDimensions(width, 500)
   },
