@@ -1,5 +1,11 @@
 import { QuicConnection, QuicPacket } from "@/data/quic";
 
+export interface TimelinePacket {
+    timestamp: number,
+    isclient: boolean,
+    frametype: number|null
+}
+
 export default class ConnWrapper{
     private _conn: QuicConnection;
 
@@ -13,13 +19,28 @@ export default class ConnWrapper{
 
     private _showStreams: boolean;
 
+    private _streamstofilter: Array<{streamnr: number, filtered: boolean}>
+
     public constructor(conn: QuicConnection){
         this._conn = conn
         this._isfilteredout = false
-        this._backgroundcolour = "#ffffff"
+        this._backgroundcolour = "#ff00ff"
         this._filteredstreams = Array()
         this._selectedPacket = null
         this._showStreams = false
+        this._streamstofilter = new Array()
+        this._streamstofilter.push({ streamnr: 0, filtered: false})
+        this.addStreamsToFilter()
+    }
+
+    private addStreamsToFilter(){
+        this._conn.packets.forEach((packet) => {
+            if (packet.payloadinfo)
+                packet.payloadinfo.framelist.forEach((frame) => {
+                    if (frame.hasOwnProperty('stream_id') && !this._streamstofilter.hasOwnProperty(frame['stream_id']))
+                        this._streamstofilter.push({streamnr: frame['stream_id'], filtered: false})
+                })
+        })
     }
 
     public getConn(): QuicConnection{
@@ -36,5 +57,75 @@ export default class ConnWrapper{
 
     public invertIsFiltered(){
         this._isfilteredout = this._isfilteredout === false ? true : false
+    }
+
+    public getBgColor(): string{
+        return this._backgroundcolour
+    }
+
+    public setBgColor(value: string){
+        this._backgroundcolour = value
+    }
+
+    public getStreamFilters(): Array<{streamnr: number, filtered: boolean}> { 
+        return this._streamstofilter
+    }
+
+    public setStreamFilters(tofilter: Array<number>) {
+        if (tofilter.length === 0){
+            this.initializeStreamFilters(false)
+            return
+        }else {
+            this.initializeStreamFilters(true)
+        }
+
+        for (let i = 0; i < tofilter.length; i++) {
+            for (let j = 0; j < this._streamstofilter.length; j++) {
+                if (this._streamstofilter[j].streamnr === tofilter[i]){
+                    this._streamstofilter[j].filtered = false
+                    break;
+                }
+            }
+        }
+    }
+
+    private initializeStreamFilters(basevalue: boolean){
+        for (let j = 0; j < this._streamstofilter.length; j++) {
+            this._streamstofilter[j].filtered = basevalue
+        }
+    }
+
+    public getTimelinePackets(): Array<TimelinePacket>{
+        let packets = new Array<TimelinePacket>()
+        let frametype: number|null
+        let client: boolean
+        this._conn.packets.forEach((packet) => {
+            if (packet.payloadinfo && packet.payloadinfo.framelist.length > 0){
+                frametype = packet.payloadinfo.framelist[0]['frametype']
+            }
+            else
+                frametype = null
+
+            if (packet.headerinfo && packet.headerinfo.dest_connection_id){
+                client = this.checkIfClient(packet.headerinfo.dest_connection_id)
+            }
+            else 
+                client = true
+            let timelinepacket: TimelinePacket = {
+                timestamp: packet.time_delta,
+                isclient: client,
+                frametype: frametype
+            }
+
+            packets.push(timelinepacket)
+        })
+        return packets
+    }
+
+    private checkIfClient(dcid: string): boolean{
+        if (this._conn.CID_endpoint1 && this._conn.CID_endpoint1.indexOf(dcid) > -1)
+            return true
+        else
+            return false
     }
 }

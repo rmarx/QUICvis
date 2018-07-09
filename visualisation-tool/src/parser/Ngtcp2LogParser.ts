@@ -310,7 +310,7 @@ export class Ngtcp2LogParser extends Parser{
                 
                 switch (frametype) {
                     case 0: //padding
-                        framelist.push(this.parsePadding(frameinfo))
+                        framelist.push(this.parsePadding(frameinfo, frametype))
                         break;
                     case 1: //rst_stream
                         break;
@@ -345,14 +345,14 @@ export class Ngtcp2LogParser extends Parser{
                             frameinfo = splitline.slice(6)
                             ackblocksinfo.push(frameinfo)
                         }
-                        framelist.push(this.parseAck(frameinfo, ackblocksinfo))
+                        framelist.push(this.parseAck(frameinfo, ackblocksinfo, frametype))
                         i++;
                         break;
                     case 14: //path_challenge
-                        framelist.push(this.parsePathChallenge(frameinfo))
+                        framelist.push(this.parsePathChallenge(frameinfo, frametype))
                         break;
                     case 15: //path_response
-                        framelist.push(this.parsePathResponse(frameinfo))
+                        framelist.push(this.parsePathResponse(frameinfo, frametype))
                         break;
                     case 16:
                     case 17:
@@ -377,6 +377,7 @@ export class Ngtcp2LogParser extends Parser{
         let len_flag_val = 2
         let fin_flag_val = 1
         let stream: Stream = {
+            frametype: frametype,
             stream_id: parseInt(this.splitOnSymbol(frameinfo[1], "=")),
             offset: parseInt(this.splitOnSymbol(frameinfo[3], "=")),
             length : parseInt(this.splitOnSymbol(frameinfo[4], "=")),
@@ -390,33 +391,37 @@ export class Ngtcp2LogParser extends Parser{
         return stream
     }
 
-    private parsePadding(frameinfo: Array<string>): Padding{
+    private parsePadding(frameinfo: Array<string>, frametype: number): Padding{
         let padding: Padding = {
+            frametype: frametype,
             length: parseInt(this.splitOnSymbol(frameinfo[1], "="))
         }
 
         return padding
     }
 
-    private parsePathChallenge(frameinfo: Array<string>): Path_Challenge{
+    private parsePathChallenge(frameinfo: Array<string>, frametype: number): Path_Challenge{
         let path_challenge: Path_Challenge = {
+            frametype: frametype,
             data: this.splitOnSymbol(frameinfo[1], "=")
         }
 
         return path_challenge
     }
 
-    private parsePathResponse(frameinfo: Array<string>): Path_Response{
+    private parsePathResponse(frameinfo: Array<string>, frametype: number): Path_Response{
         let path_response: Path_Response = {
+            frametype: frametype,
             data: this.splitOnSymbol(frameinfo[1], "=")
         }
 
         return path_response
     }
 
-    private parseAck(frameinfo: Array<string>, ackblocksinfo: Array<Array<string>>): Ack{
+    private parseAck(frameinfo: Array<string>, ackblocksinfo: Array<Array<string>>, frametype: number): Ack{
         let ack_delay = this.splitOnSymbol(frameinfo[2], "=") 
         let ack: Ack = {
+            frametype: frametype,
             largest_ack: parseInt(this.splitOnSymbol(frameinfo[1], "=")),
             ack_delay: parseInt(this.splitOnSymbol(ack_delay, "(").slice(0, -1)),
             ack_block_count: parseInt(this.splitOnSymbol(frameinfo[3], "=")),
