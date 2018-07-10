@@ -4,6 +4,7 @@ import VisSettings from '@/data/VisSettings';
 import TraceWrapper from '@/data/TraceWrapper'
 import { stat } from 'fs';
 import TimeScaleState from '@/data/TimeScaleState';
+import TableState from '@/data/TableState';
 
 Vue.use(Vuex);
 
@@ -16,7 +17,8 @@ export interface File{
 export default new Vuex.Store({
   state: {
     vissettings: new VisSettings(),
-    timescalestate: new TimeScaleState()
+    timescalestate: new TimeScaleState(),
+    tablestate: new TableState()
   },
   mutations: {
     addFile(state, tracewrap: TraceWrapper) {
@@ -82,6 +84,9 @@ export default new Vuex.Store({
     getPacketsByConn(state){
       return fileindex => connindex => state.vissettings.getFile(fileindex).getConn(connindex).getConn().packets
     },
+    getTableHeaders(state){
+      return state.tablestate.getTableHeaders()
+    }
   },
   actions: {
     addFile(context, tracewrap: TraceWrapper){

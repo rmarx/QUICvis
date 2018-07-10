@@ -41,6 +41,7 @@ export default class ConnWrapper{
                         this._streamstofilter.push({streamnr: frame['stream_id'], filtered: false})
                 })
         })
+        this._selectedPacket = this._conn.packets[0]
     }
 
     public getConn(): QuicConnection{
