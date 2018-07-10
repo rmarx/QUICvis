@@ -129,4 +129,8 @@ export default class ConnWrapper{
         else
             return false
     }
+
+    public getSelectedPacket(): QuicPacket|null{
+        return this._selectedPacket
+    }
 }

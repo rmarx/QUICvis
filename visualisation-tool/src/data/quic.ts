@@ -26,12 +26,12 @@ export interface QuicPacket{
 //export type Header = LongHeader | ShortHeader | VersionHeader;
 
 export interface Header {
-    header_form: boolean|null
+    header_form: number|null
     dest_connection_id: string|null
 }
 
 export interface LongHeader extends Header{
-    header_form: boolean|null
+    header_form: number|null
     dest_connection_id: string|null
     long_packet_type: number|null
     src_connection_id: string|null
@@ -40,12 +40,10 @@ export interface LongHeader extends Header{
 }
 
 export interface ShortHeader extends Header{
-    header_form: boolean|null
+    header_form: number|null
     dest_connection_id: string|null
-    flags: {
-        omit_conn_id: boolean
-        key_phase: boolean
-    }
+    omit_conn_id: boolean
+    key_phase: boolean
     short_packet_type: number
     packet_number: number
 }
