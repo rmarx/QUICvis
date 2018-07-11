@@ -46,6 +46,9 @@ export default new Vuex.Store({
     },
     setZoom(state){
       state.timescalestate.setZoom();
+    },
+    filterTableHeader(state, name){
+      state.tablestate.filterHeader(name)
     }
   },
   getters: {
@@ -125,6 +128,9 @@ export default new Vuex.Store({
     },
     setZoom(context){
       context.commit('setZoom')
+    },
+    filterTableHeader(context, name){
+      context.commit('filterTableHeader', name)
     }
   }
 });

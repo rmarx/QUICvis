@@ -31,4 +31,12 @@ export default class TableState{
     public getTableHeaders(): Array<TableHeader>{
         return this._filteredheaders
     }
+
+    public filterHeader(name: string){
+        for (let i = 0; i < this._filteredheaders.length; i++) {
+            if (this._filteredheaders[i].name === name) {
+                this._filteredheaders[i].filtered = this._filteredheaders[i].filtered ? false : true;
+            }
+        }
+    }
 }

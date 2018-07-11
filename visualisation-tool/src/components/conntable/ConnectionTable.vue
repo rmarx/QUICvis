@@ -1,19 +1,29 @@
 <template>
     <div id="conntable-container" v-bind:style="{width: containerwidth + 'px', height: containerheight + 'px'}">
-        <table class="table table-sm table-bordered">
-            <thead>
-                <th scope="col" class="sortable text-center" @click="sort('connid')">Conn</th>
-                <th scope="col" class="sortable text-center" v-for="column in columns" @click="sort(column.packet_key)" v-if="column.filtered === false">{{ column.name }}</th>
-            </thead>
-            <tbody>
-              <ConnRow v-for="conn in filteredconns" v-bind:traceid="conn.fileindex" v-bind:connid="conn.connid" v-bind:headerinfo="conn.headerinfo"/>
-            </tbody>
-            <tfoot>
+      <button class="btn btn-sm btn-primary float-right" 
+      type="button" data-toggle="collapse" data-target="#tablefilters" aria-expanded="false" aria-controls="tablefilters">
+      Filters
+      </button>
+      <div class="border collapse" id="tablefilters">
+        <div v-for="(column) in columns">
+            <input type="checkbox" class="checkbox" v-bind:name="column.name" :checked="!column.filtered" @click="filterColumn(column.name)">
+            {{ column.name }}
+        </div>
+      </div>
+      <table class="table table-sm table-bordered">
+          <thead>
               <th scope="col" class="sortable text-center" @click="sort('connid')">Conn</th>
-                <th scope="col" class="sortable text-center" v-for="column in columns" @click="sort(column.packet_key)" v-if="column.filtered === false">{{ column.name }}</th>
-            </tfoot>
-        </table>
-    </div>
+              <th scope="col" class="sortable text-center" v-for="column in columns" @click="sort(column.packet_key)" v-if="column.filtered === false">{{ column.name }}</th>
+          </thead>
+          <tbody>
+            <ConnRow v-for="conn in filteredconns" v-bind:traceid="conn.fileindex" v-bind:connid="conn.connid" v-bind:headerinfo="conn.headerinfo"/>
+          </tbody>
+          <tfoot>
+            <th scope="col" class="sortable text-center" @click="sort('connid')">Conn</th>
+              <th scope="col" class="sortable text-center" v-for="column in columns" @click="sort(column.packet_key)" v-if="column.filtered === false">{{ column.name }}</th>
+          </tfoot>
+      </table>
+  </div>
 </template>
 
 <script lang="ts">
@@ -63,6 +73,9 @@ export default {
         this.sorteddir = this.sorteddir==='asc'?'desc':'asc';
       }
       this.sortedcolumn = s;
+    },
+    filterColumn:function(colname){
+      this.$store.dispatch('filterTableHeader', colname)
     }
   },
   components: {
@@ -79,5 +92,16 @@ export default {
 
 .sortable{
   cursor: pointer;
+}
+
+#tablefilters{
+  background-color: aquamarine;
+  position: absolute;
+}
+
+#tablefilters > div{
+  margin-left: 4px;
+  margin-right: 4px;
+  float: left;
 }
 </style>
