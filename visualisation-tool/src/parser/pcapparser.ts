@@ -209,7 +209,7 @@ export class PcapParser extends Parser{
             dest_connection_id: quic_info["quic.dcid"],
             src_connection_id: quic_info["quic.scid"],
             version: quic_info["quic.version"],
-            packet_number: quic_info["quic.packet_number_full"],
+            packet_number: parseInt(quic_info["quic.packet_number_full"]),
         } 
         return longheader
     }
@@ -221,7 +221,7 @@ export class PcapParser extends Parser{
             dest_connection_id: quic_info["quic.dcid"],
             omit_conn_id: quic_info["quic.short.ocid_flag"] === true,
             key_phase: quic_info["quic.short.kp_flag"] === true,
-            packet_number: quic_info["quic.packet_number_full"],
+            packet_number: parseInt(quic_info["quic.packet_number_full"]),
         } 
         return shortheader
     }

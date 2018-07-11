@@ -10,7 +10,7 @@ import { TIMEOUT } from "dns";
 export interface LogConnectionInfo{
     CID_tx: Array<string>|null
     CID_rx: Array<string>|null
-    version: number|null
+    version: string|null
     packetnr: number|null
 }
 
@@ -252,7 +252,7 @@ export class Ngtcp2LogParser extends Parser{
                     infocontent: splitline[1]
                 }
                 if (infoobject.infotype === "initial_version"){
-                    connloginfo.version = parseInt(infoobject.infocontent)
+                    connloginfo.version = infoobject.infocontent
                 }
                 infoarray.push(infoobject)
             }
@@ -541,7 +541,7 @@ export class Ngtcp2LogParser extends Parser{
 
         let el = packetinfo[2]
         splitline = el.split(" ")
-        connloginfo.version = 0xFF00000B
+        connloginfo.version = '0xff00000b'
         connection = {
             CID_endpoint1: Array(this.splitOnSymbol(splitline[5], "="), splitline[1]),
             CID_endpoint2: Array(this.splitOnSymbol(splitline[6], "=")),

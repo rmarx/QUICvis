@@ -35,7 +35,7 @@ export interface LongHeader extends Header{
     dest_connection_id: string|null
     long_packet_type: number|null
     src_connection_id: string|null
-    version: number|null
+    version: string|null
     packet_number: number|null
 }
 
@@ -52,7 +52,7 @@ export interface VersionHeader{
     header_form: boolean
     long_packet_type: number
     dest_connection_id: number
-    version: number
+    version: string
 }
 
 /**

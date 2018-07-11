@@ -19,6 +19,11 @@ export default {
         return this.$store.state.timescalestate.calcTranslateX(this.packetinfo.timestamp * 1000)
     }
   },
+  methods: {
+      selectpacket: function(){
+
+      }
+  }
 };
 </script>
 
