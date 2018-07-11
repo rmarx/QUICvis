@@ -1,13 +1,17 @@
 <template>
     <div id="conntable-container" v-bind:style="{width: containerwidth + 'px', height: containerheight + 'px'}">
-        <table class="table table-sm">
+        <table class="table table-sm table-bordered">
             <thead>
-                <th scope="col" class="sortable" @click="sort('connid')">Conn</th>
-                <th scope="col" class="sortable" v-for="column in columns" @click="sort(column.name)">{{ column.name }}</th>
+                <th scope="col" class="sortable text-center" @click="sort('connid')">Conn</th>
+                <th scope="col" class="sortable text-center" v-for="column in columns" @click="sort(column.packet_key)" v-if="column.filtered === false">{{ column.name }}</th>
             </thead>
             <tbody>
               <ConnRow v-for="conn in filteredconns" v-bind:traceid="conn.fileindex" v-bind:connid="conn.connid" v-bind:headerinfo="conn.headerinfo"/>
             </tbody>
+            <tfoot>
+              <th scope="col" class="sortable text-center" @click="sort('connid')">Conn</th>
+                <th scope="col" class="sortable text-center" v-for="column in columns" @click="sort(column.packet_key)" v-if="column.filtered === false">{{ column.name }}</th>
+            </tfoot>
         </table>
     </div>
 </template>

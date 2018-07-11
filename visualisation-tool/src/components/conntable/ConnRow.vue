@@ -1,7 +1,7 @@
 <template>
     <tr v-bind:style="{'background-color': bgcolor}">
       <td>Conn{{connid + 1}}</td>
-      <td v-for="column in columns">{{ headerinfo[column.name]}}</td>
+      <td v-for="column in columns" v-if="column.filtered === false">{{ headerinfo[column.packet_key]}}</td>
     </tr>
 </template>
 
