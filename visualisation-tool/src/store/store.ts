@@ -49,6 +49,9 @@ export default new Vuex.Store({
     },
     filterTableHeader(state, name){
       state.tablestate.filterHeader(name)
+    },
+    setSelectedPacket(state, data){
+      state.vissettings.getFile(data.traceid).getConn(data.connid).setSelectedPacket(data.packetid)
     }
   },
   getters: {
@@ -131,6 +134,9 @@ export default new Vuex.Store({
     },
     filterTableHeader(context, name){
       context.commit('filterTableHeader', name)
+    },
+    setSelectedPacket(context, data){
+      context.commit('setSelectedPacket', data)
     }
   }
 });

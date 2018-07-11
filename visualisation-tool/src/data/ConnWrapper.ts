@@ -133,4 +133,12 @@ export default class ConnWrapper{
     public getSelectedPacket(): QuicPacket|null{
         return this._selectedPacket
     }
+
+    public setSelectedPacket(packetid: number) {
+        this._selectedPacket = this._conn.packets[packetid]
+    }
+
+    public isPacketSelected(packetid: number): boolean{
+        return this._conn.packets.indexOf(this._selectedPacket!) === packetid
+    }
 }

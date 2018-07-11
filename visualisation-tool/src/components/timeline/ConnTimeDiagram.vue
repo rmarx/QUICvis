@@ -31,12 +31,15 @@ export default {
         
         let uppersvgcont = document.getElementById('conn-svgdiagram-' + this.traceid + this.connid).children[1]
         let lowersvgcont = document.getElementById('conn-svgdiagram-' + this.traceid + this.connid).children[2]
-        this.packets.forEach((packet) => {
+        this.packets.forEach((packet, id) => {
             if (packet.isclient) {
                 let packetinstance = new compclass({
                     store: this.$store,
                     propsData: {
-                        packetinfo: packet
+                        packetinfo: packet,
+                        traceid: this.traceid,
+                        connid: this.connid,
+                        packetid: id,
                     }
                 })
                 packetinstance.$mount()
@@ -46,7 +49,10 @@ export default {
                 let packetinstance = new compclass({
                     store: this.$store,
                     propsData: {
-                        packetinfo: packet
+                        packetinfo: packet,
+                        traceid: this.traceid,
+                        connid: this.connid,
+                        packetid: id,
                     }
                 })
                 packetinstance.$mount()
