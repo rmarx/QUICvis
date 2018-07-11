@@ -85,7 +85,7 @@ export class PcapParser extends Parser{
 
                     //check if SCID has changed, if so change value of CID for that endpoint
                     let src_conn_id= (<LongHeader> headerinfo).src_connection_id
-                    if (headerinfo.header_form === true && src_conn_id && el.CID_endpoint2!.findIndex(x => x === src_conn_id) !== -1) {
+                    if (headerinfo.header_form === 1 && src_conn_id && el.CID_endpoint2!.findIndex(x => x === src_conn_id) !== -1) {
                         el.CID_endpoint2!.push(src_conn_id)
                     }
 
@@ -97,7 +97,7 @@ export class PcapParser extends Parser{
 
                     let src_conn_id= (<LongHeader> headerinfo).src_connection_id
                     //check if SCID has changed, if so change value of CID for that endpoint
-                    if (headerinfo.header_form === true && src_conn_id && el.CID_endpoint1!.findIndex(x => x === src_conn_id)) {
+                    if (headerinfo.header_form === 1 && src_conn_id && el.CID_endpoint1!.findIndex(x => x === src_conn_id)) {
                         el.CID_endpoint1!.push(src_conn_id)
                     }
 
@@ -115,7 +115,7 @@ export class PcapParser extends Parser{
      * Checks if a connection exists where 1 endpoint has SCID, if so add packet to connection and update to new DCID
      */
     private addPacketWithSCID(packet: QuicPacket, connections: Array<QuicConnection>): number{
-        if (!packet.headerinfo || packet.headerinfo.header_form === false) return -1
+        if (!packet.headerinfo || packet.headerinfo.header_form === 0) return -1
         const headerinfo = <LongHeader> packet.headerinfo
         let foundindex = -1;
         let BreakException = {}
@@ -146,7 +146,7 @@ export class PcapParser extends Parser{
 
     private createConnection(packet: QuicPacket, connections: Array<QuicConnection>): number{
         //TODO check if header_form is set to boolean and not string
-        if (!packet.headerinfo || packet.headerinfo.header_form === false)
+        if (!packet.headerinfo || packet.headerinfo.header_form === 0)
             return -1
 
         let longheader = <LongHeader> packet.headerinfo
@@ -209,7 +209,7 @@ export class PcapParser extends Parser{
             dest_connection_id: quic_info["quic.dcid"],
             src_connection_id: quic_info["quic.scid"],
             version: quic_info["quic.version"],
-            packet_number: quic_info["quic.packet_number_full"],
+            packet_number: parseInt(quic_info["quic.packet_number_full"]),
         } 
         return longheader
     }
@@ -219,11 +219,9 @@ export class PcapParser extends Parser{
             header_form: quic_info["quic.header_form"],
             short_packet_type: quic_info["quic.short.packet_type"],
             dest_connection_id: quic_info["quic.dcid"],
-            flags: {
-                omit_conn_id: quic_info["quic.short.ocid_flag"] === true,
-                key_phase: quic_info["quic.short.kp_flag"] === true
-            },
-            packet_number: quic_info["quic.packet_number_full"],
+            omit_conn_id: quic_info["quic.short.ocid_flag"] === true,
+            key_phase: quic_info["quic.short.kp_flag"] === true,
+            packet_number: parseInt(quic_info["quic.packet_number_full"]),
         } 
         return shortheader
     }

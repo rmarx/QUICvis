@@ -4,6 +4,8 @@ import VisSettings from '@/data/VisSettings';
 import TraceWrapper from '@/data/TraceWrapper'
 import { stat } from 'fs';
 import TimeScaleState from '@/data/TimeScaleState';
+import TableState from '@/data/TableState';
+import { Header } from '@/data/quic';
 
 Vue.use(Vuex);
 
@@ -16,7 +18,8 @@ export interface File{
 export default new Vuex.Store({
   state: {
     vissettings: new VisSettings(),
-    timescalestate: new TimeScaleState()
+    timescalestate: new TimeScaleState(),
+    tablestate: new TableState()
   },
   mutations: {
     addFile(state, tracewrap: TraceWrapper) {
@@ -43,6 +46,12 @@ export default new Vuex.Store({
     },
     setZoom(state){
       state.timescalestate.setZoom();
+    },
+    filterTableHeader(state, name){
+      state.tablestate.filterHeader(name)
+    },
+    setSelectedPacket(state, data){
+      state.vissettings.getFile(data.traceid).getConn(data.connid).setSelectedPacket(data.packetid)
     }
   },
   getters: {
@@ -70,6 +79,15 @@ export default new Vuex.Store({
     getFilteredConnsInFile(state) {
       return fileindex => state.vissettings.getFile(fileindex).getFilteredConns()
     },
+    getAllFilteredConns(state) {
+      let conns = new Array<{fileindex: number, connid: number, headerinfo: Header|null}>()
+      state.vissettings.getAllFiles().forEach((trace, traceindex) => {
+        trace.getFilteredConns().forEach((conn) => {
+          conns.push({fileindex: traceindex, connid: conn, headerinfo: state.vissettings.getFile(traceindex).getConn(conn).getSelectedPacket()!.headerinfo})
+        })
+      })
+      return conns
+    },
     getBgColorOfConn(state) {
       return fileindex => connindex => state.vissettings.getFile(fileindex).getConn(connindex).getBgColor()
     },
@@ -82,6 +100,12 @@ export default new Vuex.Store({
     getPacketsByConn(state){
       return fileindex => connindex => state.vissettings.getFile(fileindex).getConn(connindex).getConn().packets
     },
+    getTableHeaders(state){
+      return state.tablestate.getTableHeaders()
+    },
+    getSelectedPacket(state){
+      return fileindex => connindex => state.vissettings.getFile(fileindex).getConn(connindex).getSelectedPacket()
+    }
   },
   actions: {
     addFile(context, tracewrap: TraceWrapper){
@@ -107,6 +131,12 @@ export default new Vuex.Store({
     },
     setZoom(context){
       context.commit('setZoom')
+    },
+    filterTableHeader(context, name){
+      context.commit('filterTableHeader', name)
+    },
+    setSelectedPacket(context, data){
+      context.commit('setSelectedPacket', data)
     }
   }
 });

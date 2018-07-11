@@ -41,6 +41,7 @@ export default class ConnWrapper{
                         this._streamstofilter.push({streamnr: frame['stream_id'], filtered: false})
                 })
         })
+        this._selectedPacket = this._conn.packets[0]
     }
 
     public getConn(): QuicConnection{
@@ -127,5 +128,17 @@ export default class ConnWrapper{
             return true
         else
             return false
+    }
+
+    public getSelectedPacket(): QuicPacket|null{
+        return this._selectedPacket
+    }
+
+    public setSelectedPacket(packetid: number) {
+        this._selectedPacket = this._conn.packets[packetid]
+    }
+
+    public isPacketSelected(packetid: number): boolean{
+        return this._conn.packets.indexOf(this._selectedPacket!) === packetid
     }
 }
