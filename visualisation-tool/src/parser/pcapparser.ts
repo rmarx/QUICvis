@@ -169,13 +169,15 @@ export class PcapParser extends Parser{
     private parsePacket(ip_info: any, udp_info: any, quic_info: any, time: any): QuicPacket{
         let payload: Payload = { framelist: this.parsePayload(quic_info)}
         let packet: QuicPacket = {
-            src_ip_address: ip_info["ip.src_host"],
-            src_port_number: udp_info["udp.srcport"],
-            dst_ip_address: ip_info["ip.dst_host"],
-            dst_port_number: udp_info["udp.dstport"],
+            connectioninfo: {
+                src_ip_address: ip_info["ip.src_host"],
+                src_port_number: udp_info["udp.srcport"],
+                dst_ip_address: ip_info["ip.dst_host"],
+                dst_port_number: udp_info["udp.dstport"],
+                time_delta: time,
+            },
             headerinfo: this.parseHeader(quic_info),
             payloadinfo: payload,
-            time_delta: time,
             serverinfo: null
         }
         return packet

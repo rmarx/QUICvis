@@ -113,7 +113,7 @@ export default class ConnWrapper{
             else 
                 client = true
             let timelinepacket: TimelinePacket = {
-                timestamp: packet.time_delta,
+                timestamp: packet.connectioninfo!.time_delta,
                 isclient: client,
                 frametype: frametype
             }
