@@ -88,6 +88,7 @@ export default {
   overflow: auto;
   position: relative;
   margin-top: 34px;
+  float: left;
 }
 
 .sortable{

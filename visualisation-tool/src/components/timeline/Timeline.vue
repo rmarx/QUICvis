@@ -1,5 +1,5 @@
 <template>
-    <div v-bind:style="{width: containerwidth + 'px', height: containerheight + 'px', overflow: 'auto', position: 'relative'}">
+    <div v-bind:style="{width: containerwidth + 'px', height: containerheight + 'px', overflow: 'auto', position: 'relative', float: 'left'}">
         <div class="conninfocontainer float-left">
             <ConnectionInfoList />
         </div>
