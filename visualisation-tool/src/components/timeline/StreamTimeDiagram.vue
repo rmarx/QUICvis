@@ -1,6 +1,6 @@
 <template>
     <div>
-        <svg class="svgcont-trace" v-bind:height="svgheight" v-for="stream in filteredstreams" v-if="!stream.filtered" />
+        <svg class="svgcont-trace" v-bind:height="svgheight" v-for="stream in filteredstreams" v-bind:style="{display: displayStream(stream.streamnr)}" />
     </div>
 </template>
 <script lang="ts">
@@ -31,14 +31,10 @@ export default {
     mounted() {
         let compclass = Vue.extend(StreamBlock)
         let streamsvg = []
-        let i = 0;
-        for (let j = 0; j < this.filteredstreams.length; j++){
-            let stream = this.filteredstreams[j]
-            if (!stream.filtered) {
-                d3.select(this.$el.children[i]).call(this.zoom)
-                streamsvg[stream.streamnr] = this.$el.children[i]
-                i++;
-            }
+        for (let i = 0; i < this.filteredstreams.length; i++){
+            let stream = this.filteredstreams[i]
+            d3.select(this.$el.children[i]).call(this.zoom)
+            streamsvg[stream.streamnr] = this.$el.children[i]
         }
         this.streamframes.forEach((packet, id) => {
             let frameoffset = [];
@@ -47,38 +43,44 @@ export default {
                 if (frame.hasOwnProperty('stream_id')) {
                     streamid = frame['stream_id']
                 }
-                if (streamid in streamsvg){
-                    if (streamid in frameoffset){
-                        frameoffset[streamid]++
-                    }
-                    else
-                        frameoffset[streamid] = 0
-
-                    let frameinstance = new compclass({
-                        store: this.$store,
-                        propsData: {
-                            frameinfo: frame,
-                            traceid: this.traceid,
-                            connid: this.connid,
-                            packetid: id,
-                            timestamp: packet.timestamp,
-                            frameoffset: frameoffset[streamid]
-                        }
-                    })
-                    frameinstance.$mount()
-                    streamsvg[streamid].appendChild(frameinstance.$el)
+                if (streamid in frameoffset){
+                    frameoffset[streamid]++
                 }
+                else
+                    frameoffset[streamid] = 0
+
+                let frameinstance = new compclass({
+                    store: this.$store,
+                    propsData: {
+                        frameinfo: frame,
+                        traceid: this.traceid,
+                        connid: this.connid,
+                        packetid: id,
+                        timestamp: packet.timestamp,
+                        frameoffset: frameoffset[streamid]
+                    }
+                })
+                frameinstance.$mount()
+                streamsvg[streamid].appendChild(frameinstance.$el)
             })
         })
     },
     components: {
         StreamBlock
+    },
+    methods: {
+        displayStream: function(streamid){
+            for (let i = 0; i < this.filteredstreams.length; i++) {
+                if (this.filteredstreams[i].streamnr === streamid && this.filteredstreams[i].filtered)
+                    return 'none';
+            }
+            return 'block';
+        }
     }
 }
 </script>
 <style>
 .svgcont-trace{
-    display: block;
     width: 100%;
     float: left;
     border: 1px solid black;

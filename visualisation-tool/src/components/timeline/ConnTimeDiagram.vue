@@ -28,7 +28,6 @@ export default {
     },
     mounted() {
         let compclass = Vue.extend(PacketBlock)
-        //this.resetContainer()
         d3.select(this.$el.children[0]).call(this.zoom)
         d3.select(this.$el.children[1]).call(this.zoom)
         
@@ -66,15 +65,6 @@ export default {
     components: {
         PacketBlock
     },
-    methods: {
-        resetContainer: function(){
-            let container = document.getElementById('conn-svgdiagram-' + this.traceid + this.connid).children
-            for (let i = 1; i < container.length; i++) {
-                container[i].remove()
-                i--;
-            }
-        }
-    }
 }
 </script>
 <style>
