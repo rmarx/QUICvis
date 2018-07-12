@@ -1,8 +1,15 @@
 import TraceWrapper from "@/data/TraceWrapper";
+import { QuicPacket } from "@/data/quic";
 
 export interface FrameColour{
     framecode: number,
     colour: string
+}
+
+export interface SelectedPacket {
+    traceid: number,
+    connid: number,
+    packet: QuicPacket|null
 }
 
 export enum Frametypes{
@@ -28,11 +35,17 @@ export enum Frametypes{
 export default class VisSettings{
     private _files: Array<TraceWrapper>
     private _framecolours: Array<FrameColour>
+    private _selectedpacket: SelectedPacket;
 
 
     public constructor(){
         this._files = Array()
         this._framecolours = Array()
+        this._selectedpacket = {
+            traceid: 0,
+            connid: 0,
+            packet: null
+        }
         this.setInitialColours()
     }
 
@@ -146,5 +159,15 @@ export default class VisSettings{
                 return this._framecolours[i].colour
         }
         return '#ffffff'
+    }
+
+    public setSelectedPacket(newpacketid: number, connid: number, traceid: number){
+        this._selectedpacket.traceid = traceid;
+        this._selectedpacket.connid = connid;
+        this._selectedpacket.packet = this._files[traceid].getConn(connid).getPacketById(newpacketid);
+    }
+
+    public getSelectedPacket(): SelectedPacket{
+        return this._selectedpacket
     }
 }

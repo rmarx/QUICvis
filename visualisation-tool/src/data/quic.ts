@@ -10,14 +10,18 @@ export interface QuicConnection{
 }
 
 export interface QuicPacket{
+    connectioninfo: ConnectionInfo | null
+    headerinfo: Header|null
+    payloadinfo: Payload|null
+    serverinfo: Array<ServerInfo> | null
+}
+
+export interface ConnectionInfo {
     src_ip_address: string
     src_port_number: number
     dst_ip_address: string
     dst_port_number: number
-    headerinfo: Header|null
-    payloadinfo: Payload|null
     time_delta: number
-    serverinfo: Array<ServerInfo> | null
 }
 
 /**

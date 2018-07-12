@@ -11,6 +11,7 @@
             <div class="float-left border collapse overlap" v-bind:id="'connsettings' + traceid + connid">
                 <input type="color" class="colorpicker" v-bind:id="'backgroundcolor' + traceid + connid" v-model="colorvalue" @change="setBgColor">
                 <multiselect v-model="selectedstreams" :options="streamoptions" :multiple="true" :close-on-select="false" label="streamnr" track-by="streamnr" @close="setSelectStreamFilters"/>
+                <button class="btn btn-primary btn-sm" @click="setShowStreams()">Show streams</button>
             </div>
         </div>
     </div>
@@ -23,7 +24,6 @@ export default {
     props: ['traceid', 'connid'],
     data() {
         return {
-            compheight: 122,
             colorvalue: '',
             selectedstreams: null,
             streamoptions: []
@@ -32,6 +32,13 @@ export default {
     computed: {
         bgcolor() {
             return this.$store.state.vissettings.getFile(this.traceid).getConn(this.connid).getBgColor();
+        },
+        compheight() {
+            if (this.$store.state.vissettings.getFile(this.traceid).getConn(this.connid).getShowStreams()) {
+                return 62 * this.$store.state.vissettings.getFile(this.traceid).getConn(this.connid).getAmountStreamsToShow();
+            }
+            else
+                return 122;
         }
     },
     methods: {
@@ -64,6 +71,13 @@ export default {
                 tofilter: tofilter
             }
             this.$store.dispatch('setFilteredStreams', data)
+        },
+        setShowStreams(){
+            let data = {
+                traceid: this.traceid,
+                connid: this.connid
+            }
+            this.$store.dispatch('toggleShowStreams', data);
         }
     },
     mounted() {

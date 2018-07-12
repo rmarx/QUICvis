@@ -1,4 +1,8 @@
 <template>
+    <div>
+        <svg class="svgcont-trace" v-bind:height="svgheight" />
+        <svg class="svgcont-trace" v-bind:height="svgheight" />
+    </div>
 </template>
 <script lang="ts">
 import Vue from 'vue'
@@ -24,13 +28,11 @@ export default {
     },
     mounted() {
         let compclass = Vue.extend(PacketBlock)
-        d3.select('#conn-svgdiagram-' + this.traceid + this.connid).append("svg")
-            .attr("class", "svgcont-trace").attr("height", this.svgheight).call(this.zoom)
-        d3.select('#conn-svgdiagram-' + this.traceid + this.connid).append("svg")
-            .attr("class", "svgcont-trace").attr("height", this.svgheight).call(this.zoom)
+        d3.select(this.$el.children[0]).call(this.zoom)
+        d3.select(this.$el.children[1]).call(this.zoom)
         
-        let uppersvgcont = document.getElementById('conn-svgdiagram-' + this.traceid + this.connid).children[1]
-        let lowersvgcont = document.getElementById('conn-svgdiagram-' + this.traceid + this.connid).children[2]
+        let uppersvgcont = this.$el.children[0]
+        let lowersvgcont = this.$el.children[1]
         this.packets.forEach((packet, id) => {
             if (packet.isclient) {
                 let packetinstance = new compclass({
@@ -62,7 +64,7 @@ export default {
     },
     components: {
         PacketBlock
-    }
+    },
 }
 </script>
 <style>

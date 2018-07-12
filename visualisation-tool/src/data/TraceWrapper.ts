@@ -67,4 +67,17 @@ export default class TraceWrapper {
         })
         return conns
     }
+
+    public getAmountStreamsToShow(): Array<{conn: number, streams: number}>{
+        let amount = new Array<{conn: number, streams: number}>()
+        this._conns.forEach((conn, id) => {
+            if (!conn.getIsFiltered()) {
+                if (conn.getShowStreams())
+                    amount.push({conn: id, streams: conn.getAmountStreamsToShow()})
+                else
+                    amount.push({conn: id, streams: -1})
+            }
+        })
+        return amount
+    }
 }
