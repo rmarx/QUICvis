@@ -1,9 +1,14 @@
-import { QuicConnection, QuicPacket } from "@/data/quic";
+import { QuicConnection, QuicPacket, Frame } from "@/data/quic";
 
 export interface TimelinePacket {
     timestamp: number,
     isclient: boolean,
     frametype: number|null
+}
+
+export interface TimelineStreams {
+    timestamp: number,
+    frames: Array<Frame>
 }
 
 export default class ConnWrapper{
@@ -70,6 +75,10 @@ export default class ConnWrapper{
 
     public getStreamFilters(): Array<{streamnr: number, filtered: boolean}> { 
         return this._streamstofilter
+    }
+
+    public getShowStreams(): boolean{
+        return this._showStreams
     }
 
     public setStreamFilters(tofilter: Array<number>) {
@@ -144,5 +153,29 @@ export default class ConnWrapper{
 
     public getPacketById(packetid: number): QuicPacket{
         return this._conn.packets[packetid]
+    }
+
+    public getTimelineStreams(): Array<TimelineStreams>{
+        let timelinestreams = new Array<TimelineStreams>()
+        this._conn.packets.forEach((packet) => {
+            timelinestreams.push({
+                timestamp: packet.connectioninfo!.time_delta,
+                frames: packet.payloadinfo!.framelist
+            })
+        })
+        return timelinestreams
+    }
+
+    public getAmountStreamsToShow(): number{
+        let amount = 0;
+        this._streamstofilter.forEach((stream) => {
+            if (!stream.filtered)
+                amount++
+        })
+        return amount
+    }
+
+    public toggleShowStreams(){
+        this._showStreams = !this._showStreams;
     }
 }

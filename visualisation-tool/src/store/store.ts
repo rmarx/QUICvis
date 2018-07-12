@@ -53,6 +53,9 @@ export default new Vuex.Store({
     setSelectedPacket(state, data){
       state.vissettings.getFile(data.traceid).getConn(data.connid).setSelectedPacket(data.packetid);
       state.vissettings.setSelectedPacket(data.packetid, data.connid, data.traceid);
+    },
+    toggleShowStreams(state, data){
+      state.vissettings.getFile(data.traceid).getConn(data.connid).toggleShowStreams();
     }
   },
   getters: {
@@ -139,5 +142,8 @@ export default new Vuex.Store({
     setSelectedPacket(context, data){
       context.commit('setSelectedPacket', data)
     },
+    toggleShowStreams(context, data){
+      context.commit('toggleShowStreams', data)
+    }
   }
 });
