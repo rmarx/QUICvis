@@ -1,5 +1,5 @@
 <template>
-  <div id="generalsettings">
+  <div id="generalsettings" class="w-100">
     <div class="card">
       <div class="card-header">
         <h5 class="mb-0">

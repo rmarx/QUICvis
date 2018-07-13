@@ -18,19 +18,16 @@ export default class ConnWrapper{
 
     private _backgroundcolour: string;
 
-    private _filteredstreams: Array<boolean>;
-
     private _selectedPacket: QuicPacket|null;
 
     private _showStreams: boolean;
 
     private _streamstofilter: Array<{streamnr: number, filtered: boolean}>
 
-    public constructor(conn: QuicConnection){
+    public constructor(conn: QuicConnection, color: string){
         this._conn = conn
         this._isfilteredout = false
-        this._backgroundcolour = "#ff00ff"
-        this._filteredstreams = Array()
+        this._backgroundcolour = color
         this._selectedPacket = null
         this._showStreams = false
         this._streamstofilter = new Array()

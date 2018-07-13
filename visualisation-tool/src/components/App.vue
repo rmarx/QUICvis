@@ -2,7 +2,6 @@
   <div>
     <GeneralSettings />
     <Timeline />
-    <PacketInfo />
     <ConnectionTable />
   </div>
 </template>
@@ -12,14 +11,12 @@ import { Component, Vue } from 'vue-property-decorator';
 import GeneralSettings from './generalsettings/GeneralSettings';
 import Timeline from "./timeline/Timeline";
 import ConnectionTable from './conntable/ConnectionTable';
-import PacketInfo from './conntable/PacketInfo';
 
 @Component({
   components: {
     GeneralSettings,
     Timeline,
-    ConnectionTable,
-    PacketInfo
+    ConnectionTable
   },
 })
 export default class App extends Vue {

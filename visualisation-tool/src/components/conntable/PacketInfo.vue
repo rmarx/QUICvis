@@ -1,5 +1,5 @@
 <template>
-    <div v-bind:style="{width: containerwidth + 'px', height: containerheight + 'px', 'background-color': bgcolor}" class="packetinfo-cont">
+    <div v-bind:style="{height: containerheight + 'px', 'background-color': bgcolor}" class="packetinfo-cont">
         <ul>
             <InfoItem v-for="(info, key) in selectedpacket.packet" :keyname="key" :keyinfolist="info" />
         </ul>
@@ -12,7 +12,7 @@ export default {
   name: "packetinfo",
   computed: {
       containerwidth() {
-          return window.innerWidth * (1/5)
+          return window.innerWidth * (1/6)
       },
       containerheight() {
           return window.innerHeight * (3/5)
@@ -34,7 +34,7 @@ export default {
 .packetinfo-cont{
     overflow: auto; 
     position: relative;
-    float: left;
+    margin-left: 5px;
 }
 
 </style>

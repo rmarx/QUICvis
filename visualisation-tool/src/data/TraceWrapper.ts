@@ -19,20 +19,24 @@ export default class TraceWrapper {
         return this._trace
     }
 
-    public setTrace(newtrace: Trace): void {
+    public setTrace(newtrace: Trace, colorindex: number, colors: Array<string>): number {
         this._trace = newtrace;
-        this.setConns()
+        colorindex = this.setConns(colorindex, colors)
+        return colorindex
     }
 
-    private setConns() {
+    private setConns(colorindex: number, colors: Array<string>): number {
         let conndata = this._trace.connection
 
         this._conns = Array()
         if (conndata) {
             conndata.forEach((el) => {
-                this._conns.push(new ConnWrapper(el))
+                this._conns.push(new ConnWrapper(el, colors[colorindex]))
+                colorindex += 1;
+                colorindex = colorindex % (colors.length - 1)
             })
         }
+        return colorindex
     }
 
     public getConns(): Array<ConnWrapper> {
