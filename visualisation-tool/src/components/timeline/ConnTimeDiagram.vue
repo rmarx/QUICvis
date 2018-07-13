@@ -14,7 +14,7 @@ export default {
     props: ['traceid', 'connid'],
     data() {
         return {
-            svgheight: 60,
+            svgheight: 30,
             packetsize: 8
         }
     },

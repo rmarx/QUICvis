@@ -3,8 +3,8 @@
         <div v-for="(file, fileindex) in traces">
             <div v-for="(conn) in filteredconns(fileindex)" v-bind:id="'conn-svgdiagram-' + fileindex + conn" class="svgcont-trace" 
             v-bind:style="'background-color: ' + bgcolor(fileindex, conn)">
-                <ConnTimeDiagram  v-bind:traceid="fileindex" v-bind:connid="conn" v-if="!showstreams(fileindex, conn)"/>
-                <StreamTimeDiagram v-bind:traceid="fileindex" v-bind:connid="conn" v-else/>
+                <ConnTimeDiagram  v-bind:traceid="fileindex" v-bind:connid="conn"/>
+                <StreamTimeDiagram v-bind:traceid="fileindex" v-bind:connid="conn" v-if="showstreams(fileindex, conn)"/>
             </div>
         </div>
     </div>

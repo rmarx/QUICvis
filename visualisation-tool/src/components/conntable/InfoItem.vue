@@ -28,7 +28,7 @@ export default {
     props: ['keyname', 'keyinfolist'],
     data(){
         return {
-            showChildren: false
+            showChildren: true
         }
     },
     methods: {

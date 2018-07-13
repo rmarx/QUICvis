@@ -33,16 +33,12 @@ export default {
   data() {
     return {
       sortedcolumn: 'connid',
-      sorteddir: 'asc'
+      sorteddir: 'asc',
+      containerwidth: Math.max(window.innerWidth, 1800),
+      containerheight: Math.max(window.innerHeight * (3 / 10), 250)
     }
   },
   computed: {
-    containerwidth() {
-      return window.innerWidth * (4 / 5);
-    },
-    containerheight() {
-      return window.innerHeight * (3 / 10);
-    },
     columns() {
       return this.$store.getters.getTableHeaders;
     },
@@ -76,10 +72,20 @@ export default {
     },
     filterColumn:function(colname){
       this.$store.dispatch('filterTableHeader', colname)
+    },
+    handleResize:function(event){
+      this.containerwidth = Math.max(window.innerWidth, 1800),
+      this.containerheight = Math.max(window.innerHeight * (3 / 10), 250)
     }
   },
   components: {
     ConnRow
+  },
+  ready: function () {
+    window.addEventListener('resize', this.handleResize)
+  },
+  beforeDestroy: function () {
+    window.removeEventListener('resize', this.handleResize)
   }
 };
 </script>
@@ -87,8 +93,7 @@ export default {
 #conntable-container {
   overflow: auto;
   position: relative;
-  margin-top: 34px;
-  float: left;
+  margin-top: 24px;
 }
 
 .sortable{

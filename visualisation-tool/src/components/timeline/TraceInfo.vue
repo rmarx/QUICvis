@@ -32,10 +32,10 @@ export default {
             let connsettings = this.$store.state.vissettings.getFile(this.traceid).getAmountStreamsToShow();
             let height = 0
             connsettings.forEach(element => {
-                if (element.streams < 0)
-                    height += 122;
-                else
-                    height += 62 * element.streams
+                if (element.streams > 0)
+                    height += 60 * element.streams
+                
+                height += 62;
             });
             return height
         }
