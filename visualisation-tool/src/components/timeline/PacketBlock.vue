@@ -9,7 +9,7 @@ export default {
   props: ['packetinfo', 'traceid', 'connid', 'packetid'],
   data() {
       return {
-          translateY: 30
+          translateY: 10
       }
   },
   computed: {
