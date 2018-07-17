@@ -18,7 +18,7 @@ export default {
         return this.$store.state.vissettings.getFrameColour(this.frameinfo.frametype)
     },
     translateX() {
-        return this.$store.state.timescalestate.calcTranslateX(this.timestamp * 1000)
+        return this.$store.state.timescalestate.calcTranslateX((this.timestamp * 1000) + parseInt(this.xoffset))
     },
     strokewidth(){
         if (this.$store.state.vissettings.getFile(this.traceid).getConn(this.connid).isPacketSelected(this.packetid))
@@ -28,6 +28,9 @@ export default {
     },
     translateY(){
         return (this.frameoffset % 5)  * this.transamount
+    },
+    xoffset(){
+        return this.$store.state.vissettings.getFile(this.traceid).getConn(this.connid).getXOffset()
     }
   },
   methods: {

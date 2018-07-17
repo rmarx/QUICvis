@@ -46,7 +46,7 @@ export default {
 </script>
 <style>
 .conninfocontainer {
-  width: 90px;
+  width: 150px;
   margin-top: 44px;
   overflow: hidden !important;
 }

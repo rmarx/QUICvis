@@ -1,7 +1,7 @@
 <template>
     <div>
-        <svg class="svgcont-trace" v-bind:height="svgheight" />
-        <svg class="svgcont-trace" v-bind:height="svgheight" />
+        <svg class="svgcont-trace send-svg" v-bind:height="svgheight" />
+        <svg class="svgcont-trace receive-svg" v-bind:height="svgheight" />
     </div>
 </template>
 <script lang="ts">
@@ -74,4 +74,13 @@ export default {
     float: left;
     border: 1px solid black;
 }
+
+.receive-svg{
+    background:rgba(255,0,0,0.2);
+}
+
+.send-svg{
+    background:rgba(0,128,0,0.2);
+}
+
 </style>

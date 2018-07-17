@@ -56,6 +56,9 @@ export default new Vuex.Store({
     },
     toggleShowStreams(state, data){
       state.vissettings.getFile(data.traceid).getConn(data.connid).toggleShowStreams();
+    },
+    setXOffset(state, data) {
+      state.vissettings.getFile(data.traceid).getConn(data.connid).setXOffset(data.xoffset);
     }
   },
   getters: {
@@ -144,6 +147,9 @@ export default new Vuex.Store({
     },
     toggleShowStreams(context, data){
       context.commit('toggleShowStreams', data)
+    },
+    setXOffset(context, data){
+      context.commit('setXOffset', data)
     }
   }
 });

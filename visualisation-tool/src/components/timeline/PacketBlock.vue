@@ -17,13 +17,16 @@ export default {
         return this.$store.state.vissettings.getFrameColour(this.packetinfo.frametype)
     },
     translateX() {
-        return this.$store.state.timescalestate.calcTranslateX(this.packetinfo.timestamp * 1000)
+        return this.$store.state.timescalestate.calcTranslateX((this.packetinfo.timestamp * 1000) + parseInt(this.xoffset))
     },
     strokewidth(){
         if (this.$store.state.vissettings.getFile(this.traceid).getConn(this.connid).isPacketSelected(this.packetid))
             return 2
         else
             return 0
+    },
+    xoffset(){
+        return this.$store.state.vissettings.getFile(this.traceid).getConn(this.connid).getXOffset()
     }
   },
   methods: {

@@ -1,6 +1,7 @@
 <template>
     <div>
-        <svg class="svgcont-trace" v-bind:height="svgheight" v-for="stream in filteredstreams" v-bind:style="{display: displayStream(stream.streamnr)}" />
+        <svg class="svgcont-trace" v-bind:height="svgheight" v-for="stream in filteredstreams" v-bind:style="{display: displayStream(stream.streamnr), 
+        background: bgcolor}" />
     </div>
 </template>
 <script lang="ts">
@@ -18,6 +19,9 @@ export default {
         }
     },
     computed: {
+        bgcolor() {
+            return this.$store.state.vissettings.getFile(this.traceid).getConn(this.connid).getBgColor();
+        },
         streamframes(){
             return this.$store.state.vissettings.getFile(this.traceid).getConn(this.connid).getTimelineStreams()
         },

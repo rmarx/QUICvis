@@ -24,6 +24,8 @@ export default class ConnWrapper{
 
     private _streamstofilter: Array<{streamnr: number, filtered: boolean}>
 
+    private _xoffset: number;
+
     public constructor(conn: QuicConnection, color: string){
         this._conn = conn
         this._isfilteredout = false
@@ -31,6 +33,7 @@ export default class ConnWrapper{
         this._selectedPacket = null
         this._showStreams = false
         this._streamstofilter = new Array()
+        this._xoffset = 0;
         this._streamstofilter.push({ streamnr: 0, filtered: false})
         this.addStreamsToFilter()
     }
@@ -174,5 +177,13 @@ export default class ConnWrapper{
 
     public toggleShowStreams(){
         this._showStreams = !this._showStreams;
+    }
+
+    public setXOffset(offset: number){
+        this._xoffset = offset
+    }
+
+    public getXOffset(): number {
+        return this._xoffset
     }
 }

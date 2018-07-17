@@ -18,7 +18,7 @@ export default {
     props: ['traceid'],
     data() {
         return {
-            compwidth: 25
+            compwidth: 150
         }
     },
     computed: {
