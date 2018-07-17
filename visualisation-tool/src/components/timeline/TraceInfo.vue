@@ -1,6 +1,6 @@
 <template>
     <div>
-        <div class="tracecontainer" v-bind:style="{ height: height + 'px', width: compwidth + 'px'}">
+        <div class="tracecontainer" v-bind:style="{ height: compheight + 'px', width: compwidth + 'px'}">
             <div class="tracename border h-100 float-left">
                 <p class="text-truncate m-0">{{ trace._trace.name}}</p>
             </div>
@@ -18,19 +18,26 @@ export default {
     props: ['traceid'],
     data() {
         return {
-            compheight: 122,
-            compwidth: 25
+            compwidth: 150
         }
     },
     computed: {
         trace() {
             return this.$store.getters.getFileByIndex(this.traceid);   
         },
-        height() {
-            return this.$store.getters.getFilteredConnsInFile(this.traceid).length * this.compheight;
-        },
         filteredconns() {
             return this.$store.getters.getFilteredConnsInFile(this.traceid)
+        },
+        compheight() {
+            let connsettings = this.$store.state.vissettings.getFile(this.traceid).getAmountStreamsToShow();
+            let height = 0
+            connsettings.forEach(element => {
+                if (element.streams > 0)
+                    height += 60 * element.streams
+                
+                height += 62;
+            });
+            return height
         }
     },
     components: {

@@ -10,7 +10,7 @@ import { TIMEOUT } from "dns";
 export interface LogConnectionInfo{
     CID_tx: Array<string>|null
     CID_rx: Array<string>|null
-    version: number|null
+    version: string|null
     packetnr: number|null
 }
 
@@ -122,13 +122,15 @@ export class Ngtcp2LogParser extends Parser{
         
         time_delta = time_delta.substring(0, 5) + "." + time_delta.substring(5, time_delta.length)
         packet = {
-            src_ip_address: "",
-            src_port_number: -1,
-            dst_ip_address: "",
-            dst_port_number: -1,
+            connectioninfo: {
+                src_ip_address: "",
+                src_port_number: -1,
+                dst_ip_address: "",
+                dst_port_number: -1,
+                time_delta: parseFloat(time_delta)
+            },
             headerinfo: header,
             payloadinfo: { framelist: framelist},
-            time_delta: parseFloat(time_delta),
             serverinfo: serverinfo ? serverinfo : transportparams
         }
         return packet
@@ -199,7 +201,7 @@ export class Ngtcp2LogParser extends Parser{
         let cide1index = connections[connindex].CID_endpoint1!.length - 1
         let cide2index = connections[connindex].CID_endpoint2!.length - 1
         let longheader = {
-            header_form: true,
+            header_form: 1,
             dest_connection_id: line[3] === "rx" ? connections[connindex].CID_endpoint1![cide1index] : connections[connindex].CID_endpoint2![cide2index],
             long_packet_type: parseInt(this.splitOnSymbol(line[5], "(").slice(0, -1)),
             src_connection_id: line[3] === "rx" ? connections[connindex].CID_endpoint2![cide2index] : connections[connindex].CID_endpoint1![cide1index],
@@ -227,13 +229,11 @@ export class Ngtcp2LogParser extends Parser{
             connindex = this.createConnection(content, connloginfo, connections)
         
         let shortheader = {
-            header_form: false,
+            header_form: 0,
             dest_connection_id: line[3] === "rx" ? connections[connindex].CID_endpoint1![cide1index] : connections[connindex].CID_endpoint2![cide2index],
             short_packet_type: parseInt(this.splitOnSymbol(line[5], "(").slice(0, -1)),
-            flags: {
-                omit_conn_id: false,
-                key_phase: false
-            },
+            omit_conn_id: false,
+            key_phase: false,
             packet_number: parseInt(line[4])
         }
         return shortheader
@@ -254,7 +254,7 @@ export class Ngtcp2LogParser extends Parser{
                     infocontent: splitline[1]
                 }
                 if (infoobject.infotype === "initial_version"){
-                    connloginfo.version = parseInt(infoobject.infocontent)
+                    connloginfo.version = infoobject.infocontent
                 }
                 infoarray.push(infoobject)
             }
@@ -477,7 +477,7 @@ export class Ngtcp2LogParser extends Parser{
                     //check if SCID has changed, if so change value of CID for that endpoint
                     let src_conn_id= '"' + (<LongHeader> headerinfo).src_connection_id + '"'
             
-                    if (headerinfo.header_form === true && src_conn_id && el.CID_endpoint2!.findIndex(x => x === src_conn_id) !== -1) {
+                    if (headerinfo.header_form === 1 && src_conn_id && el.CID_endpoint2!.findIndex(x => x === src_conn_id) !== -1) {
                         el.CID_endpoint2!.push(src_conn_id)
                     }
 
@@ -489,7 +489,7 @@ export class Ngtcp2LogParser extends Parser{
 
                     let src_conn_id= '"' + (<LongHeader> headerinfo).src_connection_id + '"'
                     //check if SCID has changed, if so change value of CID for that endpoint
-                    if (headerinfo.header_form === true && src_conn_id && el.CID_endpoint1!.findIndex(x => x === src_conn_id) !== -1) {
+                    if (headerinfo.header_form === 1 && src_conn_id && el.CID_endpoint1!.findIndex(x => x === src_conn_id) !== -1) {
                         el.CID_endpoint1!.push(src_conn_id)
                         console.log(src_conn_id)
                     }
@@ -508,7 +508,7 @@ export class Ngtcp2LogParser extends Parser{
      * Checks if a connection exists where 1 endpoint has SCID, if so add packet to connection and update to new DCID
      */
     private addPacketWithSCID(packet: QuicPacket, connections: Array<QuicConnection>): number{
-        if (!packet.headerinfo || packet.headerinfo.header_form === false) return -1
+        if (!packet.headerinfo || packet.headerinfo.header_form === 0) return -1
         const headerinfo = <LongHeader> packet.headerinfo
         let foundindex = -1;
         let BreakException = {}
@@ -543,7 +543,7 @@ export class Ngtcp2LogParser extends Parser{
 
         let el = packetinfo[2]
         splitline = el.split(" ")
-        connloginfo.version = 0xFF00000B
+        connloginfo.version = '0xff00000b'
         connection = {
             CID_endpoint1: Array(this.splitOnSymbol(splitline[5], "="), splitline[1]),
             CID_endpoint2: Array(this.splitOnSymbol(splitline[6], "=")),

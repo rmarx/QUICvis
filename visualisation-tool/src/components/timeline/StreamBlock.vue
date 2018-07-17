@@ -6,24 +6,28 @@
 <script lang="ts">
 export default {
   name: "packetblock",
-  props: ['packetinfo', 'traceid', 'connid', 'packetid'],
+  props: ['frameinfo', 'traceid', 'connid', 'packetid', 'timestamp', 'frameoffset'],
   data() {
       return {
-          translateY: 10
+          transamount: 10,
+          baseTranslateY: 2
       }
   },
   computed: {
     fillcolor(){
-        return this.$store.state.vissettings.getFrameColour(this.packetinfo.frametype)
+        return this.$store.state.vissettings.getFrameColour(this.frameinfo.frametype)
     },
     translateX() {
-        return this.$store.state.timescalestate.calcTranslateX((this.packetinfo.timestamp * 1000) + parseInt(this.xoffset))
+        return this.$store.state.timescalestate.calcTranslateX((this.timestamp * 1000) + parseInt(this.xoffset))
     },
     strokewidth(){
         if (this.$store.state.vissettings.getFile(this.traceid).getConn(this.connid).isPacketSelected(this.packetid))
             return 2
         else
             return 0
+    },
+    translateY(){
+        return (this.frameoffset % 5)  * this.transamount
     },
     xoffset(){
         return this.$store.state.vissettings.getFile(this.traceid).getConn(this.connid).getXOffset()

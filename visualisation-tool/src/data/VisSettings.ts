@@ -1,8 +1,15 @@
 import TraceWrapper from "@/data/TraceWrapper";
+import { QuicPacket } from "@/data/quic";
 
 export interface FrameColour{
     framecode: number,
     colour: string
+}
+
+export interface SelectedPacket {
+    traceid: number,
+    connid: number,
+    packet: QuicPacket|null
 }
 
 export enum Frametypes{
@@ -28,53 +35,59 @@ export enum Frametypes{
 export default class VisSettings{
     private _files: Array<TraceWrapper>
     private _framecolours: Array<FrameColour>
+    private _selectedpacket: SelectedPacket;
 
 
     public constructor(){
         this._files = Array()
         this._framecolours = Array()
+        this._selectedpacket = {
+            traceid: 0,
+            connid: 0,
+            packet: null
+        }
         this.setInitialColours()
     }
 
     private setInitialColours(){
         this._framecolours.push({
             framecode: Frametypes.PADDING,
-            colour: "#730000"
+            colour: "#9e0e04"
         })
 
         this._framecolours.push({
             framecode: Frametypes.RST_STREAM,
-            colour: "#402020"
+            colour: "#8c3804"
         })
 
         this._framecolours.push({
             framecode: Frametypes.CONNECTION_CLOSE,
-            colour: "#664d4d"
+            colour: "#8c5e04"
         })
         
         this._framecolours.push({
             framecode: Frametypes.APPLICATION_CLOSE,
-            colour: "#f2553d"
+            colour: "#8c7f08"
         })
         
         this._framecolours.push({
             framecode: Frametypes.MAX_DATA,
-            colour: "#8c4f46"
+            colour: "#516b05"
         })
         
         this._framecolours.push({
             framecode: Frametypes.MAX_STREAM_DATA,
-            colour: "#bf9c8f"
+            colour: "#2a6b05"
         })
 
         this._framecolours.push({
             framecode: Frametypes.MAX_STREAM_ID,
-            colour: "#b2622d"
+            colour: "#015633"
         })
         
         this._framecolours.push({
             framecode: Frametypes.PING,
-            colour: "#331b00"
+            colour: "#113c51"
         })
         
         this._framecolours.push({
@@ -84,43 +97,43 @@ export default class VisSettings{
         
         this._framecolours.push({
             framecode: Frametypes.STREAM_BLOCKED,
-            colour: "#cc8800"
+            colour: "#112250"
         })
         
 
         this._framecolours.push({
             framecode: Frametypes.STREAM_ID_BLOCKED,
-            colour: "#8c7723"
+            colour: "#210f42"
         })
 
         this._framecolours.push({
             framecode: Frametypes.NEW_CONNECTION_ID,
-            colour: "#bfb68f"
+            colour: "#5c0268"
         })
         
         this._framecolours.push({
             framecode: Frametypes.STOP_SENDING,
-            colour: "#f2ea79"
+            colour: "#680236"
         })
         
         this._framecolours.push({
             framecode: Frametypes.ACK,
-            colour: "#ccff00"
+            colour: "#43484c"
         })
         
         this._framecolours.push({
             framecode: Frametypes.PATH_CHALLENGE,
-            colour: "#708c00"
+            colour: "#2f3824"
         })
         
         this._framecolours.push({
             framecode: Frametypes.PATH_RESPONSE,
-            colour: "#143300"
+            colour: "#ffffff"
         })
         
         this._framecolours.push({
             framecode: Frametypes.STREAM,
-            colour: "#b8d9a3"
+            colour: "#4c1e1e"
         })
     }
 
@@ -146,5 +159,15 @@ export default class VisSettings{
                 return this._framecolours[i].colour
         }
         return '#ffffff'
+    }
+
+    public setSelectedPacket(newpacketid: number, connid: number, traceid: number){
+        this._selectedpacket.traceid = traceid;
+        this._selectedpacket.connid = connid;
+        this._selectedpacket.packet = this._files[traceid].getConn(connid).getPacketById(newpacketid);
+    }
+
+    public getSelectedPacket(): SelectedPacket{
+        return this._selectedpacket
     }
 }

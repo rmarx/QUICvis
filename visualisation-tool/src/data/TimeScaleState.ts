@@ -39,6 +39,8 @@ export default class TimeScaleState{
         let svgcont = d3
             .select("#timelinesvg")
         this._timeaxis = d3.axisTop(this._scale);
+        this._timeaxis.tickSizeOuter(0);
+        this._timeaxis.tickSizeInner(- (window.innerHeight * (3/5)))
         this._zoom = d3.zoom().scaleExtent([1,400]).on("zoom", () => {
             this._zoomTransform = d3.event.transform;
             this._scale = this._zoomTransform.rescaleX(this._refscale)

@@ -1,4 +1,8 @@
 <template>
+    <div>
+        <svg class="svgcont-trace send-svg" v-bind:height="svgheight" />
+        <svg class="svgcont-trace receive-svg" v-bind:height="svgheight" />
+    </div>
 </template>
 <script lang="ts">
 import Vue from 'vue'
@@ -10,7 +14,7 @@ export default {
     props: ['traceid', 'connid'],
     data() {
         return {
-            svgheight: 60,
+            svgheight: 30,
             packetsize: 8
         }
     },
@@ -24,19 +28,20 @@ export default {
     },
     mounted() {
         let compclass = Vue.extend(PacketBlock)
-        d3.select('#conn-svgdiagram-' + this.traceid + this.connid).append("svg")
-            .attr("class", "svgcont-trace").attr("height", this.svgheight).call(this.zoom)
-        d3.select('#conn-svgdiagram-' + this.traceid + this.connid).append("svg")
-            .attr("class", "svgcont-trace").attr("height", this.svgheight).call(this.zoom)
+        d3.select(this.$el.children[0]).call(this.zoom)
+        d3.select(this.$el.children[1]).call(this.zoom)
         
-        let uppersvgcont = document.getElementById('conn-svgdiagram-' + this.traceid + this.connid).children[1]
-        let lowersvgcont = document.getElementById('conn-svgdiagram-' + this.traceid + this.connid).children[2]
-        this.packets.forEach((packet) => {
+        let uppersvgcont = this.$el.children[0]
+        let lowersvgcont = this.$el.children[1]
+        this.packets.forEach((packet, id) => {
             if (packet.isclient) {
                 let packetinstance = new compclass({
                     store: this.$store,
                     propsData: {
-                        packetinfo: packet
+                        packetinfo: packet,
+                        traceid: this.traceid,
+                        connid: this.connid,
+                        packetid: id,
                     }
                 })
                 packetinstance.$mount()
@@ -46,7 +51,10 @@ export default {
                 let packetinstance = new compclass({
                     store: this.$store,
                     propsData: {
-                        packetinfo: packet
+                        packetinfo: packet,
+                        traceid: this.traceid,
+                        connid: this.connid,
+                        packetid: id,
                     }
                 })
                 packetinstance.$mount()
@@ -56,7 +64,7 @@ export default {
     },
     components: {
         PacketBlock
-    }
+    },
 }
 </script>
 <style>
@@ -66,4 +74,13 @@ export default {
     float: left;
     border: 1px solid black;
 }
+
+.receive-svg{
+    background:rgba(255,0,0,0.2);
+}
+
+.send-svg{
+    background:rgba(0,128,0,0.2);
+}
+
 </style>

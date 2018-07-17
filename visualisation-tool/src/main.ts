@@ -9,7 +9,7 @@ import { Ngtcp2LogParser } from './parser/Ngtcp2LogParser'
 import './../node_modules/jquery/dist/jquery.min.js';
 import './../node_modules/bootstrap/dist/css/bootstrap.min.css';
 import './../node_modules/bootstrap/dist/js/bootstrap.min.js';
-import './../node_modules/vue-multiselect/dist/vue-multiselect.min.css';
+import './../node_modules/@fortawesome/fontawesome-free/css/all.css';
 
 Vue.use(VueRouter);
 
@@ -27,20 +27,36 @@ const router = new VueRouter({
 
 const request = 'http://localhost:8040/gettestfiles'
 
+let conncolors = [
+  '#f98b7f',
+  '#f9b97f',
+  '#f2dc8e',
+  '#a5965e',
+  '#e4ef83',
+  '#b1dd6e',
+  '#82d87d',
+  '#7dd8bb',
+  '#7dd4d8',
+  '#9189ff'
+]
+
 let data = axios.get(request).then((response) => { return response.data})
 let pcapparser = new PcapParser()
 let ngtcp2parser = new Ngtcp2LogParser()
+let startcolor = 0
 data.then((result) => {
   let container = result['filescontainer']
   container.forEach(element => {
     let tracewrap = new TraceWrapper()
     
     if (element['fileext'] === '.json') {
-      tracewrap.setTrace(pcapparser.parse(element['filename'], element['filecontent']))
+      let parsedfile = pcapparser.parse(element['filename'], element['filecontent'])
+      startcolor = tracewrap.setTrace(parsedfile, startcolor, conncolors)
       store.dispatch('addFile', tracewrap)
     }
     if (element['fileext'] === '.log') {
-      tracewrap.setTrace(ngtcp2parser.parse(element['filename'], element['filecontent']))
+      let parsedfile = ngtcp2parser.parse(element['filename'], element['filecontent'])
+      startcolor = tracewrap.setTrace(parsedfile, startcolor, conncolors)
       store.dispatch('addFile', tracewrap)
     }
   });

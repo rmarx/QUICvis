@@ -21,7 +21,7 @@ export default {
   mounted() {
     let svgcont = d3
       .select("#timelinesvg")
-    let width = document.getElementById("timeline")!.clientWidth - 12;
+    let width = document.getElementById("timeline")!.clientWidth - 2;
     this.$store.state.timescalestate.setZoom()
     this.updateDimensions(width, 500)
   },
@@ -72,5 +72,6 @@ export default {
 
 .timelinecontainer {
   overflow: auto;
+  padding-left: 2px;
 }
 </style>
