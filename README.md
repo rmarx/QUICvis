@@ -17,12 +17,12 @@ npm install
 
 ## Run website
 
-```
-#First open a terminal for the API server and run
+``` bash
+# First open a terminal for the API server and run
 cd ./apiserver
 npm run start
 
-#Then open a second terminal for the website and run
+# Then open a second terminal for the website and run
 cd ./visualisation-tool
 npm run serve
 ```
