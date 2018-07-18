@@ -15,7 +15,7 @@ export default {
   },
   computed: {
     fillcolor(){
-        return this.$store.state.vissettings.getFrameColour(this.frameinfo.frametype)
+        return this.$store.state.framecolortables.getFrameColour(this.frameinfo.frametype)
     },
     translateX() {
         return this.$store.state.timescalestate.calcTranslateX((this.timestamp * 1000) + parseInt(this.xoffset))

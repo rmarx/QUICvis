@@ -81,27 +81,18 @@ export default class ConnWrapper{
         return this._showStreams
     }
 
-    public setStreamFilters(tofilter: Array<number>) {
-        if (tofilter.length === 0){
-            this.initializeStreamFilters(false)
-            return
-        }else {
-            this.initializeStreamFilters(true)
-        }
-
-        for (let i = 0; i < tofilter.length; i++) {
-            for (let j = 0; j < this._streamstofilter.length; j++) {
-                if (this._streamstofilter[j].streamnr === tofilter[i]){
-                    this._streamstofilter[j].filtered = false
-                    break;
-                }
-            }
+    public resetStreamFilters(){
+        for (let j = 0; j < this._streamstofilter.length; j++) {
+            this._streamstofilter[j].filtered = false
         }
     }
 
-    private initializeStreamFilters(basevalue: boolean){
-        for (let j = 0; j < this._streamstofilter.length; j++) {
-            this._streamstofilter[j].filtered = basevalue
+    public filterOutStream(streamnr: number){
+        for (let i = 0; i < this._streamstofilter.length; i++) {
+            if (this._streamstofilter[i].streamnr === streamnr){
+                this._streamstofilter[i].filtered = true
+                break;
+            }
         }
     }
 
