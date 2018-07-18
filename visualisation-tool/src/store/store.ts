@@ -29,6 +29,9 @@ export default new Vuex.Store({
       let file = state.vissettings.getFile(data.fileindex)
       file.getConn(data.connindex).invertIsFiltered()
     },
+    filterStream(state, data){
+      state.vissettings.getFile(data.traceid).getConn(data.connid).filterOutStream(data.streamnr);
+    },
     removeFile(state, index){
       state.vissettings.removeFile(index)
     },
@@ -150,6 +153,9 @@ export default new Vuex.Store({
     },
     setXOffset(context, data){
       context.commit('setXOffset', data)
+    },
+    filterStream(context, data){
+      context.commit('filterStream', data)
     }
   }
 });

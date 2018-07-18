@@ -16,8 +16,9 @@
                 </div>
             </div>
         </div>
-        <div class="conn_name border" v-for="stream in filteredstreams" v-if="!stream.filtered && showstreams" v-bind:style="{height: streamheight + 'px', 'background-color': bgcolor}">
-                Stream {{ stream.streamnr}}
+        <div class="border" v-for="stream in filteredstreams" v-if="!stream.filtered && showstreams" v-bind:style="{height: streamheight + 'px', 'background-color': bgcolor}">
+                <div class="conn_name float-right">Stream {{ stream.streamnr}} </div>
+                <button class="btn btn-primary btn-sm float-left" @click="filterStream(stream.streamnr)" >Filter out</button>
         </div> 
     </div>
 </template>
@@ -75,6 +76,14 @@ export default {
                 xoffset: this.xoffset
             }
             this.$store.dispatch('setXOffset', data)
+        },
+        filterStream(streamnr: number) {
+            let data = {
+                traceid: this.traceid,
+                connid: this.connid,
+                streamnr: streamnr
+            }
+            this.$store.dispatch('filterStream', data)
         }
     },
     mounted() {

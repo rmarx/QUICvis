@@ -87,6 +87,15 @@ export default class ConnWrapper{
         }
     }
 
+    public filterOutStream(streamnr: number){
+        for (let i = 0; i < this._streamstofilter.length; i++) {
+            if (this._streamstofilter[i].streamnr === streamnr){
+                this._streamstofilter[i].filtered = true
+                break;
+            }
+        }
+    }
+
     public getTimelinePackets(): Array<TimelinePacket>{
         let packets = new Array<TimelinePacket>()
         let frametype: number|null
