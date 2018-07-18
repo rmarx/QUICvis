@@ -2,11 +2,15 @@
   <div id="generalsettings" class="w-100">
     <div class="card">
       <div class="card-header">
-        <h5 class="mb-0">
+        <h5 class="mb-0 float-left">
           <button id="headingsettings" class="btn btn-link" data-toggle="collapse" data-target="#datasettings" aria-expanded="true" aria-controls="collapseOne">
             View general settings
           </button>
         </h5>
+      <div class="float-left m-1" v-for="tablename in frametables">
+        <button class="btn btn-primary" v-if="tablename === selectedframetable">{{ tablename }}</button>
+        <button class="btn btn-secondary" v-else @click="selectFrameTable(tablename)">{{ tablename }}</button>
+      </div>
       </div>
       <div id="datasettings" class="collapse" aria-labelledby="headingsettings" data-parent="generalsettings">
         <div class="card-body">
@@ -27,6 +31,19 @@ import FileSettings from './FileSettings'
 
 export default {
   name: "GeneralSettings",
+  computed: {
+    frametables(){
+      return this.$store.state.framecolortables.getAllTableNames()
+    },
+    selectedframetable(){
+      return this.$store.state.framecolortables.getSelectedTableName()
+    }
+  },
+  methods: {
+    selectFrameTable(tablename: string){
+      this.$store.dispatch('switchFrameColorTable', tablename);
+    }
+  },
   components: {
     FileSettings
   }

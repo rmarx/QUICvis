@@ -14,7 +14,7 @@ export default {
   },
   computed: {
     fillcolor(){
-        return this.$store.state.vissettings.getFrameColour(this.packetinfo.frametype)
+        return this.$store.state.framecolortables.getFrameColour(this.packetinfo.frametype)
     },
     translateX() {
         return this.$store.state.timescalestate.calcTranslateX((this.packetinfo.timestamp * 1000) + parseInt(this.xoffset))

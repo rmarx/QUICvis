@@ -6,6 +6,7 @@ import { stat } from 'fs';
 import TimeScaleState from '@/data/TimeScaleState';
 import TableState from '@/data/TableState';
 import { Header } from '@/data/quic';
+import FrameColorTables from '@/data/frametables/FrameColorTables';
 
 Vue.use(Vuex);
 
@@ -19,7 +20,8 @@ export default new Vuex.Store({
   state: {
     vissettings: new VisSettings(),
     timescalestate: new TimeScaleState(),
-    tablestate: new TableState()
+    tablestate: new TableState(),
+    framecolortables: new FrameColorTables()
   },
   mutations: {
     addFile(state, tracewrap: TraceWrapper) {
@@ -62,6 +64,9 @@ export default new Vuex.Store({
     },
     setXOffset(state, data) {
       state.vissettings.getFile(data.traceid).getConn(data.connid).setXOffset(data.xoffset);
+    },
+    switchFrameColorTable(state, name){
+      state.framecolortables.switchTable(name)
     }
   },
   getters: {
@@ -156,6 +161,9 @@ export default new Vuex.Store({
     },
     filterStream(context, data){
       context.commit('filterStream', data)
+    },
+    switchFrameColorTable(context, name){
+      context.commit('switchFrameColorTable', name)
     }
   }
 });
