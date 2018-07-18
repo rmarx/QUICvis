@@ -9,6 +9,7 @@
                 </select>-->
                 <button class="btn btn-primary btn-sm" @click="setShowStreams()" v-if="!showstreams">E</button>
                 <button class="btn btn-primary btn-sm" @click="setShowStreams()" v-else>C</button>
+                <button class="btn btn-secondary btn-sm" @click="resetStreamFilters()">Reset Filters</button>
                 <div class="w-100 x-offset float-left">
                     <label class="w-25" v-bind:for="'x-offset-' + traceid + connid">X0</label>
                     <input  class="w-75" type="number" v-model="xoffset" v-bind:id="'x-offset-' + traceid + connid" @change="setXOffset()" min="0">
@@ -53,27 +54,12 @@ export default {
         }
     },
     methods: {
-        updateFilteredStreams: function() {
-            let streamfilters = this.$store.state.vissettings.getFile(this.traceid).getConn(this.connid).getStreamFilters(this.traceid, this.connid)
-            
-            let tempoptions = new Array<{streamnr: number}>()
-            streamfilters.forEach((element) => {
-                tempoptions.push({streamnr: element['streamnr']})
-            });
-
-            this.streamoptions = tempoptions
-        },
-        setSelectStreamFilters(selectedoptions){
-            let tofilter = new Array<number>()
-            selectedoptions.forEach((el) => {
-                tofilter.push(el['streamnr'])
-            })
+        resetStreamFilters() {
             let data = {
                 traceid: this.traceid,
                 connid: this.connid,
-                tofilter: tofilter
             }
-            this.$store.dispatch('setFilteredStreams', data)
+            this.$store.dispatch('resetStreamFilters', data);
         },
         setShowStreams(){
             let data = {
@@ -93,7 +79,6 @@ export default {
     },
     mounted() {
         this.colorvalue = this.bgcolor
-        this.updateFilteredStreams()
     },
 }
 </script>
@@ -116,6 +101,7 @@ export default {
 
 .x-offset{
     height: 20px;
+    background-color: lightgray;
 }
 </style>
 
