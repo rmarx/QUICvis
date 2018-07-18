@@ -5,14 +5,26 @@
 ## Build Setup
 
 ``` bash
-# install dependencies
+# install dependencies for API server to load files
+cd ./apiserver
 npm install
+cd ../
 
-# serve with hot reload at localhost:8080
+# install dependencies for the website
+cd ./visualisation-tool
+npm install
+```
+
+## Run website
+
+```
+#First open a terminal for the API server and run
+cd ./apiserver
+npm run start
+
+#Then open a second terminal for the website and run
+cd ./visualisation-tool
 npm run serve
-
-# build for production with minification
-npm run build
 ```
 
 For a detailed explanation on how things work, check out the [guide](http://vuejs-templates.github.io/webpack/) and [docs for vue-loader](http://vuejs.github.io/vue-loader).
