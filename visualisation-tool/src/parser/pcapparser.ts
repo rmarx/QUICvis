@@ -85,7 +85,7 @@ export class PcapParser extends Parser{
 
                     //check if SCID has changed, if so change value of CID for that endpoint
                     let src_conn_id= (<LongHeader> headerinfo).src_connection_id
-                    if (headerinfo.header_form === true && src_conn_id && el.CID_endpoint2!.findIndex(x => x === src_conn_id) !== -1) {
+                    if (headerinfo.header_form === 1 && src_conn_id && el.CID_endpoint2!.findIndex(x => x === src_conn_id) !== -1) {
                         el.CID_endpoint2!.push(src_conn_id)
                     }
 
@@ -97,7 +97,7 @@ export class PcapParser extends Parser{
 
                     let src_conn_id= (<LongHeader> headerinfo).src_connection_id
                     //check if SCID has changed, if so change value of CID for that endpoint
-                    if (headerinfo.header_form === true && src_conn_id && el.CID_endpoint1!.findIndex(x => x === src_conn_id)) {
+                    if (headerinfo.header_form === 1 && src_conn_id && el.CID_endpoint1!.findIndex(x => x === src_conn_id)) {
                         el.CID_endpoint1!.push(src_conn_id)
                     }
 
@@ -115,7 +115,7 @@ export class PcapParser extends Parser{
      * Checks if a connection exists where 1 endpoint has SCID, if so add packet to connection and update to new DCID
      */
     private addPacketWithSCID(packet: QuicPacket, connections: Array<QuicConnection>): number{
-        if (!packet.headerinfo || packet.headerinfo.header_form === false) return -1
+        if (!packet.headerinfo || packet.headerinfo.header_form === 0) return -1
         const headerinfo = <LongHeader> packet.headerinfo
         let foundindex = -1;
         let BreakException = {}
@@ -146,7 +146,7 @@ export class PcapParser extends Parser{
 
     private createConnection(packet: QuicPacket, connections: Array<QuicConnection>): number{
         //TODO check if header_form is set to boolean and not string
-        if (!packet.headerinfo || packet.headerinfo.header_form === false)
+        if (!packet.headerinfo || packet.headerinfo.header_form === 0)
             return -1
 
         let longheader = <LongHeader> packet.headerinfo
@@ -169,13 +169,15 @@ export class PcapParser extends Parser{
     private parsePacket(ip_info: any, udp_info: any, quic_info: any, time: any): QuicPacket{
         let payload: Payload = { framelist: this.parsePayload(quic_info)}
         let packet: QuicPacket = {
-            src_ip_address: ip_info["ip.src_host"],
-            src_port_number: udp_info["udp.srcport"],
-            dst_ip_address: ip_info["ip.dst_host"],
-            dst_port_number: udp_info["udp.dstport"],
+            connectioninfo: {
+                src_ip_address: ip_info["ip.src_host"],
+                src_port_number: udp_info["udp.srcport"],
+                dst_ip_address: ip_info["ip.dst_host"],
+                dst_port_number: udp_info["udp.dstport"],
+                time_delta: time,
+            },
             headerinfo: this.parseHeader(quic_info),
             payloadinfo: payload,
-            time_delta: time,
             serverinfo: null
         }
         return packet
@@ -209,7 +211,7 @@ export class PcapParser extends Parser{
             dest_connection_id: quic_info["quic.dcid"],
             src_connection_id: quic_info["quic.scid"],
             version: quic_info["quic.version"],
-            packet_number: quic_info["quic.packet_number_full"],
+            packet_number: parseInt(quic_info["quic.packet_number_full"]),
         } 
         return longheader
     }
@@ -219,11 +221,9 @@ export class PcapParser extends Parser{
             header_form: quic_info["quic.header_form"],
             short_packet_type: quic_info["quic.short.packet_type"],
             dest_connection_id: quic_info["quic.dcid"],
-            flags: {
-                omit_conn_id: quic_info["quic.short.ocid_flag"] === true,
-                key_phase: quic_info["quic.short.kp_flag"] === true
-            },
-            packet_number: quic_info["quic.packet_number_full"],
+            omit_conn_id: quic_info["quic.short.ocid_flag"] === true,
+            key_phase: quic_info["quic.short.kp_flag"] === true,
+            packet_number: parseInt(quic_info["quic.packet_number_full"]),
         } 
         return shortheader
     }
@@ -248,37 +248,37 @@ export class PcapParser extends Parser{
         let frametype = frame["quic.frame_type"]
         switch (frametype) {
             case "0":
-                return this.parsePadding(frame)
+                return this.parsePadding(frame, frametype)
             case "1":
-                return this.parseRstStream(frame)
+                return this.parseRstStream(frame, frametype)
             case "2":
-                return this.parseConnectionClose(frame)
+                return this.parseConnectionClose(frame, frametype)
             case "3":
-                return this.parseApplicationClose(frame)
+                return this.parseApplicationClose(frame, frametype)
             case "4":
-                return this.parseMaxData(frame)
+                return this.parseMaxData(frame, frametype)
             case "5":
-                return this.parseMaxStreamData(frame)
+                return this.parseMaxStreamData(frame, frametype)
             case "6":
-                return this.parseMaxStreamId(frame)
+                return this.parseMaxStreamId(frame, frametype)
             case "7":
-                return this.parsePing()
+                return this.parsePing(frametype)
             case "8":
-                return this.parseBlocked(frame)
+                return this.parseBlocked(frame, frametype)
             case "9":
-                return this.parseStreamBlocked(frame)
+                return this.parseStreamBlocked(frame, frametype)
             case "10":
-                return this.parseStreamIdBlocked(frame)
+                return this.parseStreamIdBlocked(frame, frametype)
             case "11":
-                return this.parseNewConnectionId(frame)
+                return this.parseNewConnectionId(frame, frametype)
             case "12":
-                return this.parseStopSending(frame)
+                return this.parseStopSending(frame, frametype)
             case "13":
-                return this.parseAck(frame)
+                return this.parseAck(frame, frametype)
             case "14":
-                return this.parsePathChallenge(frame)
+                return this.parsePathChallenge(frame, frametype)
             case "15":
-                return this.parsePathResponse(frame)
+                return this.parsePathResponse(frame, frametype)
             case "16":
             case "17":
             case "18":
@@ -287,22 +287,24 @@ export class PcapParser extends Parser{
             case "21":
             case "22":
             case "23":
-                return this.parseStream(frame)
+                return this.parseStream(frame, frametype)
             default:
-                return this.parsePing()
+                return this.parsePing(frametype)
         }
     }
 
-    private parsePadding(frame: any): Padding{
+    private parsePadding(frame: any, frametype: number): Padding{
         let paddingframe: Padding = {
+            frametype: frametype,
             length: frame["quic.frame_type.padding.length"]
         }
 
         return paddingframe
     }
 
-    private parseRstStream(frame: any): Rst_Stream{
+    private parseRstStream(frame: any, frametype: number): Rst_Stream{
         let rstframe: Rst_Stream = {
+            frametype: frametype,
             stream_id: frame["quic.frame_type.rsts.stream_id"],
             application_error_code: frame["quic.frame_type.rsts.application_error_code"],
             final_offset: frame["quic.frame_type.rsts.final_offset"]
@@ -311,8 +313,9 @@ export class PcapParser extends Parser{
         return rstframe
     }
 
-    private parseConnectionClose(frame: any): Connection_Close{
+    private parseConnectionClose(frame: any, frametype: number): Connection_Close{
         let conn_close: Connection_Close = {
+            frametype: frametype,
             error_code: frame["quic.frame_type.cc.error_code"],
             phrase_length: frame["quic.frame_type.cc.reason_phrase_length"],
             reason_phrase: frame["quic.frame_type.cc.reason_phrase"]
@@ -321,8 +324,9 @@ export class PcapParser extends Parser{
         return conn_close
     }
 
-    private parseApplicationClose(frame: any): Application_Close{
+    private parseApplicationClose(frame: any, frametype: number): Application_Close{
         let app_close: Application_Close = {
+            frametype: frametype,
             error_code: frame["quic.frame_type.ac.error_code"],
             phrase_length: frame["quic.frame_type.ac.reason_phrase_length"],
             reason_phrase: frame["quic.frame_type.ac.reason_phrase"]
@@ -331,16 +335,18 @@ export class PcapParser extends Parser{
         return app_close
     }
 
-    private parseMaxData(frame: any): Max_Data{
+    private parseMaxData(frame: any, frametype: number): Max_Data{
         let max_data: Max_Data = {
+            frametype: frametype,
             maximum_data: frame["quic.frame_type.md.maximum_data"]
         }
 
         return max_data
     }
 
-    private parseMaxStreamData(frame: any): Max_Stream_Data{
+    private parseMaxStreamData(frame: any, frametype: number): Max_Stream_Data{
         let max_stream_data: Max_Stream_Data = {
+            frametype: frametype,
             stream_id: frame["quic.frame_type.msd.stream_id"],
             maximum_data: frame["quic.frame_type.msd.maximum_stream_data"]
         }
@@ -348,32 +354,36 @@ export class PcapParser extends Parser{
         return max_stream_data
     }
 
-    private parseMaxStreamId(frame: any): Max_Stream_Id{
+    private parseMaxStreamId(frame: any, frametype: number): Max_Stream_Id{
         let max_stream_id: Max_Stream_Id = {
+            frametype: frametype,
             maximum_stream_id: frame["quic.frame_type.msi.stream_id"]
         }
 
         return max_stream_id
     }
 
-    private parsePing(): Ping{
+    private parsePing(frametype: number): Ping{
         let ping: Ping = {
+            frametype: frametype,
             totext: "Ping"
         }
 
         return ping
     }
 
-    private parseBlocked(frame: any): Blocked{
+    private parseBlocked(frame: any, frametype: number): Blocked{
         let blocked: Blocked = {
+            frametype: frametype,
             offset: frame["quic.stream.offset"]
         }
 
         return blocked
     }
 
-    private parseStreamBlocked(frame: any): Stream_Blocked{
+    private parseStreamBlocked(frame: any, frametype: number): Stream_Blocked{
         let stream_blocked: Stream_Blocked = {
+            frametype: frametype,
             stream_id: frame["quic.frame_type.blocked.stream_id"],
             offset: frame["quic.frame_type.blocked.offset"]
         }
@@ -381,16 +391,18 @@ export class PcapParser extends Parser{
         return stream_blocked
     }
 
-    private parseStreamIdBlocked(frame: any): Stream_Id_Blocked{
+    private parseStreamIdBlocked(frame: any, frametype: number): Stream_Id_Blocked{
         let stream_id_blocked: Stream_Id_Blocked = {
+            frametype: frametype,
             stream_id: frame["quic.frame_type.sib.stream_id"]
         }
 
         return stream_id_blocked
     }
 
-    private parseNewConnectionId(frame: any): New_Connection_Id{
+    private parseNewConnectionId(frame: any, frametype: number): New_Connection_Id{
         let new_connection_id: New_Connection_Id = {
+            frametype: frametype,
             sequence: frame["quic.frame_type.nci.sequence"],
             connection_id: frame["quic.frame_type.nci.connection_id"],
             stateless_rst_token: frame["quic.frame_type.nci.stateless_reset_token"]
@@ -399,8 +411,9 @@ export class PcapParser extends Parser{
         return new_connection_id
     }
 
-    private parseStopSending(frame: any): Stop_Sending{
+    private parseStopSending(frame: any, frametype: number): Stop_Sending{
         let stop_sending: Stop_Sending = {
+            frametype: frametype,
             stream_id: frame["quic.frame_type.ss.stream_id"],
             application_error_code: frame["quic.frame_type.ss.application_error_code"]
         }
@@ -408,8 +421,9 @@ export class PcapParser extends Parser{
         return stop_sending
     }
 
-    private parseAck(frame: any): Ack{
+    private parseAck(frame: any, frametype: number): Ack{
         let ack: Ack = {
+            frametype: frametype,
             largest_ack: frame["quic.frame_type.ack.largest_acknowledged"],
             ack_delay: frame["quic.frame_type.ack.ack_delay"],
             ack_block_count: frame["quic.frame_type.ack.ack_block_count"],
@@ -419,25 +433,28 @@ export class PcapParser extends Parser{
         return ack
     }
 
-    private parsePathChallenge(frame: any): Path_Challenge{
+    private parsePathChallenge(frame: any, frametype: number): Path_Challenge{
         let path_challenge: Path_Challenge = {
+            frametype: frametype,
             data: frame["quic.frame_type.path_challenge.data"]
         }
 
         return path_challenge
     }
 
-    private parsePathResponse(frame: any): Path_Response{
+    private parsePathResponse(frame: any, frametype: number): Path_Response{
         let path_response: Path_Response = {
+            frametype: frametype,
             data: frame["quic.frame_type.path_response.data"]
         }
 
         return path_response
     }
 
-    private parseStream(frame: any): Stream{
+    private parseStream(frame: any, frametype: number): Stream{
         let frame_flags = frame["quic.frame_type_tree"]
         let stream: Stream = {
+            frametype: frametype,
             type_flags: {
                 off_flag: frame_flags["quic.frame_type.stream.off"] == "1",
                 len_flag: frame_flags["quic.frame_type.stream.len"] == "1",
