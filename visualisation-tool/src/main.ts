@@ -40,7 +40,7 @@ let conncolors = [
   '#9189ff'
 ]
 
-let data = axios.get(request).then((response) => { return response.data})
+let data = axios.get(request).then((response) => { return response.data })
 let pcapparser = new PcapParser()
 let ngtcp2parser = new Ngtcp2LogParser()
 let startcolor = 0
@@ -48,7 +48,7 @@ data.then((result) => {
   let container = result['filescontainer']
   container.forEach(element => {
     let tracewrap = new TraceWrapper()
-    
+
     if (element['fileext'] === '.json') {
       let parsedfile = pcapparser.parse(element['filename'], element['filecontent'])
       startcolor = tracewrap.setTrace(parsedfile, startcolor, conncolors)
