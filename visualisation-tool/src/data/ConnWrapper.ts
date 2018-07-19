@@ -3,7 +3,7 @@ import { QuicConnection, QuicPacket, Frame } from "@/data/quic";
 export interface TimelinePacket {
     timestamp: number,
     isclient: boolean,
-    frametype: number|null
+    frametype: Array<number>
 }
 
 export interface TimelineStreams {
@@ -42,11 +42,22 @@ export default class ConnWrapper{
         this._conn.packets.forEach((packet) => {
             if (packet.payloadinfo)
                 packet.payloadinfo.framelist.forEach((frame) => {
-                    if (frame.hasOwnProperty('stream_id') && !this._streamstofilter.hasOwnProperty(frame['stream_id']))
-                        this._streamstofilter.push({streamnr: frame['stream_id'], filtered: false})
+                    if (frame.hasOwnProperty('stream_id') && !this.hasProperty(parseInt(frame['stream_id'])))
+                        this._streamstofilter.push({streamnr: parseInt(frame['stream_id']), filtered: false})
                 })
         })
         this._selectedPacket = this._conn.packets[0]
+    }
+
+    private hasProperty(streamnr: number): boolean{
+        let has = false;
+        for (let i = 0; i < this._streamstofilter.length; i++) {
+            if (this._streamstofilter[i].streamnr === streamnr){
+                has = true;
+                break;
+            }
+        }
+        return has;
     }
 
     public getConn(): QuicConnection{
@@ -98,14 +109,14 @@ export default class ConnWrapper{
 
     public getTimelinePackets(): Array<TimelinePacket>{
         let packets = new Array<TimelinePacket>()
-        let frametype: number|null
         let client: boolean
         this._conn.packets.forEach((packet) => {
-            if (packet.payloadinfo && packet.payloadinfo.framelist.length > 0){
-                frametype = packet.payloadinfo.framelist[0]['frametype']
+            let framelist = Array<number>()
+            if (packet.payloadinfo){
+                packet.payloadinfo.framelist.forEach((el) => {
+                    framelist.push(el['frametype'])
+                })
             }
-            else
-                frametype = null
 
             if (packet.headerinfo && packet.headerinfo.dest_connection_id){
                 client = this.checkIfClient(packet.headerinfo.dest_connection_id)
@@ -115,7 +126,7 @@ export default class ConnWrapper{
             let timelinepacket: TimelinePacket = {
                 timestamp: packet.connectioninfo!.time_delta,
                 isclient: client,
-                frametype: frametype
+                frametype: framelist
             }
 
             packets.push(timelinepacket)

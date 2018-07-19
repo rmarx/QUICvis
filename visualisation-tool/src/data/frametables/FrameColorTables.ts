@@ -2,6 +2,7 @@ import TableInterface from "@/data/frametables/TableInterface";
 import DefaultTable from "@/data/frametables/DefaultTable";
 import FCTable from "@/data/frametables/FCTable";
 import ErrorTable from "@/data/frametables/ErrorTable";
+import { Frametypes } from "@/data/frametables/Frametypes";
 
 export default class FrameColorTables{
     private _colortables: Array<TableInterface>
@@ -15,8 +16,15 @@ export default class FrameColorTables{
         this._colortables.push(new ErrorTable())
     }
 
-    public getFrameColour(frametype: number): string{
-        return this._colortables[this._activeindex].findColor(frametype);
+    public getFrameColour(frametypes: Array<string>): string{
+        let color = '#ffffff'
+        for (let i = 0; i < frametypes.length && color === '#ffffff'; i++) {
+            let framecode = parseInt(frametypes[i])
+            if (framecode > Frametypes.STREAM)
+                framecode = Frametypes.STREAM
+            color = this._colortables[this._activeindex].findColor(framecode);
+        }
+        return color;
     }
 
     public switchTable(name: string){
