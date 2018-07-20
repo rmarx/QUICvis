@@ -44,22 +44,16 @@ export default {
     },
     filteredconns() {
       let conns = this.$store.getters.getAllFilteredConns
-      conns.sort((a,b) => {
-        let modifier = 1
-        if (this.sorteddir === 'desc')
-          modifier = -1;
-
-          if (this.sortedcolumn === 'connid') {
-            if(a[this.sortedcolumn] < b[this.sortedcolumn]) return -1 * modifier;
-            if(a[this.sortedcolumn] > b[this.sortedcolumn]) return 1 * modifier;
-            return 0;
-          }
-          else {
+      if (this.sortedcolumn !== 'connid') {
+        conns.sort((a,b) => {
+          let modifier = 1
+          if (this.sorteddir === 'desc')
+            modifier = -1;
             if(a['headerinfo'][this.sortedcolumn] < b['headerinfo'][this.sortedcolumn]) return -1 * modifier;
             if(a['headerinfo'][this.sortedcolumn] > b['headerinfo'][this.sortedcolumn]) return 1 * modifier;
             return 0;
-          }
-      })
+        })
+      }
       return conns;   
     }
   },

@@ -20,6 +20,7 @@ export class Ngtcp2LogParser extends Parser{
         let trace = this.createTraceObject(name)
         let processed_file = this.processFile(tracefile);
         trace.connection = this.parseAllPackets(processed_file)
+        console.log(trace)
         return trace
     }
 
@@ -151,6 +152,9 @@ export class Ngtcp2LogParser extends Parser{
                 if (splitline[5].includes("dcid=") && splitline[6].includes("scid=")) {
                     dcid = this.splitOnSymbol(splitline[5], "=")
                     scid = this.splitOnSymbol(splitline[6], "=")
+                    dcid = this.parseCID(dcid);
+                    if (scid !== '0x')
+                        scid = this.parseCID(scid)
                     checkids = false
                 }
                 else {
@@ -180,9 +184,23 @@ export class Ngtcp2LogParser extends Parser{
         return null
     }
 
+    private parseCID(cid: string): string{
+        cid = cid.replace('0x', '')
+        let splitcid = cid.match(/.{1,2}/g)
+        let result = ""
+        if (splitcid !== null) {
+            for (let i = 0; i < splitcid!.length; i++) {
+                result += splitcid![i]
+                if (i < splitcid!.length - 1)
+                    result += ":"
+            }
+        }
+        return result
+    }
+
     private parseLongHeader(content: Array<string>, contentindex: number, connloginfo: LogConnectionInfo, connections: Array<QuicConnection>): LongHeader{
         let line = content[contentindex].split(" ")
-        let servercid = line[1]
+        let servercid = this.parseCID(line[1])
         let connindex = -1
         for (let i = 0; i < connections.length; i++) {
             let el = connections[i]
@@ -210,7 +228,7 @@ export class Ngtcp2LogParser extends Parser{
 
     private parseShortHeader(content: Array<string>, contentindex: number, connloginfo: LogConnectionInfo, connections: Array<QuicConnection>): ShortHeader{
         let line = content[contentindex].split(" ")
-        let servercid = line[1]
+        let servercid = this.parseCID(line[1])
         let connindex = -1
         for (let i = 0; i < connections.length; i++) {
             let el = connections[i]
@@ -575,8 +593,8 @@ export class Ngtcp2LogParser extends Parser{
         splitline = el.split(" ")
         connloginfo.version = '0xff00000b'
         connection = {
-            CID_endpoint1: Array(this.splitOnSymbol(splitline[5], "="), splitline[1]),
-            CID_endpoint2: Array(this.splitOnSymbol(splitline[6], "=")),
+            CID_endpoint1: Array(this.parseCID(this.splitOnSymbol(splitline[5], "=")), this.parseCID(splitline[1])),
+            CID_endpoint2: Array(this.parseCID(this.splitOnSymbol(splitline[6], "="))),
             packets: Array<QuicPacket>()
         }
         return connections.push(connection) - 1
