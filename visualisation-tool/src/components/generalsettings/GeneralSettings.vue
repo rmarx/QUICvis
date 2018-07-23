@@ -15,6 +15,7 @@
       <div id="datasettings" class="collapse" aria-labelledby="headingsettings" data-parent="generalsettings">
         <div class="card-body">
           <FileSettings />
+          <FColorSettings />
         </div>
       </div>
     </div>
@@ -28,6 +29,7 @@ import TraceWrapper from '../../data/TraceWrapper';
 import axios from 'axios'
 import { Ngtcp2LogParser } from '../../parser/Ngtcp2LogParser'
 import FileSettings from './FileSettings'
+import FColorSettings from './FColorSettings'
 
 export default {
   name: "GeneralSettings",
@@ -45,7 +47,8 @@ export default {
     }
   },
   components: {
-    FileSettings
+    FileSettings,
+    FColorSettings
   }
 }
 </script>

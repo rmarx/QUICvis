@@ -2,7 +2,7 @@
     <div>
       <div class="float-left w-100">
         <input type="number" id="startscale" @change="onfieldschange" value="0" v-model="startdom">
-        <input type="number" class="text-right" id="endscale" @change="onfieldschange" value="100" min="0">
+        <input type="number" class="text-right" id="endscale" @change="onfieldschange" value="20" min="0">
       </div>
     </div>
 </template>

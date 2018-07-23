@@ -2,7 +2,7 @@ import TableInterface from "@/data/frametables/TableInterface";
 import DefaultTable from "@/data/frametables/DefaultTable";
 import FCTable from "@/data/frametables/FCTable";
 import ErrorTable from "@/data/frametables/ErrorTable";
-import { Frametypes } from "@/data/frametables/Frametypes";
+import { Frametypes, FrameColour } from "@/data/frametables/Frametypes";
 
 export default class FrameColorTables{
     private _colortables: Array<TableInterface>
@@ -51,5 +51,9 @@ export default class FrameColorTables{
 
     public getSelectedTableName(): string {
         return this._colortables[this._activeindex].getName()
+    }
+
+    public getAllFrameColours(): Array<FrameColour>{
+        return this._colortables[this._activeindex].getAllColors()
     }
 }

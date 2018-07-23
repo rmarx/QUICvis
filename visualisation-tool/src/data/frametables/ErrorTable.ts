@@ -110,4 +110,8 @@ export default class ErrorTable implements TableInterface{
 
         return '#ffffff';
     }
+
+    public getAllColors(): Array<FrameColour>{
+        return this._colortable;
+    }
 }

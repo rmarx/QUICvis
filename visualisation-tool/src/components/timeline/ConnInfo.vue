@@ -16,7 +16,8 @@
                 </div>
             </div>
         </div>
-        <div class="border" v-for="stream in filteredstreams" v-if="!stream.filtered && showstreams" v-bind:style="{height: streamheight + 'px', 'background-color': bgcolor}">
+        <div class="border" v-for="stream in filteredstreams" v-if="!stream.filtered && showstreams" v-bind:style="{height: streamheight + 'px', 
+        'background-color': bgcolor(stream.cl_init, stream.uni_di)}">
                 <div class="conn_name float-right">Stream {{ stream.streamnr}} </div>
                 <button class="btn btn-primary btn-sm float-left" @click="filterStream(stream.streamnr)" >Filter out</button>
         </div> 
@@ -37,9 +38,6 @@ export default {
         }
     },
     computed: {
-        bgcolor() {
-            return this.$store.state.vissettings.getFile(this.traceid).getConn(this.connid).getBgColor();
-        },
         compheight() {
             let height = 0
             if (this.$store.state.vissettings.getFile(this.traceid).getConn(this.connid).getShowStreams()) {
@@ -84,6 +82,9 @@ export default {
                 streamnr: streamnr
             }
             this.$store.dispatch('filterStream', data)
+        },
+        bgcolor(cl_init: boolean, uni_di: boolean) {
+            return this.$store.state.vissettings.getStreamColor(cl_init, uni_di);
         }
     },
     mounted() {

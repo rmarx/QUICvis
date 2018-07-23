@@ -22,7 +22,7 @@ export default class ConnWrapper{
 
     private _showStreams: boolean;
 
-    private _streamstofilter: Array<{streamnr: number, filtered: boolean}>
+    private _streamstofilter: Array<{streamnr: number, filtered: boolean, uni_di: boolean, cl_init: boolean}>
 
     private _xoffset: number;
 
@@ -34,7 +34,7 @@ export default class ConnWrapper{
         this._showStreams = false
         this._streamstofilter = new Array()
         this._xoffset = 0;
-        this._streamstofilter.push({ streamnr: 0, filtered: false})
+        this._streamstofilter.push({ streamnr: 0, filtered: false, cl_init: true, uni_di: false})
         this.addStreamsToFilter()
     }
 
@@ -42,8 +42,13 @@ export default class ConnWrapper{
         this._conn.packets.forEach((packet) => {
             if (packet.payloadinfo)
                 packet.payloadinfo.framelist.forEach((frame) => {
-                    if (frame.hasOwnProperty('stream_id') && !this.hasProperty(parseInt(frame['stream_id'])))
-                        this._streamstofilter.push({streamnr: parseInt(frame['stream_id']), filtered: false})
+                    let streamnr = parseInt(frame['stream_id'])
+                    if (frame.hasOwnProperty('stream_id') && !this.hasProperty(streamnr)){
+                        let bit_streamnr = streamnr;
+                        let cl_init = bit_streamnr >> 1 === 1 ? false : true;
+                        let uni_di = bit_streamnr >> 1 === 1 ? true : false;
+                        this._streamstofilter.push({streamnr: streamnr, filtered: false, cl_init: cl_init, uni_di: uni_di})
+                    }
                 })
         })
         this._selectedPacket = this._conn.packets[0]
@@ -135,8 +140,15 @@ export default class ConnWrapper{
     }
 
     private checkIfClient(dcid: string): boolean{
-        if (this._conn.CID_endpoint1 && this._conn.CID_endpoint1.indexOf(dcid) > -1)
-            return true
+        let isclient: boolean
+        if (this._conn.CID_endpoint1 && this._conn.CID_endpoint2) {
+            isclient = this._conn.CID_endpoint1.indexOf(dcid) > -1
+
+            if (this._conn.CID_endpoint1.length < this._conn.CID_endpoint2.length)
+                isclient = !isclient
+
+            return isclient
+        }
         else
             return false
     }
