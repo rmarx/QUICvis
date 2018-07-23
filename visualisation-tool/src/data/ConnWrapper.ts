@@ -140,8 +140,15 @@ export default class ConnWrapper{
     }
 
     private checkIfClient(dcid: string): boolean{
-        if (this._conn.CID_endpoint1 && this._conn.CID_endpoint1.indexOf(dcid) > -1)
-            return true
+        let isclient: boolean
+        if (this._conn.CID_endpoint1 && this._conn.CID_endpoint2) {
+            isclient = this._conn.CID_endpoint1.indexOf(dcid) > -1
+
+            if (this._conn.CID_endpoint1.length < this._conn.CID_endpoint2.length)
+                isclient = !isclient
+
+            return isclient
+        }
         else
             return false
     }

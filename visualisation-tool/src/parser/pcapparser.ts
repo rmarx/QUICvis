@@ -37,7 +37,7 @@ export class PcapParser extends Parser{
             quic_info = tracefile[packetnr]._source.layers.quic
             udp_info = tracefile[packetnr]._source.layers.udp
             if (!quic_info) continue;
-            packet = this.parsePacket(ip_info, udp_info, quic_info, tracefile[packetnr]._source.layers.frame["frame.time_delta"])
+            packet = this.parsePacket(ip_info, udp_info, quic_info, parseFloat(tracefile[packetnr]._source.layers.frame["frame.time_relative"]))
             connindex = this.addPacketToConnection(packet, connections)
             if (packet.payloadinfo &&  this.isNewConnectionId(packet.payloadinfo))
                 this.addAditionalConnId(packet, connections, connindex)
