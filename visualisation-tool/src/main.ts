@@ -67,6 +67,8 @@ data.then((result) => {
   });
 })
 
+store.dispatch('setVisSettings')
+
 new Vue({
   store,
   router,

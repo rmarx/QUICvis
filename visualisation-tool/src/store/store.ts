@@ -7,6 +7,8 @@ import TimeScaleState from '@/data/TimeScaleState';
 import TableState from '@/data/TableState';
 import { Header } from '@/data/quic';
 import FrameColorTables from '@/data/frametables/FrameColorTables';
+import SequenceSettings from '@/data/SequenceSettings';
+import { stackOffsetExpand } from 'd3';
 
 Vue.use(Vuex);
 
@@ -21,7 +23,8 @@ export default new Vuex.Store({
     vissettings: new VisSettings(),
     timescalestate: new TimeScaleState(),
     tablestate: new TableState(),
-    framecolortables: new FrameColorTables()
+    framecolortables: new FrameColorTables(),
+    sequencesettings: new SequenceSettings(),
   },
   mutations: {
     addFile(state, tracewrap: TraceWrapper) {
@@ -67,6 +70,24 @@ export default new Vuex.Store({
     },
     switchFrameColorTable(state, name){
       state.framecolortables.switchTable(name)
+    },
+    setSequenceTraceIndex(state, data){
+      if (data.tracenumber === 1)
+        state.sequencesettings.setTraceindex1(data.traceindex)
+      else
+        state.sequencesettings.setTraceindex2(data.traceindex)
+    },
+    setSequenceConnIndex(state, data){
+      if (data.connnumber === 1)
+        state.sequencesettings.setConnindex1(data.connindex)
+      else
+        state.sequencesettings.setConnindex2(data.connindex)
+    },
+    setSequenceRtt(state, rtt){
+      state.sequencesettings.set1filertt(rtt)
+    },
+    setVisSettings(state){
+      state.sequencesettings.setVisSettings(state.vissettings)
     }
   },
   getters: {
@@ -164,6 +185,18 @@ export default new Vuex.Store({
     },
     switchFrameColorTable(context, name){
       context.commit('switchFrameColorTable', name)
+    },
+    setSequenceTraceIndex(context, data){
+      context.commit('setSequenceTraceIndex', data)
+    },
+    setSequenceConnIndex(context, data){
+      context.commit('setSequenceConnIndex', data)
+    },
+    setSequenceRtt(context, rtt){
+      context.commit('setSequenceRtt', rtt)
+    },
+    setVisSettings(context){
+      context.commit('setVisSettings')
     }
   }
 });
