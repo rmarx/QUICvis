@@ -11,7 +11,9 @@
         <button class="btn btn-primary" v-if="tablename === selectedframetable">{{ tablename }}</button>
         <button class="btn btn-secondary" v-else @click="selectFrameTable(tablename)">{{ tablename }}</button>
       </div>
-      </div>
+      <router-link  v-if="this.$route.path === '/'" to="/sequence" tag="button" class="btn float-right btn-primary">Sequence Diagram</router-link>
+      <router-link  v-else to="/" tag="button" class="btn float-right btn-primary">Timeline</router-link>
+    </div>
       <div id="datasettings" class="collapse" aria-labelledby="headingsettings" data-parent="generalsettings">
         <div class="card-body">
           <FileSettings />
