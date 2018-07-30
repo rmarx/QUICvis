@@ -89,4 +89,13 @@ export default class VisSettings{
     public getSelectedPacket(): SelectedPacket{
         return this._selectedpacket
     }
+
+    public getAllFileNames(): Array<string>{
+        let filenames = new Array<string>()
+
+        this._files.forEach((file) => {
+            filenames.push(file.getTraceName())
+        })
+        return filenames
+    }
 }
