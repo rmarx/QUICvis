@@ -1,5 +1,7 @@
 import Vue from 'vue';
 import App from './components/App.vue';
+import AppSequence from './components/AppSequence.vue';
+import AppTimeline from './components/AppTimeline.vue';
 import store from './store/store';
 import VueRouter from 'vue-router';
 import { PcapParser } from './parser/pcapparser'
@@ -17,7 +19,10 @@ Vue.config.productionTip = false;
 
 const routes = [
   {
-    path: '/pcaps/:name', component: App
+    path: '/', component: AppTimeline
+  },
+  {
+    path: '/sequence', component: AppSequence
   }
 ];
 

@@ -1,12 +1,20 @@
 <template>
-  <router-view />
+  <div>
+    <GeneralSettings />
+  </div>
 </template>
 
 <script lang="ts">
 import { Component, Vue } from 'vue-property-decorator';
+import GeneralSettings from './generalsettings/GeneralSettings';
 
-export default class App extends Vue {
-  name: 'App'
+@Component({
+  components: {
+    GeneralSettings,
+  },
+})
+export default class AppSequence extends Vue {
+  name: 'AppSequence'
 }
 </script>
 
