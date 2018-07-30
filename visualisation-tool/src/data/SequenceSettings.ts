@@ -1,4 +1,5 @@
 import VisSettings from "@/data/VisSettings";
+import { QuicPacket } from "@/data/quic";
 
 export default class SequenceSettings {
     private _traceindex1: number;
@@ -64,6 +65,23 @@ export default class SequenceSettings {
 
     public setVisSettings(vis: VisSettings){
         this._vissettings = vis;
-        console.log(vis)
+    }
+
+    public getValidFiles(): boolean{
+        if (this._traceindex1 >= 0 && this._connindex1 >= 0 && this._traceindex2 < 0) return true;
+        else 
+            return false;
+    }
+
+    public getPacketsConn1(): Array<QuicPacket>{
+        return this._vissettings.getFile(this._traceindex1).getConn(this._connindex1).getSequencePackets()
+    }
+
+    public getPacketsConn2(): Array<QuicPacket>{
+        return this._vissettings.getFile(this._traceindex2).getConn(this._connindex2).getSequencePackets()
+    }
+
+    public isPacketClientSend(dcid: string): boolean{
+        return this._vissettings.getFile(this._traceindex1).getConn(this._connindex1).checkIfClient(dcid)
     }
 }

@@ -139,7 +139,7 @@ export default class ConnWrapper{
         return packets
     }
 
-    private checkIfClient(dcid: string): boolean{
+    public checkIfClient(dcid: string): boolean{
         let isclient: boolean
         if (this._conn.CID_endpoint1 && this._conn.CID_endpoint2) {
             isclient = this._conn.CID_endpoint1.indexOf(dcid) > -1
@@ -199,5 +199,9 @@ export default class ConnWrapper{
 
     public getXOffset(): number {
         return this._xoffset
+    }
+
+    public getSequencePackets(): Array<QuicPacket>{
+        return this._conn.packets
     }
 }
