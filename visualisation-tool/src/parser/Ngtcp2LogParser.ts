@@ -20,6 +20,7 @@ export class Ngtcp2LogParser extends Parser{
         let trace = this.createTraceObject(name)
         let processed_file = this.processFile(tracefile);
         trace.connection = this.parseAllPackets(processed_file)
+        console.log(trace)
         return trace
     }
 
@@ -98,6 +99,7 @@ export class Ngtcp2LogParser extends Parser{
         let connindex: number
 
         for (let i = 0; i < tracefile.length; i++) {
+            if (tracefile[i] === "") continue;
             packet = this.parsePacket(tracefile[i], connloginfo, connections)
             connindex = this.addPacketToConnection(packet, connections)
             if (packet.payloadinfo &&  this.isNewConnectionId(packet.payloadinfo))
@@ -528,6 +530,8 @@ export class Ngtcp2LogParser extends Parser{
                     if (headerinfo.header_form === 1 && src_conn_id && el.CID_endpoint2!.findIndex(x => x === src_conn_id) !== -1) {
                         el.CID_endpoint2!.push(src_conn_id)
                     }
+                    if (el.CID_endpoint2!.length === 0)
+                        el.CID_endpoint2!.push(src_conn_id)
 
                     throw BreakException
                 }
@@ -588,13 +592,28 @@ export class Ngtcp2LogParser extends Parser{
         let splitline
         let connection: QuicConnection
 
-        let el = packetinfo[2]
-        splitline = el.split(" ")
-        connloginfo.version = '0xff00000b'
-        connection = {
-            CID_endpoint1: Array(this.parseCID(this.splitOnSymbol(splitline[5], "=")), this.parseCID(splitline[1])),
-            CID_endpoint2: Array(this.parseCID(this.splitOnSymbol(splitline[6], "="))),
-            packets: Array<QuicPacket>()
+        if (packetinfo.length > 2){ 
+            let el = packetinfo[2]
+            splitline = el.split(" ")
+        
+
+            connloginfo.version = '0xff00000b'
+            connection = {
+                CID_endpoint1: Array(this.parseCID(this.splitOnSymbol(splitline[5], "=")), this.parseCID(splitline[1])),
+                CID_endpoint2: Array(this.parseCID(this.splitOnSymbol(splitline[6], "="))),
+                packets: Array<QuicPacket>()
+            }
+        }
+        else{
+            let el = packetinfo[0]
+            splitline = el.split(" ")
+        
+            connloginfo.version = '0xff00000b'
+            connection = {
+                CID_endpoint1: Array(this.parseCID(splitline[1])),
+                CID_endpoint2: Array(),
+                packets: Array<QuicPacket>()
+            }
         }
         return connections.push(connection) - 1
     }
