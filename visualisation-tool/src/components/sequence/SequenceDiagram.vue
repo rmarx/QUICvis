@@ -1,5 +1,7 @@
 <template>
-    <svg id="sequencediagram" v-if="validfiles">
+    <svg id="sequencediagram" v-if="validfiles" v-bind:height="getLargestTime + 'px'">
+        <line x1="150" y1="-100" x2="150" v-bind:y2="(getLargestTime + 100)"  stroke="black"/>
+        <line x1="850" y1="-100" x2="850" v-bind:y2="(getLargestTime + 100)"  stroke="black"/>
         <SequenceArrow v-for="packet in packets_conn1" :packet_conn1="packet"/>
     </svg>
     <div id="nodiagram" v-else>
@@ -20,6 +22,9 @@ export default {
       },
       packets_conn2(){
 
+      },
+      getLargestTime(){
+          return this.$store.state.sequencesettings.getLargestTime() * 1000 * 10
       }
   },
   components: {
@@ -30,10 +35,10 @@ export default {
 
 <style>
 #sequencediagram{
-    width: 1000px;
-    height: 700px;
     margin-left: 300px;
     margin-top: 100px;
+    margin-bottom: 100px;
+    width: 1000px;
     overflow: visible;
 }
 </style>

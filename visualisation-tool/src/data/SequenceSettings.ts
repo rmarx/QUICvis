@@ -84,4 +84,24 @@ export default class SequenceSettings {
     public isPacketClientSend(dcid: string): boolean{
         return this._vissettings.getFile(this._traceindex1).getConn(this._connindex1).checkIfClient(dcid)
     }
+
+    public getLargestTime(): number{
+        let packets1 = this._vissettings.getFile(this._traceindex1).getConn(this._connindex1).getSequencePackets();
+        let time = 0;
+
+        packets1.forEach((packet) => {
+            if (packet.connectioninfo!.time_delta > time)
+                time = packet.connectioninfo!.time_delta
+        })
+
+        if (this._traceindex2 >= 0 && this._connindex2 >= 0) {
+            let packets2 = this._vissettings.getFile(this._traceindex2).getConn(this._connindex2).getSequencePackets();
+            packets2.forEach((packet) => {
+                if (packet.connectioninfo!.time_delta > time)
+                    time = packet.connectioninfo!.time_delta
+            })
+        }
+
+        return time
+    }
 }

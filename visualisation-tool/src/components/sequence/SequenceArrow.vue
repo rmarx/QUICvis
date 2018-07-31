@@ -13,6 +13,14 @@
                  {{ frameName(frame.frametype) }}
              </text>
          </g>
+         <g>
+            <line x1="150" x2="130" y1="0" y2="0" stroke="black"/>
+            <text x="80" y="0">{{ ( ytranslate / scale ).toFixed(2) }} </text>
+         </g>
+         <g>
+            <line x1="850" x2="870" v-bind:y1="((this.rtt_amount / 2) * this.scale)" v-bind:y2="((this.rtt_amount / 2) * this.scale)" stroke="black"/>
+            <text x="875" v-bind:y="((this.rtt_amount / 2) * this.scale)">{{ ((ytranslate + ((this.rtt_amount / 2) * this.scale))/scale).toFixed(2) }} </text>
+         </g>
     </g>
 
     <g v-else v-bind:transform="'translate(0,' + ytranslate + ')'" @click="putOnForeground">
@@ -27,6 +35,15 @@
              v-bind:fill="framebgcolor(frame.frametype)">
                  {{ frameName(frame.frametype) }}
              </text>
+         </g>
+
+          <g>
+            <line x1="150" x2="130" y1="0" y2="0" stroke="black"/>
+            <text x="80" y="0">{{ ( ytranslate / scale ).toFixed(2) }} </text>
+         </g>
+         <g>
+            <line x1="850" x2="870" v-bind:y1="-((this.rtt_amount / 2) * this.scale)" v-bind:y2="-((this.rtt_amount / 2) * this.scale)" stroke="black"/>
+            <text x="875" v-bind:y="-((this.rtt_amount / 2) * this.scale)">{{ ((ytranslate - ((this.rtt_amount / 2) * this.scale))/scale).toFixed(2) }} </text>
          </g>
     </g>
 </template>
