@@ -8,7 +8,7 @@
 
 <script lang="ts">
 import { Component, Vue } from 'vue-property-decorator';
-import GeneralSettings from './generalsettings/GeneralSettings';
+import GeneralSettings from './generalsettings/GeneralSettings.vue';
 import SequenceInfo from './sequence/SequenceInfo';
 import SequenceDiagram from './sequence/SequenceDiagram';
 

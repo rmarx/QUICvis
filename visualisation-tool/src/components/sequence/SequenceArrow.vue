@@ -1,6 +1,6 @@
 <template>
-    <g v-if="clientsend"  v-bind:transform="'translate(0,' + ytranslate + ')'" @click="putOnForeground">
-        <line y1="0" v-bind:y2=" (this.rtt_amount / 2) * this.scale" x1="150" x2="850" stroke="lightgreen" stroke-width="2px" 
+    <g v-if="clientsend"  v-bind:transform="'translate(0,' + (ytranslate + baseheight) + ')'" @click="putOnForeground">
+        <line v-bind:y1="0" v-bind:y2=" (this.rtt_amount / 2) * this.scale" x1="150" x2="850" stroke="lightgreen" stroke-width="2px" 
         />
         <polyline v-bind:points="'830, ' + (((this.rtt_amount / 2) * this.scale) - 10) 
         + ' 850, ' + ((this.rtt_amount / 2) * this.scale) + ' 830, ' + (((this.rtt_amount / 2) * this.scale) + 10)"
@@ -23,7 +23,7 @@
          </g>
     </g>
 
-    <g v-else v-bind:transform="'translate(0,' + ytranslate + ')'" @click="putOnForeground">
+    <g v-else v-bind:transform="'translate(0,' + (ytranslate + baseheight) + ')'" @click="putOnForeground">
         <line y1="0" v-bind:y2="(-this.rtt_amount / 2) * this.scale" x1="150" x2="850" stroke="pink" stroke-width="2px" 
          stroke-dasharray="15 3 5 3"/>
         <polyline v-bind:points="'170, ' + (-10) 
@@ -52,7 +52,7 @@ import Vue from 'vue'
 import { getLongHeaderName, getFrameName } from '../../data/QuicNames'
 export default {
     name: "SequenceArrow",
-    props: ['packet_conn1'],
+    props: ['packet_conn1', 'baseheight'],
     data() {
         return {
             scale: 10,
