@@ -70,15 +70,52 @@ export default class SequenceSettings {
     public getValidFiles(): boolean{
         if (this._traceindex1 >= 0 && this._connindex1 >= 0 && this._traceindex2 < 0) return true;
         else 
-            return false;
+            if (this._traceindex1 >= 0 && this._connindex1 >= 0 && this._traceindex2 >= 0 && this._connindex2 >= 0 && this._traceindex1 !== this._traceindex2){
+                let connids1_e1 = this._vissettings.getFile(this._traceindex1).getConn(this._connindex1).getConn().CID_endpoint1
+                let connids1_e2 = this._vissettings.getFile(this._traceindex1).getConn(this._connindex1).getConn().CID_endpoint2
+
+                let connids2_e1 = this._vissettings.getFile(this._traceindex2).getConn(this._connindex2).getConn().CID_endpoint1
+                let connids2_e2 = this._vissettings.getFile(this._traceindex2).getConn(this._connindex2).getConn().CID_endpoint2
+                
+
+                if (connids1_e1!.length > connids2_e2!.length){
+                    let temp = connids2_e2
+                    connids2_e2 = connids1_e1
+                    connids1_e1 = temp
+                }
+                if (connids1_e2!.length > connids2_e1!.length){
+                    let temp = connids2_e1
+                    connids2_e1 = connids1_e2
+                    connids1_e2 = temp
+                }
+
+                if (this.compareCIDS(connids1_e1!, connids2_e2!) && this.compareCIDS(connids1_e2!, connids2_e1!)) return true
+                else return false
+            }
+            else 
+                return false;
+    }
+
+    private compareCIDS(cids_e1: Array<string>, cids_e2: Array<string>): boolean{
+        let correctfiles = true;
+        for (let i = 0; i < cids_e1.length; i++) {
+            if (cids_e2.findIndex(x => x === cids_e1[i]) === -1){
+                correctfiles = false;
+                break;
+            }
+        }
+
+        return correctfiles
     }
 
     public getPacketsConn1(): Array<QuicPacket>{
         return this._vissettings.getFile(this._traceindex1).getConn(this._connindex1).getSequencePackets()
     }
 
-    public getPacketsConn2(): Array<QuicPacket>{
-        return this._vissettings.getFile(this._traceindex2).getConn(this._connindex2).getSequencePackets()
+    public getPacketsConn2(): Array<QuicPacket>|null{
+        if (this._traceindex2 >= 0 && this._connindex2 >= 0)
+            return this._vissettings.getFile(this._traceindex2).getConn(this._connindex2).getSequencePackets()
+        else return null
     }
 
     public isPacketClientSend(dcid: string): boolean{
@@ -119,6 +156,8 @@ export default class SequenceSettings {
             }
         }
 
+        if (RTT === 0)
+            RTT = 1
         return (RTT * 1000)
     }
 }

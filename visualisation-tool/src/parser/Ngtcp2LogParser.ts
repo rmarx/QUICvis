@@ -534,13 +534,12 @@ export class Ngtcp2LogParser extends Parser{
                     el.packets.push(packet)
 
                     //check if SCID has changed, if so change value of CID for that endpoint
-                    let src_conn_id= '"' + (<LongHeader> headerinfo).src_connection_id + '"'
-            
-                    if (headerinfo.header_form === 1 && src_conn_id && el.CID_endpoint2!.findIndex(x => x === src_conn_id) !== -1) {
+                    let src_conn_id= (<LongHeader> headerinfo).src_connection_id
+                    if (headerinfo.header_form === 1 && src_conn_id && el.CID_endpoint2!.findIndex(x => x === src_conn_id) === -1) {
                         el.CID_endpoint2!.push(src_conn_id)
                     }
                     if (el.CID_endpoint2!.length === 0)
-                        el.CID_endpoint2!.push(src_conn_id)
+                        el.CID_endpoint2!.push(src_conn_id!)
 
                     throw BreakException
                 }
@@ -548,9 +547,9 @@ export class Ngtcp2LogParser extends Parser{
                     foundindex = index;
                     el.packets.push(packet)
 
-                    let src_conn_id= '"' + (<LongHeader> headerinfo).src_connection_id + '"'
+                    let src_conn_id= (<LongHeader> headerinfo).src_connection_id
                     //check if SCID has changed, if so change value of CID for that endpoint
-                    if (headerinfo.header_form === 1 && src_conn_id && el.CID_endpoint1!.findIndex(x => x === src_conn_id) !== -1) {
+                    if (headerinfo.header_form === 1 && src_conn_id && el.CID_endpoint1!.findIndex(x => x === src_conn_id) === -1) {
                         el.CID_endpoint1!.push(src_conn_id)
                     }
 

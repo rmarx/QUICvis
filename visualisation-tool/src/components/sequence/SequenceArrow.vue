@@ -1,46 +1,21 @@
 <template>
     <g v-if="clientsend"  v-bind:transform="'translate(0,' + (ytranslate + baseheight) + ')'" @click="putOnForeground">
-        <line v-bind:y1="0" v-bind:y2=" (this.rtt_amount / 2) * this.scale" x1="150" x2="850" stroke="lightgreen" stroke-width="2px" 
-        />
-        <polyline v-bind:points="'830, ' + (((this.rtt_amount / 2) * this.scale) - 10) 
-        + ' 850, ' + ((this.rtt_amount / 2) * this.scale) + ' 830, ' + (((this.rtt_amount / 2) * this.scale) + 10)"
-         stroke="black"  stroke-width="2px" fill="transparent"/>
-
         <ArrowInfo :packet_conn1="packet_conn1" />
-         <g>
-            <line x1="150" x2="130" y1="0" y2="0" stroke="black"/>
-            <text x="80" y="0">{{ ( ytranslate / scale ).toFixed(2) }} </text>
-         </g>
-         <g>
-            <line x1="850" x2="870" v-bind:y1="((this.rtt_amount / 2) * this.scale)" v-bind:y2="((this.rtt_amount / 2) * this.scale)" stroke="black"/>
-            <text x="875" v-bind:y="((this.rtt_amount / 2) * this.scale)">{{ ((ytranslate + ((this.rtt_amount / 2) * this.scale))/scale).toFixed(2) }} </text>
-         </g>
     </g>
 
     <g v-else v-bind:transform="'translate(0,' + (ytranslate + baseheight) + ')'" @click="putOnForeground">
-        <line v-bind:y1="this.rtt_amount * this.scale" v-bind:y2="(this.rtt_amount / 2) * this.scale" x1="150" x2="850" stroke="pink" stroke-width="2px" 
-         stroke-dasharray="15 3 5 3"/>
-        <polyline v-bind:points="'170, ' + ((this.rtt_amount * this.scale) -10) 
-        + ' 150, ' + (this.rtt_amount * this.scale) + ' 170, ' + ((this.rtt_amount * this.scale) + 10)"
-         stroke="black"  stroke-width="2px" fill="transparent"/>
          <ArrowInfo :packet_conn1="packet_conn1" />
-          <g>
-            <line x1="150" x2="130" v-bind:y1="this.rtt_amount * this.scale" v-bind:y2="this.rtt_amount * this.scale" stroke="black"/>
-            <text x="80" v-bind:y="this.rtt_amount * this.scale">{{ ((ytranslate / scale ) + (this.rtt_amount * this.scale)/scale).toFixed(2) }} </text>
-         </g>
-         <g>
-            <line x1="850" x2="870" v-bind:y1="((this.rtt_amount / 2) * this.scale)" v-bind:y2="((this.rtt_amount / 2) * this.scale)" stroke="black"/>
-            <text x="875" v-bind:y="((this.rtt_amount / 2) * this.scale)">{{ ((ytranslate + ((this.rtt_amount / 2) * this.scale))/scale).toFixed(2) }} </text>
-         </g>
     </g>
 </template>
 <script lang="ts">
 import Vue from 'vue'
 import ArrowInfo from './ArrowInfo.vue'
+import * as d3 from 'd3'
 import { getLongHeaderName, getFrameName } from '../../data/QuicNames'
+import { svg } from 'd3';
 export default {
     name: "SequenceArrow",
-    props: ['packet_conn1', 'baseheight', 'rttscale'],
+    props: ['packet_conn1', 'baseheight', 'rttscale', 'packet_conn2'],
     data() {
         return {
             scale: 10,
@@ -82,7 +57,48 @@ export default {
             }
             el.remove()
             svg.appendChild(el)
+        },
+        addServerPacket(domel: HTMLElement){
+            let svggroup = d3.select(domel)
+
+            svggroup.append('line').attr('y1', this.rtt_amount * this.scale).attr('y2', (this.rtt_amount / 2) * this.scale)
+                .attr('x1', 150).attr('x2', 850).attr('stroke', 'pink').attr('stroke-width', '2px').attr('stroke-dasharray', '15 3 5 3')
+
+            svggroup.append('polyline').attr('points', '170, ' + ((this.rtt_amount * this.scale) - 10) 
+                + ' 150, ' + (this.rtt_amount * this.scale) + ' 170, ' + ((this.rtt_amount * this.scale) + 10))
+                .attr('stroke', 'black').attr('stroke-width', '2px').attr('fill', 'transparent')
+
+            svggroup.append('line').attr('x1', 150).attr('x2', 130).attr('y1', this.rtt_amount * this.scale).attr('y2', this.rtt_amount * this.scale).attr('stroke', 'black')
+            svggroup.append('text').attr('x', 80).attr('y', this.rtt_amount * this.scale)
+                .text(((this.ytranslate / this.scale ) + (this.rtt_amount * this.scale)/this.scale).toFixed(2))
+
+            svggroup.append('line').attr('x1', 850).attr('x2', 870).attr('y1', (this.rtt_amount / 2) * this.scale).attr('y2', (this.rtt_amount / 2) * this.scale).attr('stroke', 'black')
+            svggroup.append('text').attr('x', 875).attr('y', (this.rtt_amount / 2) * this.scale)
+                .text(((this.ytranslate + ((this.rtt_amount / 2) * this.scale))/this.scale).toFixed(2))
+        },
+        addClientPacket(domel: HTMLElement){
+            let svggroup = d3.select(domel)
+
+            svggroup.append('line').attr('y1', 0).attr('y2', (this.rtt_amount / 2) * this.scale)
+                .attr('x1', 150).attr('x2', 850).attr('stroke', 'lightgreen').attr('stroke-width', '2px')
+
+            svggroup.append('polyline').attr('points', '830, ' + (((this.rtt_amount / 2) * this.scale) - 10) 
+                + ' 850, ' + ((this.rtt_amount / 2) * this.scale) + ' 830, ' + (((this.rtt_amount / 2) * this.scale) + 10))
+                .attr('stroke', 'black').attr('stroke-width', '2px').attr('fill', 'transparent')
+
+            svggroup.append('line').attr('x1', 150).attr('x2', 130).attr('y1', 0).attr('y2', 0).attr('stroke', 'black')
+            svggroup.append('text').attr('x', 80).attr('y', 0).text(( this.ytranslate / this.scale ).toFixed(2))
+
+            svggroup.append('line').attr('x1', 850).attr('x2', 870).attr('y1', (this.rtt_amount / 2) * this.scale).attr('y2', (this.rtt_amount / 2) * this.scale).attr('stroke', 'black')
+            svggroup.append('text').attr('x', 875).attr('y', (this.rtt_amount / 2) * this.scale)
+                .text(((this.ytranslate + ((this.rtt_amount / 2) * this.scale))/this.scale).toFixed(2))
         }
+    },
+    mounted() {
+        if (this.clientsend)
+            this.addClientPacket(this.$el)
+        else
+            this.addServerPacket(this.$el)
     },
     components: {
         ArrowInfo

@@ -46,7 +46,7 @@ export default {
 
         let textfield = textgroup.append('text').text(this.headername + '(' + this.packet_conn1.size + 'B)')
         translate += textfield.property('clientWidth')
-
+        
         textfield = textgroup.append('text')
             .attr('transform', 'translate(' + translate + ', 0)')
             .text('PN:' + this.packet_conn1.headerinfo.packet_number)
