@@ -1,22 +1,16 @@
 <template>
-    <g transform="translate(200,-10)" v-if="clientsend">
-        <text v-bind:textLength="(headername.length * 9 + 24)">{{ headername + '(' + packet_conn1.size + 'b)' }}</text>
-        <text v-for="(frame, index) in packet_conn1.payloadinfo.framelist" v-bind:transform="'translate(' + (framename_translate + index * 70) + ', 0)'" 
-        v-bind:fill="framebgcolor(frame.frametype)" v-bind:textLength="(frameName(frame.frametype).length * 9)">
-            {{ frameName(frame.frametype) }}
-        </text>
+    <g transform="translate(300,-10)" v-if="clientsend">
+
     </g>
-    <g transform="translate(500,-10)" v-else>
-        <text v-bind:textLength="(headername.length * 9 + 24)">{{ headername + '(' + packet_conn1.size + 'b)' }}</text>
-        <text v-for="(frame, index) in packet_conn1.payloadinfo.framelist" v-bind:transform="'translate(' + (framename_translate + index * 70) + ', 0)'" 
-        v-bind:fill="framebgcolor(frame.frametype)" v-bind:textLength="(frameName(frame.frametype).length * 9)">
-            {{ frameName(frame.frametype) }}
-        </text>
+    <g transform="translate(300,-10)" v-else>
+    
     </g>
 </template>
 <script lang="ts">
 import Vue from 'vue'
+import * as d3 from 'd3';
 import { getLongHeaderName, getFrameName } from '../../data/QuicNames'
+import { text } from 'd3';
 export default {
     name: "ArrowInfo",
     props: ['packet_conn1'],
@@ -44,6 +38,29 @@ export default {
         },
         getTextTranslate(amount: number){
             
+        }
+    },
+    mounted() {
+        let translate = 0;
+        let textgroup = d3.select(this.$el)
+
+        let textfield = textgroup.append('text').text(this.headername + '(' + this.packet_conn1.size + 'B)')
+        translate += textfield.property('clientWidth')
+
+        textfield = textgroup.append('text')
+            .attr('transform', 'translate(' + translate + ', 0)')
+            .text('PN:' + this.packet_conn1.headerinfo.packet_number)
+        translate += textfield.property('clientWidth')
+
+        for (let i = 0; i < this.packet_conn1.payloadinfo.framelist.length; i++) {
+            let frame = this.packet_conn1.payloadinfo.framelist[i]
+            let framename = this.frameName(frame.frametype)
+            textfield = textgroup.append('text')
+                .attr('transform', 'translate(' + translate + ', 0)')
+                .attr('fill', this.framebgcolor(frame.frametype))
+                .text(framename)
+            
+            translate += textfield.property('clientWidth')
         }
     }
 }

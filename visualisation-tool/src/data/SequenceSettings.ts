@@ -104,4 +104,21 @@ export default class SequenceSettings {
 
         return time
     }
+
+    public getFirstRTT(): number {
+        let packets1 = this._vissettings.getFile(this._traceindex1).getConn(this._connindex1).getSequencePackets();
+        let RTT = 0;
+
+        let time1 = packets1[0].connectioninfo!.time_delta
+        let connid1 =  packets1[0].headerinfo!.dest_connection_id
+
+        for (let index = 1; index < packets1.length; index++) {
+            let packet = packets1[1]
+            if (packet.headerinfo!.dest_connection_id  !== connid1 ) {
+                RTT = packet.connectioninfo!.time_delta - time1
+            }
+        }
+
+        return (RTT * 1000)
+    }
 }

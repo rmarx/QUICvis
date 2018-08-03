@@ -2,7 +2,7 @@
     <svg id="sequencediagram" v-if="validfiles" v-bind:height="getLargestTime + 'px'">
         <line x1="150" y1="-100" x2="150" v-bind:y2="(getLargestTime + 100)"  stroke="black"/>
         <line x1="850" y1="-100" x2="850" v-bind:y2="(getLargestTime + 100)"  stroke="black"/>
-        <SequenceArrow v-for="(packet, index) in packets_conn1" :packet_conn1="packet" :baseheight="(index * margin)"/>
+        <SequenceArrow v-for="(packet, index) in packets_conn1" :packet_conn1="packet" :baseheight="(index * margin)" :rttscale="getRTTScale"/>
     </svg>
     <div id="nodiagram" v-else>
         Current file selection is invalid
@@ -30,6 +30,14 @@ export default {
       },
       getLargestTime(){
           return this.$store.state.sequencesettings.getLargestTime() * 1000 * 10
+      },
+      getRTTScale(){
+          let originalRTT = this.$store.state.sequencesettings.getFirstRTT()
+          let setRTT = this.$store.state.sequencesettings.get1filertt()
+          setRTT = parseFloat(setRTT) === 0 ? originalRTT : setRTT
+
+          console.log(originalRTT / setRTT)
+          return originalRTT / setRTT
       }
   },
   components: {
