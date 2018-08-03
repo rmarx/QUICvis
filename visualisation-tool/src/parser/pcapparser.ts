@@ -178,7 +178,8 @@ export class PcapParser extends Parser{
             },
             headerinfo: this.parseHeader(quic_info),
             payloadinfo: payload,
-            serverinfo: null
+            serverinfo: null,
+            size: parseInt(udp_info["udp.length"])
         }
         return packet
     }
@@ -478,7 +479,7 @@ export class PcapParser extends Parser{
 
         let dst_conn_id = packet.headerinfo!.dest_connection_id
         let conn = connections[connindex]
-        let conn_id_frame = <New_Connection_Id> packet.payloadinfo
+        let conn_id_frame = <New_Connection_Id> packet.payloadinfo!.framelist[0]
         if (conn.CID_endpoint1!.findIndex(x => x === dst_conn_id) !== -1)
             conn.CID_endpoint2!.push(conn_id_frame.connection_id.toString())
         else

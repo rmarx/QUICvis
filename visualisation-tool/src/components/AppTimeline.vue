@@ -8,19 +8,17 @@
 
 <script lang="ts">
 import { Component, Vue } from 'vue-property-decorator';
-import GeneralSettings from './generalsettings/GeneralSettings';
-import Timeline from "./timeline/Timeline";
-import ConnectionTable from './conntable/ConnectionTable';
+import GeneralSettings from './generalsettings/GeneralSettings.vue';
+import Timeline from "./timeline/Timeline.vue";
+import ConnectionTable from './conntable/ConnectionTable.vue';
 
-@Component({
+export default {
+  name: 'AppTimeline',
   components: {
     GeneralSettings,
     Timeline,
     ConnectionTable
-  },
-})
-export default class AppTimeline extends Vue {
-  name: 'AppTimeline'
+  }
 }
 </script>
 

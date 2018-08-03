@@ -27,7 +27,7 @@
 </template>
 
 <script lang="ts">
-import ConnRow from './ConnRow';
+import ConnRow from './ConnRow.vue';
 export default {
   name: "connectiontable",
   data() {

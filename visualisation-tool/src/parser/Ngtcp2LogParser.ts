@@ -130,10 +130,20 @@ export class Ngtcp2LogParser extends Parser{
             },
             headerinfo: header,
             payloadinfo: { framelist: framelist},
-            serverinfo: serverinfo ? serverinfo : transportparams
+            serverinfo: serverinfo ? serverinfo : transportparams,
+            size: this.getPacketSize(content[0])
         }
         return packet
         
+    }
+
+    private getPacketSize(line: string): number {
+        let splitline = line.split(' ')
+        let size = 0
+        if (splitline.length === 6 && splitline[3] === 'recv' && splitline[4] === 'packet'){
+            size = parseInt(this.splitOnSymbol(splitline[5], '='))
+        }
+        return size
     }
 
     private parseHeader(content: Array<string>, connloginfo: LogConnectionInfo, connections: Array<QuicConnection>): Header|null{
@@ -622,7 +632,7 @@ export class Ngtcp2LogParser extends Parser{
 
         let dst_conn_id = packet.headerinfo!.dest_connection_id
         let conn = connections[connindex]
-        let conn_id_frame = <New_Connection_Id> packet.payloadinfo
+        let conn_id_frame = <New_Connection_Id> packet.payloadinfo!.framelist[0]
         if (conn.CID_endpoint1!.findIndex(x => x === dst_conn_id) !== -1)
             conn.CID_endpoint2!.push(conn_id_frame.connection_id.toString())
         else

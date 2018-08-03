@@ -14,6 +14,7 @@ export interface QuicPacket{
     headerinfo: Header|null
     payloadinfo: Payload|null
     serverinfo: Array<ServerInfo> | null
+    size: number
 }
 
 export interface ConnectionInfo {

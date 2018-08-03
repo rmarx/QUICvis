@@ -10,8 +10,8 @@
 </template>
 <script lang="ts">
 import Vue from 'vue'
-import ConnTimeDiagram from './ConnTimeDiagram'
-import StreamTimeDiagram from './StreamTimeDiagram'
+import ConnTimeDiagram from './ConnTimeDiagram.vue'
+import StreamTimeDiagram from './StreamTimeDiagram.vue'
 export default {
     name: "connectiontimelinelist",
     computed: {

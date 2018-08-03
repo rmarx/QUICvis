@@ -6,13 +6,7 @@
         + ' 850, ' + ((this.rtt_amount / 2) * this.scale) + ' 830, ' + (((this.rtt_amount / 2) * this.scale) + 10)"
          stroke="black"  stroke-width="2px" fill="transparent"/>
 
-         <g transform="translate(200,-10)">
-             <text>{{ headername }}</text>
-             <text v-for="(frame, index) in packet_conn1.payloadinfo.framelist" v-bind:transform="'translate(' + (framename_translate + index * 50) + ', 0)'" 
-             v-bind:fill="framebgcolor(frame.frametype)">
-                 {{ frameName(frame.frametype) }}
-             </text>
-         </g>
+        <ArrowInfo :packet_conn1="packet_conn1" />
          <g>
             <line x1="150" x2="130" y1="0" y2="0" stroke="black"/>
             <text x="80" y="0">{{ ( ytranslate / scale ).toFixed(2) }} </text>
@@ -29,14 +23,7 @@
         <polyline v-bind:points="'170, ' + (-10) 
         + ' 150, ' + (0) + ' 170, ' + (10)"
          stroke="black"  stroke-width="2px" fill="transparent"/>
-         <g transform="translate(500,-10)">
-             <text>{{ headername }}</text>
-             <text v-for="(frame, index) in packet_conn1.payloadinfo.framelist" v-bind:transform="'translate(' + (framename_translate + index * 50) + ', 0)'" 
-             v-bind:fill="framebgcolor(frame.frametype)">
-                 {{ frameName(frame.frametype) }}
-             </text>
-         </g>
-
+         <ArrowInfo :packet_conn1="packet_conn1" />
           <g>
             <line x1="150" x2="130" y1="0" y2="0" stroke="black"/>
             <text x="80" y="0">{{ ( ytranslate / scale ).toFixed(2) }} </text>
@@ -49,6 +36,7 @@
 </template>
 <script lang="ts">
 import Vue from 'vue'
+import ArrowInfo from './ArrowInfo.vue'
 import { getLongHeaderName, getFrameName } from '../../data/QuicNames'
 export default {
     name: "SequenceArrow",
@@ -82,7 +70,7 @@ export default {
         framebgcolor(frametype: string){
             return this.$store.state.framecolortables.getFrameColour([frametype])
         },
-        putOnForeground(ev: MouseEvent){
+        putOnForeground(ev: any){
             let el: HTMLElement;
             let svg: HTMLElement
             for (let i = 0; i < ev.path.length; i++) {
@@ -95,6 +83,9 @@ export default {
             el.remove()
             svg.appendChild(el)
         }
+    },
+    components: {
+        ArrowInfo
     }
 }
 </script>

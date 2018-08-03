@@ -7,7 +7,7 @@
 </template>
 
 <script lang="ts">
-import InfoItem from './InfoItem';
+import InfoItem from './InfoItem.vue';
 export default {
   name: "packetinfo",
   computed: {

@@ -8,7 +8,7 @@
 import Vue from 'vue'
 import * as d3 from "d3";
 import { svg } from "d3";
-import PacketBlock from "./PacketBlock"
+import PacketBlock from "./PacketBlock.vue"
 export default {
     name: "conntimediagram",
     props: ['traceid', 'connid'],
