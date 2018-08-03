@@ -9,14 +9,14 @@ export default class TimeScaleState{
     private _start: number;
     private _end: number;
 
-    private _zoom: d3.ZoomBehavior<Element, {}>|null;
+    private _zoom: any;
     private _zoomTransform: d3.ZoomTransform;
 
     private _refscale: d3.ScaleLinear<number, number>;
     private _scale: d3.ScaleLinear<number, number>;
 
-    private _timeaxis: d3.Axis<d3.AxisDomain>|null;
-    private _gaxis: d3.Selection<d3.BaseType, {}, HTMLElement, any>|null;
+    private _timeaxis: any;
+    private _gaxis: any;
 
     constructor(){
         this._width = 0;
@@ -45,7 +45,8 @@ export default class TimeScaleState{
             this._zoomTransform = d3.event.transform;
             this._scale = this._zoomTransform.rescaleX(this._refscale)
             this._timeaxis!.scale(d3.event.transform.rescaleX(this._scale));
-            this._gaxis.call(this._timeaxis);
+            if (this._timeaxis)
+                this._gaxis.call(this._timeaxis);
 
             let newdomain = this._timeaxis!.scale().domain()
             this._start = newdomain[0];

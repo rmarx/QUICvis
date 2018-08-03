@@ -7,7 +7,7 @@
 </template>
 <script lang="ts">
 import Vue from 'vue'
-import TraceInfo from './TraceInfo'
+import TraceInfo from './TraceInfo.vue'
 export default {
     name: "connectioninfolist",
     computed: {

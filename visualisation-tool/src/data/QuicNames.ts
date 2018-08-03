@@ -29,19 +29,19 @@ export function getFrameName(value: number): string{
             name = "Rst_stream"
             break;
         case 2:
-            name = "Connection_close"
+            name = "Conn_close"
             break;
         case 3:
-            name = "Application_close"
+            name = "App_close"
             break;
         case 4:
             name = "Max_data"
             break;
         case 5:
-            name = "Max_stream_data"
+            name = "Max_str_data"
             break;
         case 6:
-            name = "Max_stream_id"
+            name = "Max_str_id"
             break;
         case 7:
             name = "Ping"
@@ -50,13 +50,13 @@ export function getFrameName(value: number): string{
             name = "Blocked"
             break;
         case 9:
-            name = "Stream_blocked"
+            name = "Str_blocked"
             break;
         case 10:
-            name = "Stream_id_blocked"
+            name = "Str_id_blocked"
             break;
         case 11:
-            name = "New_connection_id"
+            name = "New_conn_id"
             break;
         case 12:
             name = "Stop_sending"
@@ -65,10 +65,10 @@ export function getFrameName(value: number): string{
             name = "Ack"
             break;
         case 14:
-            name = "Path_challenge"
+            name = "Path_ch"
             break;
         case 15:
-            name = "Path_response"
+            name = "Path_re"
             break;
         default:
             name = "Stream"

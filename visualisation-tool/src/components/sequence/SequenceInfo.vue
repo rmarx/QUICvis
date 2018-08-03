@@ -26,7 +26,6 @@
           <option value="-1">None</option>
           <option v-for="index in connids_trace2" v-bind:value="index - 1">Conn {{ index}}</option>
         </select>
-        {{ test}}
         <label for="endpoint2-rtt" class="w-25">RTT (ms)</label>
         <input type="number" id="endpoint2-rtt" v-model="rtt_amount" @change="changeRtt()">
       </div>

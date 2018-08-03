@@ -20,12 +20,12 @@
 </template>
 
 <script lang="ts">
-import TimeScale from "./TimeScale";//timescale component
-import ConnectionInfoList from "./ConnectionInfoList"//connectionsettings component //connectioninfo component
-import ConnectionTimelineList from './ConnectionTimelineList' //connection timeline list component
+import TimeScale from "./TimeScale.vue";//timescale component
+import ConnectionInfoList from "./ConnectionInfoList.vue"//connectionsettings component //connectioninfo component
+import ConnectionTimelineList from './ConnectionTimelineList.vue' //connection timeline list component
     //connectiondiagram component
 import * as d3 from 'd3';
-import PacketInfo from '../conntable/PacketInfo';
+import PacketInfo from '../conntable/PacketInfo.vue';
 export default {
   name: "timeline",
   computed: {

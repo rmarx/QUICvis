@@ -8,19 +8,17 @@
 
 <script lang="ts">
 import { Component, Vue } from 'vue-property-decorator';
-import GeneralSettings from './generalsettings/GeneralSettings';
-import SequenceInfo from './sequence/SequenceInfo';
-import SequenceDiagram from './sequence/SequenceDiagram';
+import GeneralSettings from './generalsettings/GeneralSettings.vue';
+import SequenceInfo from './sequence/SequenceInfo.vue';
+import SequenceDiagram from './sequence/SequenceDiagram.vue';
 
-@Component({
+export default {
+  name: 'AppSequence',
   components: {
     GeneralSettings,
     SequenceInfo,
     SequenceDiagram
-  },
-})
-export default class AppSequence extends Vue {
-  name: 'AppSequence'
+  }
 }
 </script>
 

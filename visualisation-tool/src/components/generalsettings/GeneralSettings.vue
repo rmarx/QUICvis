@@ -30,8 +30,8 @@ import { PcapParser } from '../..//parser/pcapparser'
 import TraceWrapper from '../../data/TraceWrapper';
 import axios from 'axios'
 import { Ngtcp2LogParser } from '../../parser/Ngtcp2LogParser'
-import FileSettings from './FileSettings'
-import FColorSettings from './FColorSettings'
+import FileSettings from './FileSettings.vue'
+import FColorSettings from './FColorSettings.vue'
 
 export default {
   name: "GeneralSettings",

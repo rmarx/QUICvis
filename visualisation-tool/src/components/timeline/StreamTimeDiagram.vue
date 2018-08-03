@@ -8,7 +8,7 @@
 import Vue from 'vue'
 import * as d3 from "d3";
 import { svg } from "d3";
-import StreamBlock from './StreamBlock';
+import StreamBlock from './StreamBlock.vue';
 export default {
     name: "streamtimediagram",
     props: ['traceid', 'connid'],

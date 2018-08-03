@@ -130,10 +130,20 @@ export class Ngtcp2LogParser extends Parser{
             },
             headerinfo: header,
             payloadinfo: { framelist: framelist},
-            serverinfo: serverinfo ? serverinfo : transportparams
+            serverinfo: serverinfo ? serverinfo : transportparams,
+            size: this.getPacketSize(content[0])
         }
         return packet
         
+    }
+
+    private getPacketSize(line: string): number {
+        let splitline = line.split(' ')
+        let size = 0
+        if (splitline.length === 6 && splitline[3] === 'recv' && splitline[4] === 'packet'){
+            size = parseInt(this.splitOnSymbol(splitline[5], '='))
+        }
+        return size
     }
 
     private parseHeader(content: Array<string>, connloginfo: LogConnectionInfo, connections: Array<QuicConnection>): Header|null{
@@ -524,13 +534,12 @@ export class Ngtcp2LogParser extends Parser{
                     el.packets.push(packet)
 
                     //check if SCID has changed, if so change value of CID for that endpoint
-                    let src_conn_id= '"' + (<LongHeader> headerinfo).src_connection_id + '"'
-            
-                    if (headerinfo.header_form === 1 && src_conn_id && el.CID_endpoint2!.findIndex(x => x === src_conn_id) !== -1) {
+                    let src_conn_id= (<LongHeader> headerinfo).src_connection_id
+                    if (headerinfo.header_form === 1 && src_conn_id && el.CID_endpoint2!.findIndex(x => x === src_conn_id) === -1) {
                         el.CID_endpoint2!.push(src_conn_id)
                     }
                     if (el.CID_endpoint2!.length === 0)
-                        el.CID_endpoint2!.push(src_conn_id)
+                        el.CID_endpoint2!.push(src_conn_id!)
 
                     throw BreakException
                 }
@@ -538,9 +547,9 @@ export class Ngtcp2LogParser extends Parser{
                     foundindex = index;
                     el.packets.push(packet)
 
-                    let src_conn_id= '"' + (<LongHeader> headerinfo).src_connection_id + '"'
+                    let src_conn_id= (<LongHeader> headerinfo).src_connection_id
                     //check if SCID has changed, if so change value of CID for that endpoint
-                    if (headerinfo.header_form === 1 && src_conn_id && el.CID_endpoint1!.findIndex(x => x === src_conn_id) !== -1) {
+                    if (headerinfo.header_form === 1 && src_conn_id && el.CID_endpoint1!.findIndex(x => x === src_conn_id) === -1) {
                         el.CID_endpoint1!.push(src_conn_id)
                     }
 
@@ -622,7 +631,7 @@ export class Ngtcp2LogParser extends Parser{
 
         let dst_conn_id = packet.headerinfo!.dest_connection_id
         let conn = connections[connindex]
-        let conn_id_frame = <New_Connection_Id> packet.payloadinfo
+        let conn_id_frame = <New_Connection_Id> packet.payloadinfo!.framelist[0]
         if (conn.CID_endpoint1!.findIndex(x => x === dst_conn_id) !== -1)
             conn.CID_endpoint2!.push(conn_id_frame.connection_id.toString())
         else

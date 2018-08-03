@@ -12,7 +12,7 @@
 </template>
 <script lang="ts">
 import Vue from 'vue'
-import ConnInfo from './ConnInfo'
+import ConnInfo from './ConnInfo.vue'
 export default {
     name: "traceinfo",
     props: ['traceid'],
