@@ -9,7 +9,7 @@
       </div>
       <div class="card-header">
         <h5 class="mb-0 float-left">
-          <button id="headingsettings" class="btn btn-link" data-toggle="collapse" data-target="#datasettings" aria-expanded="false" aria-controls="datasettings" >
+          <button id="headingsettings" class="btn btn-link" @click="expandDataSettings()" >
             View general settings
           </button>
         </h5>
@@ -47,8 +47,15 @@ export default {
     selectFrameTable(tablename: string){
       this.$store.dispatch('switchFrameColorTable', tablename);
     },
-    test(){
-      console.log(document.getElementById('datasettings'))
+    expandDataSettings(){
+      let settings = document.getElementById('datasettings')
+      let classes = settings.classList
+
+      if (classes.contains('show')){
+        classes.remove('show')
+      }
+      else
+        classes.add('show')
     }
   },
   components: {
