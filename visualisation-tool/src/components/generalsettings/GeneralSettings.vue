@@ -9,7 +9,7 @@
       </div>
       <div class="card-header">
         <h5 class="mb-0 float-left">
-          <button id="headingsettings" class="btn btn-link" @click="test()" >
+          <button id="headingsettings" class="btn btn-link" data-toggle="collapse" data-target="#datasettings" aria-expanded="false" aria-controls="datasettings" >
             View general settings
           </button>
         </h5>
