@@ -1,6 +1,12 @@
 <template>
   <div id="generalsettings" class="w-100">
     <div class="card">
+      <div id="datasettings" class="collapse" aria-labelledby="headingsettings" data-parent="generalsettings">
+        <div class="card-body">
+          <FileSettings />
+          <FColorSettings />
+        </div>
+      </div>
       <div class="card-header">
         <h5 class="mb-0 float-left">
           <button id="headingsettings" class="btn btn-link" data-toggle="collapse" data-target="#datasettings" aria-expanded="true" aria-controls="collapseOne">
@@ -14,12 +20,6 @@
       <router-link  v-if="this.$route.path === '/'" to="/sequence" tag="button" class="btn float-right btn-primary">Sequence Diagram</router-link>
       <router-link  v-else to="/" tag="button" class="btn float-right btn-primary">Timeline</router-link>
     </div>
-      <div id="datasettings" class="collapse" aria-labelledby="headingsettings" data-parent="generalsettings">
-        <div class="card-body">
-          <FileSettings />
-          <FColorSettings />
-        </div>
-      </div>
     </div>
   </div>
 </template>
