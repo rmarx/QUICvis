@@ -88,14 +88,43 @@ export default class SequenceSettings {
                     connids2_e2 = connids1_e1
                     connids1_e1 = temp
                 }
-                if (connids1_e2!.length > connids2_e1!.length){
-                    let temp = connids2_e1
-                    connids2_e1 = connids1_e2
-                    connids1_e2 = temp
+                if (this.compareCIDS(connids1_e1!, connids2_e2!)) {
+                    if (connids1_e2!.length > connids2_e1!.length){
+                        let temp = connids2_e1
+                        connids2_e1 = connids1_e2
+                        connids1_e2 = temp
+                    }
+                    if (this.compareCIDS(connids1_e2!, connids2_e1!))
+                        return true
+                    else 
+                        return false
                 }
+                else {
+                    if (connids1_e1!.length > connids2_e2!.length){
+                        let temp = connids1_e1
+                        connids1_e1 = connids2_e2
+                        connids2_e2 = temp
+                    }
 
-                if (this.compareCIDS(connids1_e1!, connids2_e2!) && this.compareCIDS(connids1_e2!, connids2_e1!)) return true
-                else return false
+                    if (connids1_e1!.length > connids2_e1!.length){
+                        let temp = connids2_e1
+                        connids2_e1 = connids1_e1
+                        connids1_e1 = temp
+                    }
+                    if (this.compareCIDS(connids1_e1!, connids2_e1!)) {
+                        if (connids1_e2!.length > connids2_e2!.length){
+                            let temp = connids2_e2
+                            connids2_e2 = connids1_e2
+                            connids1_e2 = temp
+                        }
+                        if (this.compareCIDS(connids1_e2!, connids2_e2!))
+                            return true
+                        else 
+                            return false
+                    }
+                    else 
+                        return false
+                }
             }
             else 
                 return false;

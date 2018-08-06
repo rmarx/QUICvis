@@ -70,7 +70,7 @@ export default {
       this.$store.dispatch('setSequenceRtt', this.rtt_amount)
     },
     changeSelectedTrace_1(){
-      this.conn1_index = -1
+      this.conn1_index = 0
       let data = {
         tracenumber: 1,
         traceindex: this.trace1_index
@@ -79,7 +79,7 @@ export default {
       this.changeSelectedConn_1()
     },
     changeSelectedTrace_2(){
-      this.conn2_index = -1
+      this.conn2_index = 0
       let data = {
         tracenumber: 2,
         traceindex: this.trace2_index
