@@ -1,6 +1,11 @@
 import VisSettings from "@/data/VisSettings";
 import { QuicPacket } from "@/data/quic";
 
+export interface SequencePackets {
+    packet_conn1: QuicPacket,
+    packet_conn2: QuicPacket|null;
+}
+
 export default class SequenceSettings {
     private _traceindex1: number;
     private _traceindex2: number;
@@ -108,14 +113,27 @@ export default class SequenceSettings {
         return correctfiles
     }
 
-    public getPacketsConn1(): Array<QuicPacket>{
-        return this._vissettings.getFile(this._traceindex1).getConn(this._connindex1).getSequencePackets()
-    }
+    public getPackets(): Array<SequencePackets>{
+        let seqpackets = new Array<SequencePackets>()
+        let packets_c1 = this._vissettings.getFile(this._traceindex1).getConn(this._connindex1).getSequencePackets()
 
-    public getPacketsConn2(): Array<QuicPacket>|null{
-        if (this._traceindex2 >= 0 && this._connindex2 >= 0)
-            return this._vissettings.getFile(this._traceindex2).getConn(this._connindex2).getSequencePackets()
-        else return null
+        packets_c1.forEach((packet) => {
+            seqpackets.push({packet_conn1: packet, packet_conn2: null})
+        })
+
+        if (this._traceindex2 >= 0 && this._connindex2 >= 0){
+            let packets_c2 = this._vissettings.getFile(this._traceindex2).getConn(this._connindex2).getSequencePackets()
+
+            packets_c2.forEach((packet) => {
+                let index = seqpackets.findIndex(seqpacket => seqpacket.packet_conn1.headerinfo.packet_number === packet.headerinfo.packet_number)
+                if (index >= 0){
+                    seqpackets[index].packet_conn2 = packet
+                }
+            })
+        }
+
+
+        return seqpackets
     }
 
     public isPacketClientSend(dcid: string): boolean{
