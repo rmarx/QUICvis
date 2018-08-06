@@ -33,6 +33,7 @@ export interface ConnectionInfo {
 export interface Header {
     header_form: number|null
     dest_connection_id: string|null
+    packet_number: number|null
 }
 
 export interface LongHeader extends Header{

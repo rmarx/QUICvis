@@ -12,6 +12,7 @@
         <div v-else>
             <div v-for="(info, key) in keyinfolist" v-if="showChildren">
                 <li v-for="frame in info">
+                    {{ frameName(parseInt(frame.frametype))}}
                     <ul>
                         <li v-for="(frameinfo, framekey) in frame">{{ framekey }} : {{ frameinfo }}</li>
                     </ul>
@@ -23,17 +24,21 @@
 </template>
 
 <script lang="ts">
+import { getFrameName } from '../../data/QuicNames'
 export default {
     name: 'infoitem',
-    props: ['keyname', 'keyinfolist'],
+    props: ['keyname', 'keyinfolist', 'collapse'],
     data(){
         return {
-            showChildren: true
+            showChildren: this.collapse
         }
     },
     methods: {
         toggleChildren: function(){
             this.showChildren = !this.showChildren
+        },
+        frameName(frametype) {
+            return getFrameName(frametype)
         }
     }
 }
