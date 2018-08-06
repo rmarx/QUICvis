@@ -1,9 +1,10 @@
 import VisSettings from "@/data/VisSettings";
-import { QuicPacket } from "@/data/quic";
+import { QuicPacket, Ack } from "@/data/quic";
 
 export interface SequencePackets {
     packet_conn1: QuicPacket,
     packet_conn2: QuicPacket|null;
+    est_rtt: number
 }
 
 export interface SequenceFilter {
@@ -197,7 +198,7 @@ export default class SequenceSettings {
         let packets_c1 = this._vissettings.getFile(this._traceindex1).getConn(this._connindex1).getSequencePackets()
 
         packets_c1.forEach((packet) => {
-            seqpackets.push({packet_conn1: packet, packet_conn2: null})
+            seqpackets.push({packet_conn1: packet, packet_conn2: null, est_rtt: 0})
         })
 
         if (this._traceindex2 >= 0 && this._connindex2 >= 0){
@@ -210,9 +211,39 @@ export default class SequenceSettings {
                 }
             })
         }
+        else {
+            let RTT = 1
+            let newRTT: number
+            for (let i = 0; i < packets_c1.length; i++) {
+                if (this.isPacketClientSend(packets_c1[i].headerinfo.dest_connection_id))
+                    newRTT = this.getRTTOfPacket(packets_c1[i], packets_c1)
+                if ( newRTT >= 0) {
+                    RTT = newRTT
+                }
+                seqpackets[i].est_rtt = RTT
+            }
+        }
 
 
         return seqpackets
+    }
+
+    private getRTTOfPacket(packet: QuicPacket, packets: Array<QuicPacket>): number{
+        let RTT = -1
+        for (let i = 0; i < packets.length; i++) {
+            let frames = packets[i].payloadinfo.framelist
+
+            let index = frames.findIndex(frame => parseFloat(frame.frametype) === 13)
+            if (index >= 0){
+                let ackframe = <Ack> frames[index]
+                if (parseInt(ackframe.largest_ack) === parseInt(packet.headerinfo.packet_number)){
+                    RTT = (packets[i].connectioninfo.time_delta * 1000) -  (packet.connectioninfo.time_delta * 1000)
+                    break;
+                }
+            }
+        }
+
+        return RTT
     }
 
     public isPacketClientSend(dcid: string): boolean{

@@ -42,7 +42,7 @@ import { getLongHeaderName, getFrameName } from '../../data/QuicNames'
 import { svg } from 'd3';
 export default {
     name: "SequenceArrow",
-    props: ['packet_conn1', 'baseheight', 'rttscale', 'packet_conn2'],
+    props: ['packet_conn1', 'baseheight', 'rttscale', 'packet_conn2', 'est_rtt'],
     data() {
         return {
             scale: 10,
@@ -66,7 +66,7 @@ export default {
                 else
                     return t_p2 * 1000 * this.scale
             }
-            return (parseFloat(this.packet_conn1.connectioninfo.time_delta)* this.rttscale * 1000) * this.scale
+            return (parseFloat(this.packet_conn1.connectioninfo.time_delta) * 1000) * this.scale
         },
         headername() {
             if (parseInt(this.packet_conn1.headerinfo.header_form) === 0) return '1-RTT protect'
@@ -79,7 +79,7 @@ export default {
                 return diff * 1000 * this.scale
             }
             else
-                return (this.rtt_amount / 2) * this.scale
+                return (this.est_rtt / 2) * this.scale * this.rttscale
         },
         angle(){
             let opp = 700
