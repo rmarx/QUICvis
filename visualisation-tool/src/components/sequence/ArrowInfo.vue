@@ -1,8 +1,8 @@
 <template>
-    <g transform="translate(300,-10)" v-if="clientsend">
+    <g v-bind:transform="'translate(300,' + (y_coord - angle*6.5) + ') rotate(' + angle + ')'" v-if="clientsend">
 
     </g>
-    <g transform="translate(300,-10)" v-else>
+    <g v-bind:transform="'translate(300,' + (y_coord + angle*1.2) + ') rotate(' + -angle + ')'" v-else>
     
     </g>
 </template>
@@ -12,7 +12,7 @@ import { getLongHeaderName, getFrameName } from '../../data/QuicNames'
 import ArrowInfoSegment from './ArrowInfoSegment.vue'
 export default {
     name: "ArrowInfo",
-    props: ['packet_conn1'],
+    props: ['packet_conn1', 'y_coord', 'angle'],
     data() {
         return {
             framename_translate: 0
