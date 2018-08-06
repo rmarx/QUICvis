@@ -6,6 +6,11 @@ export interface SequencePackets {
     packet_conn2: QuicPacket|null;
 }
 
+export interface SequenceFilter {
+    name: string,
+    toShow: boolean
+}
+
 export default class SequenceSettings {
     private _traceindex1: number;
     private _traceindex2: number;
@@ -16,6 +21,7 @@ export default class SequenceSettings {
     private _1filertt: number;
 
     private _vissettings: VisSettings;
+    private _seqfilters: Array<SequenceFilter>
 
     constructor() {
         this._traceindex1 = -1;
@@ -26,6 +32,50 @@ export default class SequenceSettings {
 
         this._1filertt = 0;
         this._vissettings = new VisSettings();
+
+        this._seqfilters = new Array()
+        this.addSequenceFilters()
+    }
+
+    private addSequenceFilters(){
+        this._seqfilters.push({
+            name: 'packetnrs',
+            toShow: true
+        })
+
+        this._seqfilters.push({
+            name: 'headername',
+            toShow: true
+        })
+
+        this._seqfilters.push({
+            name: 'timestamps',
+            toShow: true
+        })
+
+        this._seqfilters.push({
+            name: 'streamnrs',
+            toShow: true
+        })
+    }
+
+    public changeFilter(name: string){
+        let index = this._seqfilters.findIndex(filter => filter.name === name)
+
+        if (index >=0)
+            this._seqfilters[index].toShow = !this._seqfilters[index].toShow
+    }
+
+    public getSeqFilter(name: string): boolean{
+        let index = this._seqfilters.findIndex(filter => filter.name === name)
+        if (index >=0)
+            return this._seqfilters[index].toShow
+        else
+            return false
+    }
+
+    public getAllSeqFilters(): Array<SequenceFilter>{
+        return this._seqfilters
     }
 
     public setTraceindex1(index: number){

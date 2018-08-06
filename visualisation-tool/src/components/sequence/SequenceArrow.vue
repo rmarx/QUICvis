@@ -7,11 +7,11 @@
          stroke="black"  stroke-width="2px" fill="transparent"/>
  
         <ArrowInfo :packet_conn1="packet_conn1" :angle="angle" :y_coord="centerpoint_text"/>
-         <g>
+         <g v-if="showtimestamps">
             <line x1="150" x2="130" y1="0" y2="0" stroke="black"/>
             <text x="80" y="0">{{ ( ytranslate / scale ).toFixed(2) }} </text>
          </g>
-         <g>
+         <g v-if="showtimestamps">
             <line x1="850" x2="870" v-bind:y1="y_client" v-bind:y2="y_client" stroke="black"/>
             <text x="875" v-bind:y="y_client">{{ ((ytranslate + y_client)/scale).toFixed(2) }} </text>
          </g>
@@ -24,11 +24,11 @@
         + ' 150, ' + y_client + ' 170, ' + (y_client + 10)"
          stroke="black"  stroke-width="2px" fill="transparent"/>
          <ArrowInfo :packet_conn1="packet_conn1" :angle="angle" :y_coord="centerpoint_text"/>
-          <g>
+          <g v-if="showtimestamps">
             <line x1="150" x2="130" v-bind:y1="y_client" v-bind:y2="y_client" stroke="black"/>
             <text x="80" v-bind:y="y_client">{{ ((ytranslate / scale ) + y_client/scale).toFixed(2) }} </text>
          </g>
-         <g>
+         <g v-if="showtimestamps">
             <line x1="850" x2="870" v-bind:y1="0" v-bind:y2="0" stroke="black"/>
             <text x="875" v-bind:y="0">{{ (ytranslate/scale).toFixed(2) }} </text>
          </g>
@@ -90,6 +90,9 @@ export default {
         },
         centerpoint_text(){
             return this.y_client / 1.5
+        },
+        showtimestamps(){
+            return this.$store.state.sequencesettings.getSeqFilter('timestamps')
         }
     },
     methods: {

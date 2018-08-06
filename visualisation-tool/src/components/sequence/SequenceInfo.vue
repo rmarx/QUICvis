@@ -14,6 +14,10 @@
         </select>
       </div>
 
+      <div id="filterbuttons">
+        <button v-for="filter in seqfilters" v-bind:class="'float-left btn btn-sm ' + filterButtonStyle(filter.name)" @click="filterPressed(filter.name)">{{ buttonText(filter.name)}}</button>
+      </div>
+
       <div id="endpoint2container">
         <h3 class="w-100">Endpoint2</h3>
         <label for="endpoint2-trace" class="w-25">Input file:</label>
@@ -63,6 +67,9 @@ export default {
     },
     test(){
       return this.$store.state.sequencesettings.getConnindex2()
+    },
+    seqfilters(){
+      return this.$store.state.sequencesettings.getAllSeqFilters()
     }
   },
   methods: {
@@ -101,6 +108,27 @@ export default {
       }
       this.$store.dispatch('setSequenceConnIndex', data)
     },
+    filterButtonStyle(name: string){
+      let value = this.$store.state.sequencesettings.getSeqFilter(name)
+
+      if (value) {
+        return 'btn-primary'
+      }
+      else
+        return 'btn-secondary'
+    },
+    buttonText(name: string){
+      let value = this.$store.state.sequencesettings.getSeqFilter(name)
+
+      if (value) {
+        return 'Hide ' + name
+      }
+      else
+        return 'Show ' + name
+    },
+    filterPressed(name: string){
+      this.$store.dispatch('changeSeqFilter', name)
+    }
   }
 }
 </script>
@@ -118,6 +146,12 @@ export default {
   background-color: darkcyan;
   height: 150px;
   width: 300px;
+}
+
+#filterbuttons{
+  float: left;
+  height: 150px;
+  width: 370px;
 }
 
 #endpoint2container{

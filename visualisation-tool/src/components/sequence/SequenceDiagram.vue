@@ -50,4 +50,9 @@ export default {
     width: 1000px;
     overflow: visible;
 }
+
+#nodiagram{
+    margin-left: 300px;
+    margin-top: 1px;
+}
 </style>

@@ -88,6 +88,9 @@ export default new Vuex.Store({
     },
     setVisSettings(state){
       state.sequencesettings.setVisSettings(state.vissettings)
+    },
+    changeSeqFilter(state, name){
+      state.sequencesettings.changeFilter(name)
     }
   },
   getters: {
@@ -197,6 +200,9 @@ export default new Vuex.Store({
     },
     setVisSettings(context){
       context.commit('setVisSettings')
+    },
+    changeSeqFilter(context, name){
+      context.commit('changeSeqFilter', name)
     }
   }
 });
