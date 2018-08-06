@@ -6,7 +6,7 @@
         + ' 850, ' + y_client + ' 830, ' + (y_client + 10)"
          stroke="black"  stroke-width="2px" fill="transparent"/>
  
-        <ArrowInfo :packet_conn1="packet_conn1" />
+        <ArrowInfo :packet_conn1="packet_conn1" :angle="angle" :y_coord="centerpoint_text"/>
          <g>
             <line x1="150" x2="130" y1="0" y2="0" stroke="black"/>
             <text x="80" y="0">{{ ( ytranslate / scale ).toFixed(2) }} </text>
@@ -23,7 +23,7 @@
         <polyline v-bind:points="'170, ' + (y_client -10) 
         + ' 150, ' + y_client + ' 170, ' + (y_client + 10)"
          stroke="black"  stroke-width="2px" fill="transparent"/>
-         <ArrowInfo :packet_conn1="packet_conn1" />
+         <ArrowInfo :packet_conn1="packet_conn1" :angle="angle" :y_coord="centerpoint_text"/>
           <g>
             <line x1="150" x2="130" v-bind:y1="y_client" v-bind:y2="y_client" stroke="black"/>
             <text x="80" v-bind:y="y_client">{{ ((ytranslate / scale ) + y_client/scale).toFixed(2) }} </text>
@@ -76,11 +76,21 @@ export default {
         y_client(){
             if (this.packet_conn2 !== null) {
                 let diff = Math.abs(parseFloat(this.packet_conn1.connectioninfo.time_delta) - parseFloat(this.packet_conn2.connectioninfo.time_delta))
-                return diff * this.scale
+                return diff * 1000 * this.scale
             }
             else
                 return (this.rtt_amount / 2) * this.scale
         },
+        angle(){
+            let opp = 700
+            let adj = this.y_client
+
+            let angle = Math.atan(opp/adj) * 180 / Math.PI
+            return 90 - angle
+        },
+        centerpoint_text(){
+            return this.y_client / 1.5
+        }
     },
     methods: {
         frameName(frametype: string){

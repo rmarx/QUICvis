@@ -26,7 +26,7 @@ export default {
           return this.$store.state.sequencesettings.getPackets()
       },
       getLargestTime(){
-          return this.$store.state.sequencesettings.getLargestTime() * 1000 * 10
+          return ((this.$store.state.sequencesettings.getLargestTime() * 1000 * 10) + (this.sequencepackets.length * this.margin))
       },
       getRTTScale(){
           let originalRTT = this.$store.state.sequencesettings.getFirstRTT()
