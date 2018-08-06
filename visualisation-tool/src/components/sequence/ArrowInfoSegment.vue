@@ -13,14 +13,21 @@
 <script lang="ts">
 import Vue from 'vue'
 import { getLongHeaderName, getFrameName } from '../../data/QuicNames'
+import { pack } from 'd3';
 export default {
     name: "ArrowInfoSegment",
     props: ['translate', 'framebgcolor', 'texttoshow', 'packet_conn', 'frameid'],
     computed: {
         headername() {
-            if (parseInt(this.packet_conn.headerinfo.header_form) === 0) return '1-RTT protect'
+            let packettext = ''
+            if (parseInt(this.packet_conn.headerinfo.header_form) === 0) 
+                packettext = '1-RTT protect'
             else
-                return getLongHeaderName(parseInt(this.packet_conn.headerinfo.long_packet_type))
+                packettext = getLongHeaderName(parseInt(this.packet_conn.headerinfo.long_packet_type))
+
+            if (parseInt(this.packet_conn.size) > 0)
+                packettext += '(' + this.packet_conn.size + 'B)'
+            return packettext
         },
         packetnr(){
             return 'PN:' + this.packet_conn.headerinfo.packet_number

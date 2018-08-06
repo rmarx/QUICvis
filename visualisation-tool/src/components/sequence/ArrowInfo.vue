@@ -46,10 +46,6 @@ export default {
         let compclass = Vue.extend(ArrowInfoSegment)
         let translate = 0;
 
-        let packettext = this.headername
-        
-        if (parseInt(this.packet_conn1.size) > 0)
-            packettext += '(' + this.packet_conn1.size + 'B)'
         let packetinstance = new compclass({
             store: this.$store,
             propsData: {
