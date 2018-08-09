@@ -1,8 +1,8 @@
 <template>
-    <text v-if="showheadername && texttoshow === 'header'" v-bind:transform="'translate(' + translate + ', 0)'" v-bind:fill="framebgcolor">
+    <text v-if="texttoshow === 'header'" v-bind:transform="'translate(' + translate + ', 0)'" v-bind:fill="showheadername">
         {{ headername}}
     </text>
-    <text v-else-if="showpacketnrs && texttoshow === 'packetnr'" v-bind:transform="'translate(' + translate + ', 0)'" v-bind:fill="framebgcolor">
+    <text v-else-if="texttoshow === 'packetnr'" v-bind:transform="'translate(' + translate + ', 0)'" v-bind:fill="showpacketnrs">
         {{ packetnr}}
     </text>
 
@@ -33,10 +33,16 @@ export default {
             return 'PN:' + this.packet_conn.headerinfo.packet_number
         },
         showpacketnrs(){
-            return this.$store.state.sequencesettings.getSeqFilter('packetnrs')
+            if (!this.$store.state.sequencesettings.getSeqFilter('packetnrs'))
+                return 'transparent'
+            else
+                return this.framebgcolor
         },
         showheadername(){
-            return this.$store.state.sequencesettings.getSeqFilter('headername')
+            if (!this.$store.state.sequencesettings.getSeqFilter('headername'))
+                return 'transparent'
+            else
+                return this.framebgcolor
         },
         showstreamnrs(){
             return this.$store.state.sequencesettings.getSeqFilter('streamnrs')
@@ -50,7 +56,7 @@ export default {
             let info = ''
             switch (parseInt(frame.frametype)) {
                 case 13:
-                    if (this.showpacketnrs)
+                    if (this.showpacketnrs !== 'transparent')
                         info = ' (' + frame.largest_ack + ')'
                     break;
                 case 16:
