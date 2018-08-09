@@ -3,7 +3,7 @@
         <line x1="150" y1="-100" x2="150" v-bind:y2="(getLargestTime + 100)"  stroke="black"/>
         <line x1="850" y1="-100" x2="850" v-bind:y2="(getLargestTime + 100)"  stroke="black"/>
         <SequenceArrow v-for="(packets, index) in sequencepackets" :packet_conn1="packets.packet_conn1" 
-        :packet_conn2="packets.packet_conn2" :baseheight="(index * margin)" :rttscale="getRTTScale" :est_rtt="packets.est_rtt"/>
+        :packet_conn2="packets.packet_conn2" :baseheight="(index * margin)" :start_time="packets.start_time"/>
     </svg>
     <div id="nodiagram" v-else>
         Current file selection is invalid
@@ -29,13 +29,6 @@ export default {
       getLargestTime(){
           return ((this.$store.state.sequencesettings.getLargestTime() * 1000 * 10) + (this.sequencepackets.length * this.margin))
       },
-      getRTTScale(){
-          let originalRTT = this.sequencepackets[0].est_rtt
-          let setRTT = this.$store.state.sequencesettings.get1filertt()
-          setRTT = parseFloat(setRTT) === 0 ? originalRTT : setRTT
-          console.log(originalRTT / setRTT)
-          return setRTT / originalRTT
-      }
   },
   components: {
       SequenceArrow

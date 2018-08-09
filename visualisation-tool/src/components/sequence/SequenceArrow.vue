@@ -1,9 +1,9 @@
 <template>
      <g v-if="clientsend"  v-bind:transform="'translate(0,' + (ytranslate + baseheight) + ')'" @click="putOnForeground">
-        <line v-bind:y1="0" v-bind:y2="y_client" x1="150" x2="850" stroke="lightgreen" stroke-width="2px" 
+        <line v-bind:y1="0" v-bind:y2="y_server" x1="150" x2="850" stroke="lightgreen" stroke-width="2px" 
         />
-        <polyline v-bind:points="'830, ' + (y_client - 10) 
-        + ' 850, ' + y_client + ' 830, ' + (y_client + 10)"
+        <polyline v-bind:points="'830, ' + (y_server - 10) 
+        + ' 850, ' + y_server + ' 830, ' + (y_server + 10)"
          stroke="black"  stroke-width="2px" fill="transparent"/>
  
         <ArrowInfo :packet_conn1="packet_conn1" :angle="angle" :y_coord="centerpoint_text"/>
@@ -12,13 +12,13 @@
             <text x="80" y="0">{{ ( ytranslate / scale ).toFixed(2) }} </text>
          </g>
          <g v-if="showtimestamps">
-            <line x1="850" x2="870" v-bind:y1="y_client" v-bind:y2="y_client" stroke="black"/>
-            <text x="875" v-bind:y="y_client">{{ ((ytranslate + y_client)/scale).toFixed(2) }} </text>
+            <line x1="850" x2="870" v-bind:y1="y_server" v-bind:y2="y_server" stroke="black"/>
+            <text x="875" v-bind:y="y_server">{{ ((ytranslate + y_server)/scale).toFixed(2) }} </text>
          </g>
     </g>
  
     <g v-else v-bind:transform="'translate(0,' + (ytranslate + baseheight) + ')'" @click="putOnForeground">
-        <line v-bind:y1="y_client" v-bind:y2="0" x1="150" x2="850" stroke="pink" stroke-width="2px" 
+        <line v-bind:y1="y_client" v-bind:y2="y_server" x1="150" x2="850" stroke="pink" stroke-width="2px" 
          stroke-dasharray="15 3 5 3"/>
         <polyline v-bind:points="'170, ' + (y_client -10) 
         + ' 150, ' + y_client + ' 170, ' + (y_client + 10)"
@@ -29,8 +29,8 @@
             <text x="80" v-bind:y="y_client">{{ ((ytranslate / scale ) + y_client/scale).toFixed(2) }} </text>
          </g>
          <g v-if="showtimestamps">
-            <line x1="850" x2="870" v-bind:y1="0" v-bind:y2="0" stroke="black"/>
-            <text x="875" v-bind:y="0">{{ (ytranslate/scale).toFixed(2) }} </text>
+            <line x1="850" x2="870" v-bind:y1="y_server" v-bind:y2="y_server" stroke="black"/>
+            <text x="875" v-bind:y="y_server">{{ ((ytranslate / scale ) + y_server/scale).toFixed(2) }} </text>
          </g>
     </g>
 </template>
@@ -42,7 +42,7 @@ import { getLongHeaderName, getFrameName } from '../../data/QuicNames'
 import { svg } from 'd3';
 export default {
     name: "SequenceArrow",
-    props: ['packet_conn1', 'baseheight', 'rttscale', 'packet_conn2', 'est_rtt'],
+    props: ['packet_conn1', 'baseheight', 'packet_conn2', 'start_time'],
     data() {
         return {
             scale: 10,
@@ -66,30 +66,45 @@ export default {
                 else
                     return t_p2 * 1000 * this.scale
             }
-            return (parseFloat(this.packet_conn1.connectioninfo.time_delta) * 1000) * this.scale
+            return parseFloat(this.start_time) * this.scale
         },
         headername() {
             if (parseInt(this.packet_conn1.headerinfo.header_form) === 0) return '1-RTT protect'
             else
                 return getLongHeaderName(parseInt(this.packet_conn1.headerinfo.long_packet_type))
         }, 
-        y_client(){
+        y_server(){
+            if (this.packet_conn2 !== null) {
+                if (this.clientsend) {
+                    let diff = Math.abs(parseFloat(this.packet_conn1.connectioninfo.time_delta) - parseFloat(this.packet_conn2.connectioninfo.time_delta))
+                    return diff * 1000 * this.scale
+                }
+                else
+                    return 0
+            }
+            else
+                return (this.rtt_amount / 2) * this.scale
+        },
+        y_client() {
             if (this.packet_conn2 !== null) {
                 let diff = Math.abs(parseFloat(this.packet_conn1.connectioninfo.time_delta) - parseFloat(this.packet_conn2.connectioninfo.time_delta))
                 return diff * 1000 * this.scale
             }
             else
-                return (this.est_rtt / 2) * this.scale * this.rttscale
+            return this.rtt_amount * this.scale
         },
         angle(){
             let opp = 700
-            let adj = this.y_client
+            let adj = this.y_server
 
             let angle = Math.atan(opp/adj) * 180 / Math.PI
             return 90 - angle
         },
         centerpoint_text(){
-            return this.y_client / 1.5
+            if (this.clientsend)
+                return this.y_server / 1.5
+            else
+                return this.y_client / 1.2
         },
         showtimestamps(){
             return this.$store.state.sequencesettings.getSeqFilter('timestamps')

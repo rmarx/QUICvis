@@ -4,7 +4,7 @@ import { QuicPacket, Ack } from "@/data/quic";
 export interface SequencePackets {
     packet_conn1: QuicPacket,
     packet_conn2: QuicPacket|null;
-    est_rtt: number
+    start_time: number
 }
 
 export interface SequenceFilter {
@@ -198,7 +198,7 @@ export default class SequenceSettings {
         let packets_c1 = this._vissettings.getFile(this._traceindex1).getConn(this._connindex1).getSequencePackets()
 
         packets_c1.forEach((packet) => {
-            seqpackets.push({packet_conn1: packet, packet_conn2: null, est_rtt: 0})
+            seqpackets.push({packet_conn1: packet, packet_conn2: null, start_time: 0})
         })
 
         if (this._traceindex2 >= 0 && this._connindex2 >= 0){
@@ -212,19 +212,31 @@ export default class SequenceSettings {
             })
         }
         else {
-            let RTT = 1
-            let newRTT: number
+            let cl_rtt_factor = 0
+            let se_rtt_factor = 0
+            let cl_rtt_used = false
+            let se_rtt_used = false
             for (let i = 0; i < packets_c1.length; i++) {
-                if (this.isPacketClientSend(packets_c1[i].headerinfo.dest_connection_id))
-                    newRTT = this.getRTTOfPacket(packets_c1[i], packets_c1)
-                if ( newRTT >= 0) {
-                    RTT = newRTT
+                if (this.isPacketClientSend(packets_c1[i].headerinfo.dest_connection_id) && se_rtt_used){
+                    se_rtt_factor++
+                    se_rtt_used = false
                 }
-                seqpackets[i].est_rtt = RTT
+                if (!this.isPacketClientSend(packets_c1[i].headerinfo.dest_connection_id) && cl_rtt_used){
+                    cl_rtt_factor++
+                    cl_rtt_used = false
+                }
+
+                if (this.isPacketClientSend(packets_c1[i].headerinfo.dest_connection_id)){
+                    seqpackets[i].start_time = cl_rtt_factor * this._1filertt
+                    cl_rtt_used = true
+                }
+
+                if (!this.isPacketClientSend(packets_c1[i].headerinfo.dest_connection_id)){
+                    seqpackets[i].start_time = se_rtt_factor * this._1filertt
+                    se_rtt_used = true
+                }
             }
         }
-
-
         return seqpackets
     }
 
