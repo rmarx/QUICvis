@@ -39,7 +39,7 @@ import Vue from 'vue'
 import ArrowInfo from './ArrowInfo.vue'
 import * as d3 from 'd3'
 import { getLongHeaderName, getFrameName } from '../../data/QuicNames'
-import { svg } from 'd3';
+import { svg, interpolateBrBG } from 'd3';
 export default {
     name: "SequenceArrow",
     props: ['packet_conn1', 'baseheight', 'packet_conn2', 'start_time'],
@@ -97,14 +97,21 @@ export default {
             let opp = 700
             let adj = this.y_server
 
+            if (!this.clientsend && this.packet_conn2 !== null)
+                adj = this.y_client
+
             let angle = Math.atan(opp/adj) * 180 / Math.PI
             return 90 - angle
         },
         centerpoint_text(){
             if (this.clientsend)
                 return this.y_server / 1.5
-            else
-                return this.y_client / 1.2
+            else {
+                if (this.packet_conn2 !== null)
+                    return this.y_client / 1.5
+                else
+                    return this.y_client / 1.2
+            }
         },
         showtimestamps(){
             return this.$store.state.sequencesettings.getSeqFilter('timestamps')
