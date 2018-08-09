@@ -144,13 +144,11 @@ export default class ConnWrapper{
         if (this._conn.CID_endpoint1 && this._conn.CID_endpoint2) {
             isclient = this._conn.CID_endpoint1.indexOf(dcid) > -1
 
-            if (this._conn.CID_endpoint1.length < this._conn.CID_endpoint2.length)
-                isclient = !isclient
-
-            return isclient
+            return !isclient
         }
-        else
+        else {
             return false
+        }
     }
 
     public getSelectedPacket(): QuicPacket|null{

@@ -20,6 +20,13 @@ export class Ngtcp2LogParser extends Parser{
         let trace = this.createTraceObject(name)
         let processed_file = this.processFile(tracefile);
         trace.connection = this.parseAllPackets(processed_file)
+
+        for (let i = 0; i < trace.connection.length; i++) {
+            if (trace.connection[i].packets.length === 0){
+                trace.connection.splice(i, 1)
+                i--
+            }
+        }
         return trace
     }
 
@@ -220,7 +227,7 @@ export class Ngtcp2LogParser extends Parser{
             }
         }
 
-        if (connindex === -1) 
+        if (connindex === -1)
             connindex = this.createConnection(content, connloginfo, connections)
 
         let cide1index = connections[connindex].CID_endpoint1!.length - 1
@@ -233,6 +240,7 @@ export class Ngtcp2LogParser extends Parser{
             version: connloginfo.version,
             packet_number: parseInt(line[3])
         }
+
         return longheader;
     }
 

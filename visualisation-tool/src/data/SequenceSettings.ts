@@ -214,7 +214,7 @@ export default class SequenceSettings {
         else {
             let cl_rtt_factor = 0
             let se_rtt_factor = 0
-            let cl_rtt_used = false
+            let cl_rtt_used = true
             let se_rtt_used = false
             for (let i = 0; i < packets_c1.length; i++) {
                 if (this.isPacketClientSend(packets_c1[i].headerinfo.dest_connection_id) && se_rtt_used){
