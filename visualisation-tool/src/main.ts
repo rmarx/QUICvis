@@ -59,7 +59,7 @@ data.then((result) => {
       startcolor = tracewrap.setTrace(parsedfile, startcolor, conncolors)
       store.dispatch('addFile', tracewrap)
     }
-    if (element['fileext'] === '.log') {
+    if (element['fileext'] === '.ngtcp2-log') {
       let parsedfile = ngtcp2parser.parse(element['filename'], element['filecontent'])
       startcolor = tracewrap.setTrace(parsedfile, startcolor, conncolors)
       store.dispatch('addFile', tracewrap)
