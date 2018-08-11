@@ -12,6 +12,7 @@ import './../node_modules/jquery/dist/jquery.min.js';
 import './../node_modules/bootstrap/dist/css/bootstrap.min.css';
 import './../node_modules/bootstrap/dist/js/bootstrap.min.js';
 import './../node_modules/@fortawesome/fontawesome-free/css/all.css';
+import { QuickerLogParser } from '@/parser/QuickerLogParser';
 
 Vue.use(VueRouter);
 
@@ -48,6 +49,7 @@ let conncolors = [
 let data = axios.get(request).then((response) => { return response.data })
 let pcapparser = new PcapParser()
 let ngtcp2parser = new Ngtcp2LogParser()
+let quickerparser = new QuickerLogParser()
 let startcolor = 0
 data.then((result) => {
   let container = result['filescontainer']
@@ -63,6 +65,12 @@ data.then((result) => {
       let parsedfile = ngtcp2parser.parse(element['filename'], element['filecontent'])
       startcolor = tracewrap.setTrace(parsedfile, startcolor, conncolors)
       store.dispatch('addFile', tracewrap)
+    }
+
+    if (element['fileext'] === '.quicker-log') {
+      let parsedfile = quickerparser.parse(element['filename'], element['filecontent'])
+      startcolor = tracewrap.setTrace(parsedfile, startcolor, conncolors)
+      //store.dispatch('addFile', tracewrap)
     }
   });
 })
