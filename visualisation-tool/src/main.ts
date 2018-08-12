@@ -70,7 +70,7 @@ data.then((result) => {
     if (element['fileext'] === '.quicker-log') {
       let parsedfile = quickerparser.parse(element['filename'], element['filecontent'])
       startcolor = tracewrap.setTrace(parsedfile, startcolor, conncolors)
-      //store.dispatch('addFile', tracewrap)
+      store.dispatch('addFile', tracewrap)
     }
   });
 })

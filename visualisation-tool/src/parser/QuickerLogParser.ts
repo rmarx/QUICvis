@@ -12,7 +12,7 @@ export class QuickerLogParser extends Parser{
         tracefile = this.removeEscapeCharacters(tracefile)
         let packets = this.divideTextByPackets(tracefile)
 
-        this.parsePackets(packets)
+        trace.connection = this.parsePackets(packets)
         
         return trace
     }
@@ -41,14 +41,14 @@ export class QuickerLogParser extends Parser{
         return trace
     }
 
-    private parsePackets(packets_string: Array<string>){
+    private parsePackets(packets_string: Array<string>): Array<QuicConnection>{
         let starttime = this.getTime(packets_string[0].split('\n')[0])
         let connections = new Array<QuicConnection>()
         packets_string.forEach((packet) => {
             this.parsePacket(packet, starttime, connections)
         })
 
-        console.log(connections)
+        return connections
     }
 
     private getTime(timestamp: string): number{
@@ -60,10 +60,10 @@ export class QuickerLogParser extends Parser{
     private converTimeToMs(timestamp: string): number{
         let splittime = timestamp.split(':')
         let seconds = splittime[2].split('.')
-        let time = parseFloat(seconds[1])
-        time += parseFloat(seconds[0]) * 1000
-        time += parseFloat(splittime[1]) * 60 * 1000
-        time += parseFloat(splittime[0]) * 60 * 60 * 1000
+        let time = parseFloat(seconds[1])/1000
+        time += parseFloat(seconds[0])
+        time += parseFloat(splittime[1]) * 60
+        time += parseFloat(splittime[0]) * 60 * 60
 
         return time
     }
@@ -73,15 +73,39 @@ export class QuickerLogParser extends Parser{
         let conn_info = this.parseConnectionInfo(splitstring[0], starttime)
         let headerinfo = this.parseHeaderInfo(splitstring[1] + splitstring[2])
 
+        splitstring.splice(0,3)
+
+        for (let i = 0; i < splitstring.length; i++) {
+            splitstring[i] = splitstring[i].replace(/\s+/, '')
+        }
+
+        let payload: Payload = {
+            framelist: this.parsePayload(this.groupDataPerFrame(splitstring))
+        }
+
         let packet: QuicPacket = {
             connectioninfo: conn_info,
             headerinfo: headerinfo,
-            payloadinfo: null,
+            payloadinfo: payload,
             serverinfo: null,
             size: 0
         }
-
         this.addPacketToConnection(packet, connections)
+    }
+
+    private groupDataPerFrame(splitframeinfo: Array<string>): Array<string>{
+        let splitnow = true
+        let framenames = ['PADDING', 'RST_STREAM', 'CONNECTION_CLOSE', 'APPLICATION_CLOSE', 'MAX_DATA', 'MAX_STREAM_DATA', 'MAX_STREAM_ID', 'PING', 
+            'BLOCKED', 'STREAM_BLOCKED', 'STREAM_ID_BLOCKED', 'NEW_CONNECTION_ID', 'STOP_SENDING', 'ACK', 'PATH_CHALLENGE', 'PATH_RESPONSE', 'STREAM']
+        for (let i = 0; i < splitframeinfo.length; i++) {
+            if (framenames.indexOf(splitframeinfo[i].split(' ')[0]) === -1 && i + 1 < splitframeinfo.length && splitnow){
+                splitframeinfo[i - 1] = splitframeinfo[i - 1] + ' ' + splitframeinfo[i]
+                splitframeinfo.splice(i,1)
+                i--
+            }
+        }
+
+        return splitframeinfo
     }
 
     private parseConnectionInfo(conninfo_string: string, starttime: number): ConnectionInfo{
@@ -177,6 +201,134 @@ export class QuickerLogParser extends Parser{
             default:
                 break;
         }
+    }
+
+    private parsePayload(splitframes: Array<string>) : Array<Frame>{
+        let frame_array = Array<Frame>()
+
+
+        splitframes.forEach((frame) => {
+            if (frame !== '')
+                frame_array.push(this.parseFrameType(frame))
+        });
+            
+        return frame_array
+    }
+
+    private parseFrameType(frame: string): Frame{
+        let splitframe = frame.split(' ')[1]
+        let frametype = parseInt(splitframe.substr(1, splitframe.length - 2))
+
+        switch (frametype) {
+            case 0:
+                return this.parsePadding(frame, frametype)
+            /*case 1:
+                return this.parseRstStream(frame, frametype)
+            case 2:
+                return this.parseConnectionClose(frame, frametype)
+            case 3:
+                return this.parseApplicationClose(frame, frametype)
+            case 4:
+                return this.parseMaxData(frame, frametype)
+            case 5:
+                return this.parseMaxStreamData(frame, frametype)*/
+            case 6:
+                return this.parseMaxStreamId(frame, frametype)
+            /*case 7:
+                return this.parsePing(frametype)
+            case 8:
+                return this.parseBlocked(frame, frametype)
+            case 9:
+                return this.parseStreamBlocked(frame, frametype)
+            case 10:
+                return this.parseStreamIdBlocked(frame, frametype)
+            case 11:
+                return this.parseNewConnectionId(frame, frametype)
+            case 12:
+                return this.parseStopSending(frame, frametype)*/
+            case 13:
+                return this.parseAck(frame, frametype)
+            /*case 14:
+                return this.parsePathChallenge(frame, frametype)
+            case 15:
+                return this.parsePathResponse(frame, frametype)*/
+            case 16:
+            case 17:
+            case 18:
+            case 19:
+            case 20:
+            case 21:
+            case 22:
+            case 23:
+                return this.parseStream(frame, frametype)
+            default:
+                return this.parsePing(frametype)
+        }
+    }
+
+    private parsePadding(frame: string, frametype: number): Padding{
+        let splitframe = frame.split(/\s+/g)
+        let paddingframe: Padding = {
+            frametype: frametype,
+            length: parseInt(splitframe[3])
+        }
+
+        return paddingframe
+    }
+
+    private parsePing(frametype: number): Ping{
+        let ping: Ping = {
+            frametype: frametype,
+            totext: "Ping"
+        }
+
+        return ping
+    }
+
+    private parseMaxStreamId(frame: string, frametype: number): Max_Stream_Id{
+        let splitframe = frame.split(/\s+/g)
+        let max_stream_id: Max_Stream_Id = {
+            frametype: frametype,
+            maximum_stream_id: parseInt(splitframe[3].split('=')[1])
+        }
+
+        return max_stream_id
+    }
+
+    private parseStream(frame: string, frametype: number): Stream{
+        let splitframe = frame.split(/\s+/g)
+
+        let streamdata = ""
+        for (let i = 9; i < splitframe.length; i++) {
+            streamdata += splitframe[i]
+        }
+        let stream: Stream = {
+            frametype: frametype,
+            type_flags: {
+                off_flag: splitframe[4].split('=')[1] == "1",
+                len_flag: splitframe[3].split('=')[1] == "1",
+                fin_flag: splitframe[2].split('=')[1] == "1"
+            },
+            stream_id: parseInt(splitframe[6].substr(1, splitframe[6].length - 2)),
+            offset: parseInt(splitframe[8].split('=')[1]),
+            length: parseInt(splitframe[7].split('=')[1]),
+            stream_data: streamdata
+        }
+
+        return stream
+    }
+
+    private parseAck(frame: string, frametype: number): Ack{
+        let splitframe = frame.split(/\s+/g)
+        let ack: Ack = {
+            frametype: frametype,
+            largest_ack: parseInt(splitframe[3].split('=')[1]),
+            ack_delay: parseInt(splitframe[5].split('=')[1]),
+            ack_block_count: parseInt(splitframe[8].split('=')[1]),
+            ack_blocks: Array<AckBlock>()
+        }
+
+        return ack
     }
 
     private addPacketToConnection(packet: QuicPacket, connections: Array<QuicConnection>): number{

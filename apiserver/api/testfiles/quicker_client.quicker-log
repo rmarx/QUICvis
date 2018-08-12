@@ -27,10 +27,6 @@ QUICker client connecting to 127.0.0.1:4433
     [31mSTREAM (0x17) [0m FIN=1 LEN=1 OFF=1
     StreamID (0x04) length=16 offset=0
       474554202f696e6465782e68746d6c0a          'GET /index.html\n'
-protected1RTT client key: 1df3af5cbc7c617fc183d768316a5f0050ea2d5f67d533e8ffceaac74755b148
-protected1RTT client iv: 35373e65bf5afb4bd0985194
-protected1RTT server key: 9dbf2e67e2ab297c61bb82ef2791988654f3768aadeb447a20e1877d9489210b
-protected1RTT server iv: cdffae9c7dd9adf3e0edd09e
 2018-08-11T14:07:50.868 
   [31mTX Protected1RTT(0x5)[0m, Dest CID: 0x1185f781db17936ac367c85945909b3cfc[31m
        PKN: 2118860158[0m, spinbit: 0
