@@ -47,7 +47,6 @@ export class QuickerLogParser extends Parser{
         packets_string.forEach((packet) => {
             this.parsePacket(packet, starttime, connections)
         })
-
         return connections
     }
 
@@ -72,6 +71,11 @@ export class QuickerLogParser extends Parser{
         let splitstring = packet_string.split('\n')
         let conn_info = this.parseConnectionInfo(splitstring[0], starttime)
         let headerinfo = this.parseHeaderInfo(splitstring[1] + splitstring[2])
+        
+        let headerpart = splitstring[2].split(/\s+/g)
+        let pksize = 0
+        if (headerpart[3] === "payload")
+            pksize = parseFloat(headerpart[5])
 
         splitstring.splice(0,3)
 
@@ -82,13 +86,12 @@ export class QuickerLogParser extends Parser{
         let payload: Payload = {
             framelist: this.parsePayload(this.groupDataPerFrame(splitstring))
         }
-
         let packet: QuicPacket = {
             connectioninfo: conn_info,
             headerinfo: headerinfo,
             payloadinfo: payload,
             serverinfo: null,
-            size: 0
+            size: pksize
         }
         this.addPacketToConnection(packet, connections)
     }
