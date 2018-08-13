@@ -265,7 +265,6 @@ export class Ngtcp2LogParser extends Parser{
             header_form: 0,
             dest_connection_id: line[4] === "rx" ? connections[connindex].CID_endpoint1![cide1index] : connections[connindex].CID_endpoint2![cide2index],
             short_packet_type: parseInt(this.splitOnSymbol(line[5], "(").slice(0, -1)),
-            omit_conn_id: false,
             key_phase: false,
             packet_number: parseInt(line[3])
         }

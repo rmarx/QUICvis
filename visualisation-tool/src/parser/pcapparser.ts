@@ -222,7 +222,6 @@ export class PcapParser extends Parser{
             header_form: quic_info["quic.header_form"],
             short_packet_type: quic_info["quic.short.packet_type"],
             dest_connection_id: quic_info["quic.dcid"],
-            omit_conn_id: quic_info["quic.short.ocid_flag"] === true,
             key_phase: quic_info["quic.short.kp_flag"] === true,
             packet_number: parseInt(quic_info["quic.packet_number_full"]),
         } 

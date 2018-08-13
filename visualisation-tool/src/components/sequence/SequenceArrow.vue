@@ -59,7 +59,7 @@ export default {
         ytranslate(){
             if (this.packet_conn2 !== null) {
                 let t_p1 = parseFloat(this.packet_conn1.connectioninfo.time_delta)
-                let t_p2 = parseFloat(this.packet_conn2.connectioninfo.time_delta)
+                let t_p2 = parseFloat(this.packet_conn2.connectioninfo.time_delta) + ((this.rtt_amount / 2) / 1000)
 
                 if (t_p1 < t_p2)
                     return t_p1 * 1000 * this.scale
@@ -76,7 +76,8 @@ export default {
         y_server(){
             if (this.packet_conn2 !== null) {
                 if (this.clientsend) {
-                    let diff = Math.abs(parseFloat(this.packet_conn1.connectioninfo.time_delta) - parseFloat(this.packet_conn2.connectioninfo.time_delta))
+                    let diff = Math.abs(parseFloat(this.packet_conn1.connectioninfo.time_delta) 
+                        - (parseFloat(this.packet_conn2.connectioninfo.time_delta) + (this.rtt_amount / 2) / 1000))
                     return diff * 1000 * this.scale
                 }
                 else
@@ -87,7 +88,7 @@ export default {
         },
         y_client() {
             if (this.packet_conn2 !== null) {
-                let diff = Math.abs(parseFloat(this.packet_conn1.connectioninfo.time_delta) - parseFloat(this.packet_conn2.connectioninfo.time_delta))
+                let diff = Math.abs(parseFloat(this.packet_conn1.connectioninfo.time_delta) - (parseFloat(this.packet_conn2.connectioninfo.time_delta) + (this.rtt_amount / 2) / 1000))
                 return diff * 1000 * this.scale
             }
             else

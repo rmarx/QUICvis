@@ -48,7 +48,6 @@ export interface LongHeader extends Header{
 export interface ShortHeader extends Header{
     header_form: number|null
     dest_connection_id: string|null
-    omit_conn_id: boolean
     key_phase: boolean
     short_packet_type: number
     packet_number: number

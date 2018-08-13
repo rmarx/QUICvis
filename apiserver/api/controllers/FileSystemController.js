@@ -16,7 +16,8 @@ exports.gettestfiles = function(req, res){
                 "filecontent": JSON.parse(filecontent)
             })
         }
-        if (ext === '.log'){
+        let splitext = ext.split('-')
+        if (splitext.length === 2 && splitext[1] === 'log'){
             filecontent = fs.readFileSync(filefolder + filename, 'utf-8')
             filescontainer.push({
                 "filename": filename,
