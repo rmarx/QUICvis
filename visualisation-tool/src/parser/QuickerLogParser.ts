@@ -230,11 +230,11 @@ export class QuickerLogParser extends Parser{
             case 2:
                 return this.parseConnectionClose(frame, frametype)
             case 3:
-                return this.parseApplicationClose(frame, frametype)
+                return this.parseApplicationClose(frame, frametype)*/
             case 4:
                 return this.parseMaxData(frame, frametype)
             case 5:
-                return this.parseMaxStreamData(frame, frametype)*/
+                return this.parseMaxStreamData(frame, frametype)
             case 6:
                 return this.parseMaxStreamId(frame, frametype)
             /*case 7:
@@ -251,10 +251,10 @@ export class QuickerLogParser extends Parser{
                 return this.parseStopSending(frame, frametype)*/
             case 13:
                 return this.parseAck(frame, frametype)
-            /*case 14:
+            case 14:
                 return this.parsePathChallenge(frame, frametype)
             case 15:
-                return this.parsePathResponse(frame, frametype)*/
+                return this.parsePathResponse(frame, frametype)
             case 16:
             case 17:
             case 18:
@@ -277,6 +277,27 @@ export class QuickerLogParser extends Parser{
         }
 
         return paddingframe
+    }
+
+    private parseMaxData(frame: any, frametype: number): Max_Data{
+        let splitframe = frame.split(/\s+/g)
+        let max_data: Max_Data = {
+            frametype: frametype,
+            maximum_data: parseInt(splitframe[3].split('=')[1])
+        }
+
+        return max_data
+    }
+
+    private parseMaxStreamData(frame: any, frametype: number): Max_Stream_Data{
+        let splitframe = frame.split(/\s+/g)
+        let max_stream_data: Max_Stream_Data = {
+            frametype: frametype,
+            stream_id: parseInt(splitframe[3].substr(1, splitframe[6].length - 2)),
+            maximum_data: parseInt(splitframe[5].split('=')[1])
+        }
+
+        return max_stream_data
     }
 
     private parsePing(frametype: number): Ping{
@@ -332,6 +353,26 @@ export class QuickerLogParser extends Parser{
         }
 
         return ack
+    }
+
+    private parsePathChallenge(frame: any, frametype: number): Path_Challenge{
+        let splitframe = frame.split(/\s+/g)
+        let path_challenge: Path_Challenge = {
+            frametype: frametype,
+            data: splitframe[2].split('=')[1]
+        }
+
+        return path_challenge
+    }
+
+    private parsePathResponse(frame: any, frametype: number): Path_Response{
+        let splitframe = frame.split(/\s+/g)
+        let path_response: Path_Response = {
+            frametype: frametype,
+            data: splitframe[2].split('=')[1]
+        }
+
+        return path_response
     }
 
     private addPacketToConnection(packet: QuicPacket, connections: Array<QuicConnection>): number{
