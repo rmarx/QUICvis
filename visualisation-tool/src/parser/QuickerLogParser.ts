@@ -293,8 +293,8 @@ export class QuickerLogParser extends Parser{
         let splitframe = frame.split(/\s+/g)
         let max_stream_data: Max_Stream_Data = {
             frametype: frametype,
-            stream_id: parseInt(splitframe[3].substr(1, splitframe[6].length - 2)),
-            maximum_data: parseInt(splitframe[5].split('=')[1])
+            stream_id: parseInt(splitframe[2].split('=')[1]),
+            maximum_data: parseInt(splitframe[4].split('=')[1])
         }
 
         return max_stream_data

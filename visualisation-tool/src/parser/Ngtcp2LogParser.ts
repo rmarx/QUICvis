@@ -221,13 +221,13 @@ export class Ngtcp2LogParser extends Parser{
         let connindex = -1
         for (let i = 0; i < connections.length; i++) {
             let el = connections[i]
-            if (el.CID_endpoint1!.findIndex(x => x === servercid) !== -1){
+            if (el.CID_endpoint2!.findIndex(x => x === servercid) !== -1){
                 connindex = i;
                 break;
             }
         }
 
-        if (connindex === -1)
+        if (connindex === -1) 
             connindex = this.createConnection(content, connloginfo, connections)
 
         let cide1index = connections[connindex].CID_endpoint1!.length - 1
@@ -250,7 +250,7 @@ export class Ngtcp2LogParser extends Parser{
         let connindex = -1
         for (let i = 0; i < connections.length; i++) {
             let el = connections[i]
-            if (el.CID_endpoint1!.findIndex(x => x === servercid) !== -1){
+            if (el.CID_endpoint2!.findIndex(x => x === servercid) !== -1){
                 connindex = i;
                 break;
             }
@@ -614,8 +614,8 @@ export class Ngtcp2LogParser extends Parser{
 
             connloginfo.version = '0xff00000b'
             connection = {
-                CID_endpoint1: Array(this.parseCID(this.splitOnSymbol(splitline[5], "=")), this.parseCID(splitline[1])),
-                CID_endpoint2: Array(this.parseCID(this.splitOnSymbol(splitline[6], "="))),
+                CID_endpoint1: Array(this.parseCID(this.splitOnSymbol(splitline[6], "="))),
+                CID_endpoint2: Array(this.parseCID(splitline[1]), this.parseCID(this.splitOnSymbol(splitline[5], "="))),
                 packets: Array<QuicPacket>()
             }
         }

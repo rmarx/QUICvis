@@ -298,7 +298,7 @@ export class PcapParser extends Parser{
             frametype: frametype,
             length: frame["quic.frame_type.padding.length"]
         }
-
+        
         return paddingframe
     }
 
@@ -317,10 +317,10 @@ export class PcapParser extends Parser{
         let conn_close: Connection_Close = {
             frametype: frametype,
             error_code: frame["quic.frame_type.cc.error_code"],
-            phrase_length: frame["quic.frame_type.cc.reason_phrase_length"],
+            phrase_length: frame["quic.frame_type.cc.reason_phrase.length"],
             reason_phrase: frame["quic.frame_type.cc.reason_phrase"]
         }
-
+        
         return conn_close
     }
 
@@ -340,7 +340,7 @@ export class PcapParser extends Parser{
             frametype: frametype,
             maximum_data: frame["quic.frame_type.md.maximum_data"]
         }
-
+        
         return max_data
     }
 
@@ -350,7 +350,7 @@ export class PcapParser extends Parser{
             stream_id: frame["quic.frame_type.msd.stream_id"],
             maximum_data: frame["quic.frame_type.msd.maximum_stream_data"]
         }
-
+        
         return max_stream_data
     }
 
@@ -359,7 +359,7 @@ export class PcapParser extends Parser{
             frametype: frametype,
             maximum_stream_id: frame["quic.frame_type.msi.stream_id"]
         }
-
+        
         return max_stream_id
     }
 
@@ -375,19 +375,17 @@ export class PcapParser extends Parser{
     private parseBlocked(frame: any, frametype: number): Blocked{
         let blocked: Blocked = {
             frametype: frametype,
-            offset: frame["quic.stream.offset"]
+            offset: frame["quic.frame_type.sb.offset"]
         }
-
         return blocked
     }
 
     private parseStreamBlocked(frame: any, frametype: number): Stream_Blocked{
         let stream_blocked: Stream_Blocked = {
             frametype: frametype,
-            stream_id: frame["quic.frame_type.blocked.stream_id"],
-            offset: frame["quic.frame_type.blocked.offset"]
+            stream_id: frame["quic.frame_type.sb.stream_id"],
+            offset: frame["quic.frame_type.sb.offset"]
         }
-
         return stream_blocked
     }
 
@@ -438,7 +436,7 @@ export class PcapParser extends Parser{
             frametype: frametype,
             data: frame["quic.frame_type.path_challenge.data"]
         }
-
+        
         return path_challenge
     }
 
@@ -447,7 +445,7 @@ export class PcapParser extends Parser{
             frametype: frametype,
             data: frame["quic.frame_type.path_response.data"]
         }
-
+        
         return path_response
     }
 
@@ -460,12 +458,11 @@ export class PcapParser extends Parser{
                 len_flag: frame_flags["quic.frame_type.stream.len"] == "1",
                 fin_flag: frame_flags["quic.frame_type.stream.fin"] == "1"
             },
-            stream_id: frame["quic.stream.stream_id"],
+            stream_id: parseInt(frame["quic.stream.stream_id"]),
             offset: frame["quic.stream.offset"],
             length: frame["quic.stream.length"],
             stream_data: frame["quic.stream_data"]
         }
-
         return stream
     }
 
