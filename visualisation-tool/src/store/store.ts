@@ -91,6 +91,9 @@ export default new Vuex.Store({
     },
     changeSeqFilter(state, name){
       state.sequencesettings.changeFilter(name)
+    },
+    setSequenceScale(state, scale){
+      state.sequencesettings.setTimeScale(scale);
     }
   },
   getters: {
@@ -144,7 +147,7 @@ export default new Vuex.Store({
     },
     getSelectedPacket(state){
       return fileindex => connindex => state.vissettings.getFile(fileindex).getConn(connindex).getSelectedPacket()
-    }
+    },
   },
   actions: {
     addFile(context, tracewrap: TraceWrapper){
@@ -203,6 +206,9 @@ export default new Vuex.Store({
     },
     changeSeqFilter(context, name){
       context.commit('changeSeqFilter', name)
+    },
+    setSequenceScale(context, scale){
+      context.commit('setSequenceScale', scale)
     }
   }
 });

@@ -20,6 +20,7 @@ export default class SequenceSettings {
     private _connindex2: number;
 
     private _1filertt: number;
+    private _time_scale: number;
 
     private _vissettings: VisSettings;
     private _seqfilters: Array<SequenceFilter>
@@ -32,6 +33,7 @@ export default class SequenceSettings {
         this._connindex2 = -1;
 
         this._1filertt = 0;
+        this._time_scale = 10;
         this._vissettings = new VisSettings();
 
         this._seqfilters = new Array()
@@ -121,6 +123,14 @@ export default class SequenceSettings {
 
     public setVisSettings(vis: VisSettings){
         this._vissettings = vis;
+    }
+
+    public getTimeScale(): number{
+        return this._time_scale
+    }
+
+    public setTimeScale(scale: number) {
+        this._time_scale = scale
     }
 
     public getValidFiles(): boolean{

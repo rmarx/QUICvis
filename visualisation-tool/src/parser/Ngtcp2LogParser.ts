@@ -374,12 +374,15 @@ export class Ngtcp2LogParser extends Parser{
                     case 13: //ack
                         let ack_block_count = parseInt(this.splitOnSymbol(frameinfo[3], "="))
                         let ackblocksinfo = Array<Array<string>>()
+                        let k = 0
                         for (let j = 1; j < ack_block_count + 1; j++){
-                            i += j;
-                            splitline = content[i].split(" ");
+                            splitline = content[i + j].split(" ");
                             let blockinfo = splitline.slice(6)
                             ackblocksinfo.push(blockinfo)
+                            k = k + j
                         }
+                        i += k
+                        
                         framelist.push(this.parseAck(frameinfo, ackblocksinfo, frametype))
                         i++;
                         break;

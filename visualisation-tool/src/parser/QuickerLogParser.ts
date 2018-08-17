@@ -119,7 +119,6 @@ export class QuickerLogParser extends Parser{
             dst_port_number: -1,
             time_delta: this.getTime(conninfo_string) - starttime
         }
-
         return conn_info
     }
     private parseHeaderInfo(headerinfo_string: string): Header {
