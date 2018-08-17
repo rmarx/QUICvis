@@ -72,6 +72,13 @@ export class Ngtcp2LogParser extends Parser{
                             isend = true
                             i--;
                         }
+                        if ((splitline[2] === "frm" && splitline[4] === 'tx')) {
+                            isend = true
+                            i--;
+                            let split = currentpacket.split('\n')
+                            split.splice(split.length-1,1)
+                            currentpacket = split.toString()
+                        }
                     }
                 }
                 //check if it's an outgoing packet
