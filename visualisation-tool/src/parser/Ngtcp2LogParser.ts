@@ -27,7 +27,7 @@ export class Ngtcp2LogParser extends Parser{
                 i--
             }
         }
-        
+
         return trace
     }
 
@@ -94,6 +94,8 @@ export class Ngtcp2LogParser extends Parser{
                         currentpacket += "\n" + partfile
                     }
                 }
+                if (splitline[2] === "rcv" && splitline[3] === "packet" && splitline[4] === "lost")
+                    currentpacket += "\n" + partfile
             }
         }
         if (currentpacket !== "")
@@ -313,7 +315,7 @@ export class Ngtcp2LogParser extends Parser{
         for (let i = 0; i < content.length; i++) {
             line = content[i];
             splitline = line.split(" ")
-            if (splitline[2] === "rcv" && !splitline[3].includes("loss_detection_alarm")){
+            if (splitline[2] === "rcv" && !splitline[3].includes("loss_detection_alarm") && splitline[3] !== "packet"){
                 let subarr = splitline.slice(3)
                 for (let j = 0; j < subarr.length; j++) {
                     splitline = subarr[j].split("=")
@@ -326,6 +328,14 @@ export class Ngtcp2LogParser extends Parser{
                     }
                 }
             }
+            else 
+                if (splitline[2] === "rcv" && !splitline[3].includes("loss_detection_alarm") && splitline[3] === "packet" && splitline[4] === "lost"){
+                    let subarr = splitline.slice(3)
+                    infoarray.push({
+                        infotype: "lost packet",
+                        infocontent: subarr[2]
+                    })
+                }
         }
         if (infoarray.length > 0)
             return infoarray
