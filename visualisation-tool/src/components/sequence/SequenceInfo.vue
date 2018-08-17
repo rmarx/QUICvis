@@ -12,6 +12,8 @@
           <option value="-1">None</option>
           <option v-for="index in connids_trace1" v-bind:value="index - 1">Conn {{ index}}</option>
         </select>
+        <label for="time_scale" class="w-25">Scale (pixel/ms)</label>
+        <input type="number" id="time_scale" v-model="time_scale" @change="changeTimescale()">
       </div>
 
       <div id="filterbuttons">
@@ -46,7 +48,8 @@ export default {
       trace2_index: -1,
       conn1_index: -1,
       conn2_index: -1,
-      rtt_amount: this.$store.state.sequencesettings.get1filertt()
+      rtt_amount: this.$store.state.sequencesettings.get1filertt(),
+      time_scale: this.$store.state.sequencesettings.getTimeScale()
     }
   },
   computed: {
@@ -128,6 +131,9 @@ export default {
     },
     filterPressed(name: string){
       this.$store.dispatch('changeSeqFilter', name)
+    },
+    changeTimescale(){
+      this.$store.dispatch('setSequenceScale', this.time_scale)
     }
   }
 }
@@ -136,7 +142,7 @@ export default {
 <style>
 #sequenceinfo{
     width: 1000px;
-    height: 150px;
+    height: 180px;
     border: black solid 1px;
     margin-left: 300px;
 }
@@ -144,20 +150,20 @@ export default {
 #endpoint1container{
   float: left;
   background-color: darkcyan;
-  height: 150px;
+  height: 180px;
   width: 300px;
 }
 
 #filterbuttons{
   float: left;
-  height: 150px;
+  height: 180px;
   width: 370px;
 }
 
 #endpoint2container{
   float: right;
   background-color: darkcyan;
-  height: 150px;
+  height: 180px;
   width: 300px;
 }
 </style>

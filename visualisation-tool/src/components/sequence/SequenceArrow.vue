@@ -45,11 +45,13 @@ export default {
     props: ['packet_conn1', 'baseheight', 'packet_conn2', 'start_time'],
     data() {
         return {
-            scale: 10,
             framename_translate: 100
         }
     },
     computed: {
+        scale() {
+            return this.$store.state.sequencesettings.getTimeScale()
+        },
         clientsend(){
             return this.$store.state.sequencesettings.isPacketClientSend(this.packet_conn1.headerinfo.dest_connection_id)
         },
@@ -66,7 +68,10 @@ export default {
                 else
                     return t_p2 * 1000 * this.scale
             }
-            return parseFloat(this.start_time) * this.scale
+            if (this.start_time > 0)
+                return parseFloat(this.start_time) * this.scale
+            else
+                return parseFloat(this.packet_conn1.connectioninfo.time_delta) * 1000 * this.scale
         },
         headername() {
             if (parseInt(this.packet_conn1.headerinfo.header_form) === 0) return '1-RTT protect'
@@ -83,8 +88,9 @@ export default {
                 else
                     return 0
             }
-            else
+            else {
                 return (this.rtt_amount / 2) * this.scale
+            }
         },
         y_client() {
             if (this.packet_conn2 !== null) {

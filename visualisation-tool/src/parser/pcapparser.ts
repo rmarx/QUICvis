@@ -12,7 +12,6 @@ export class PcapParser extends Parser{
 
         let conn = this.parseAllPackets(tracefile) ;
         trace.connection = conn
-        //console.log(conn)
         return trace
     }
 
@@ -85,7 +84,7 @@ export class PcapParser extends Parser{
 
                     //check if SCID has changed, if so change value of CID for that endpoint
                     let src_conn_id= (<LongHeader> headerinfo).src_connection_id
-                    if (headerinfo.header_form === 1 && src_conn_id && el.CID_endpoint2!.findIndex(x => x === src_conn_id) !== -1) {
+                    if (headerinfo.header_form === 1 && src_conn_id && el.CID_endpoint2!.findIndex(x => x === src_conn_id) === -1) {
                         el.CID_endpoint2!.push(src_conn_id)
                     }
 
@@ -97,7 +96,7 @@ export class PcapParser extends Parser{
 
                     let src_conn_id= (<LongHeader> headerinfo).src_connection_id
                     //check if SCID has changed, if so change value of CID for that endpoint
-                    if (headerinfo.header_form === 1 && src_conn_id && el.CID_endpoint1!.findIndex(x => x === src_conn_id)) {
+                    if (headerinfo.header_form === 1 && src_conn_id && el.CID_endpoint1!.findIndex(x => x === src_conn_id) === -1) {
                         el.CID_endpoint1!.push(src_conn_id)
                     }
 
@@ -185,12 +184,12 @@ export class PcapParser extends Parser{
     }
 
     private parseHeader(quic_info: any): Header{
-        let headertype = quic_info["quic.header_form"]
+        let headertype = parseInt(quic_info["quic.header_form"])
         //TODO add case to parse version negotiation packet
         switch (headertype) {
-            case "1":
+            case 1:
                 return this.parseLongHeader(quic_info)
-            case "0":
+            case 0:
                 return this.parseShortHeader(quic_info)
             default:
                 var noheader: LongHeader = {
@@ -207,7 +206,7 @@ export class PcapParser extends Parser{
 
     private parseLongHeader(quic_info: any): LongHeader{
         let longheader: LongHeader = {
-            header_form: quic_info["quic.header_form"],
+            header_form: parseInt(quic_info["quic.header_form"]),
             long_packet_type: quic_info["quic.long.packet_type"],
             dest_connection_id: quic_info["quic.dcid"],
             src_connection_id: quic_info["quic.scid"],
@@ -219,7 +218,7 @@ export class PcapParser extends Parser{
 
     private parseShortHeader(quic_info: any): ShortHeader{
         let shortheader: ShortHeader = {
-            header_form: quic_info["quic.header_form"],
+            header_form: parseInt(quic_info["quic.header_form"]),
             short_packet_type: quic_info["quic.short.packet_type"],
             dest_connection_id: quic_info["quic.dcid"],
             key_phase: quic_info["quic.short.kp_flag"] === true,
@@ -298,7 +297,7 @@ export class PcapParser extends Parser{
             frametype: frametype,
             length: frame["quic.frame_type.padding.length"]
         }
-
+        
         return paddingframe
     }
 
@@ -317,10 +316,10 @@ export class PcapParser extends Parser{
         let conn_close: Connection_Close = {
             frametype: frametype,
             error_code: frame["quic.frame_type.cc.error_code"],
-            phrase_length: frame["quic.frame_type.cc.reason_phrase_length"],
+            phrase_length: frame["quic.frame_type.cc.reason_phrase.length"],
             reason_phrase: frame["quic.frame_type.cc.reason_phrase"]
         }
-
+        
         return conn_close
     }
 
@@ -340,7 +339,7 @@ export class PcapParser extends Parser{
             frametype: frametype,
             maximum_data: frame["quic.frame_type.md.maximum_data"]
         }
-
+        
         return max_data
     }
 
@@ -350,7 +349,7 @@ export class PcapParser extends Parser{
             stream_id: frame["quic.frame_type.msd.stream_id"],
             maximum_data: frame["quic.frame_type.msd.maximum_stream_data"]
         }
-
+        
         return max_stream_data
     }
 
@@ -359,7 +358,7 @@ export class PcapParser extends Parser{
             frametype: frametype,
             maximum_stream_id: frame["quic.frame_type.msi.stream_id"]
         }
-
+        
         return max_stream_id
     }
 
@@ -375,19 +374,17 @@ export class PcapParser extends Parser{
     private parseBlocked(frame: any, frametype: number): Blocked{
         let blocked: Blocked = {
             frametype: frametype,
-            offset: frame["quic.stream.offset"]
+            offset: frame["quic.frame_type.sb.offset"]
         }
-
         return blocked
     }
 
     private parseStreamBlocked(frame: any, frametype: number): Stream_Blocked{
         let stream_blocked: Stream_Blocked = {
             frametype: frametype,
-            stream_id: frame["quic.frame_type.blocked.stream_id"],
-            offset: frame["quic.frame_type.blocked.offset"]
+            stream_id: frame["quic.frame_type.sb.stream_id"],
+            offset: frame["quic.frame_type.sb.offset"]
         }
-
         return stream_blocked
     }
 
@@ -438,7 +435,7 @@ export class PcapParser extends Parser{
             frametype: frametype,
             data: frame["quic.frame_type.path_challenge.data"]
         }
-
+        
         return path_challenge
     }
 
@@ -447,7 +444,7 @@ export class PcapParser extends Parser{
             frametype: frametype,
             data: frame["quic.frame_type.path_response.data"]
         }
-
+        
         return path_response
     }
 
@@ -460,12 +457,11 @@ export class PcapParser extends Parser{
                 len_flag: frame_flags["quic.frame_type.stream.len"] == "1",
                 fin_flag: frame_flags["quic.frame_type.stream.fin"] == "1"
             },
-            stream_id: frame["quic.stream.stream_id"],
+            stream_id: parseInt(frame["quic.stream.stream_id"]),
             offset: frame["quic.stream.offset"],
             length: frame["quic.stream.length"],
             stream_data: frame["quic.stream_data"]
         }
-
         return stream
     }
 

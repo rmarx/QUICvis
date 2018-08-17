@@ -27,6 +27,7 @@ export class Ngtcp2LogParser extends Parser{
                 i--
             }
         }
+
         return trace
     }
 
@@ -72,6 +73,13 @@ export class Ngtcp2LogParser extends Parser{
                             isend = true
                             i--;
                         }
+                        if ((splitline[2] === "frm" && splitline[4] === 'tx')) {
+                            isend = true
+                            i--;
+                            let split = currentpacket.split('\n')
+                            split.splice(split.length-1,1)
+                            currentpacket = split.toString()
+                        }
                     }
                 }
                 //check if it's an outgoing packet
@@ -86,6 +94,8 @@ export class Ngtcp2LogParser extends Parser{
                         currentpacket += "\n" + partfile
                     }
                 }
+                if (splitline[2] === "rcv" && splitline[3] === "packet" && splitline[4] === "lost")
+                    currentpacket += "\n" + partfile
             }
         }
         if (currentpacket !== "")
@@ -221,22 +231,22 @@ export class Ngtcp2LogParser extends Parser{
         let connindex = -1
         for (let i = 0; i < connections.length; i++) {
             let el = connections[i]
-            if (el.CID_endpoint1!.findIndex(x => x === servercid) !== -1){
+            if (el.CID_endpoint2!.findIndex(x => x === servercid) !== -1){
                 connindex = i;
                 break;
             }
         }
 
-        if (connindex === -1)
+        if (connindex === -1) 
             connindex = this.createConnection(content, connloginfo, connections)
 
         let cide1index = connections[connindex].CID_endpoint1!.length - 1
         let cide2index = connections[connindex].CID_endpoint2!.length - 1
         let longheader = {
             header_form: 1,
-            dest_connection_id: line[4] === "rx" ? connections[connindex].CID_endpoint1![cide1index] : connections[connindex].CID_endpoint2![cide2index],
+            dest_connection_id: line[4] === "tx" ? connections[connindex].CID_endpoint1![cide1index] : connections[connindex].CID_endpoint2![cide2index],
             long_packet_type: parseInt(this.splitOnSymbol(line[5], "(").slice(0, -1)),
-            src_connection_id: line[4] === "rx" ? connections[connindex].CID_endpoint2![cide2index] : connections[connindex].CID_endpoint1![cide1index],
+            src_connection_id: line[4] === "tx" ? connections[connindex].CID_endpoint2![cide2index] : connections[connindex].CID_endpoint1![cide1index],
             version: connloginfo.version,
             packet_number: parseInt(line[3])
         }
@@ -250,7 +260,7 @@ export class Ngtcp2LogParser extends Parser{
         let connindex = -1
         for (let i = 0; i < connections.length; i++) {
             let el = connections[i]
-            if (el.CID_endpoint1!.findIndex(x => x === servercid) !== -1){
+            if (el.CID_endpoint2!.findIndex(x => x === servercid) !== -1){
                 connindex = i;
                 break;
             }
@@ -263,7 +273,7 @@ export class Ngtcp2LogParser extends Parser{
         
         let shortheader = {
             header_form: 0,
-            dest_connection_id: line[4] === "rx" ? connections[connindex].CID_endpoint1![cide1index] : connections[connindex].CID_endpoint2![cide2index],
+            dest_connection_id: line[4] === "tx" ? connections[connindex].CID_endpoint1![cide1index] : connections[connindex].CID_endpoint2![cide2index],
             short_packet_type: parseInt(this.splitOnSymbol(line[5], "(").slice(0, -1)),
             key_phase: false,
             packet_number: parseInt(line[3])
@@ -305,7 +315,7 @@ export class Ngtcp2LogParser extends Parser{
         for (let i = 0; i < content.length; i++) {
             line = content[i];
             splitline = line.split(" ")
-            if (splitline[2] === "rcv" && !splitline[3].includes("loss_detection_alarm")){
+            if (splitline[2] === "rcv" && !splitline[3].includes("loss_detection_alarm") && splitline[3] !== "packet"){
                 let subarr = splitline.slice(3)
                 for (let j = 0; j < subarr.length; j++) {
                     splitline = subarr[j].split("=")
@@ -318,6 +328,14 @@ export class Ngtcp2LogParser extends Parser{
                     }
                 }
             }
+            else 
+                if (splitline[2] === "rcv" && !splitline[3].includes("loss_detection_alarm") && splitline[3] === "packet" && splitline[4] === "lost"){
+                    let subarr = splitline.slice(3)
+                    infoarray.push({
+                        infotype: "lost packet",
+                        infocontent: subarr[2]
+                    })
+                }
         }
         if (infoarray.length > 0)
             return infoarray
@@ -374,12 +392,15 @@ export class Ngtcp2LogParser extends Parser{
                     case 13: //ack
                         let ack_block_count = parseInt(this.splitOnSymbol(frameinfo[3], "="))
                         let ackblocksinfo = Array<Array<string>>()
+                        let k = 0
                         for (let j = 1; j < ack_block_count + 1; j++){
-                            i += j;
-                            splitline = content[i].split(" ");
+                            splitline = content[i + j].split(" ");
                             let blockinfo = splitline.slice(6)
                             ackblocksinfo.push(blockinfo)
+                            k = k + j
                         }
+                        i += k
+                        
                         framelist.push(this.parseAck(frameinfo, ackblocksinfo, frametype))
                         i++;
                         break;
@@ -614,8 +635,8 @@ export class Ngtcp2LogParser extends Parser{
 
             connloginfo.version = '0xff00000b'
             connection = {
-                CID_endpoint1: Array(this.parseCID(this.splitOnSymbol(splitline[5], "=")), this.parseCID(splitline[1])),
-                CID_endpoint2: Array(this.parseCID(this.splitOnSymbol(splitline[6], "="))),
+                CID_endpoint1: Array(this.parseCID(this.splitOnSymbol(splitline[6], "="))),
+                CID_endpoint2: Array(this.parseCID(splitline[1]), this.parseCID(this.splitOnSymbol(splitline[5], "="))),
                 packets: Array<QuicPacket>()
             }
         }
