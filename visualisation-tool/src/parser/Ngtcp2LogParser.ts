@@ -27,6 +27,7 @@ export class Ngtcp2LogParser extends Parser{
                 i--
             }
         }
+        
         return trace
     }
 
@@ -241,9 +242,9 @@ export class Ngtcp2LogParser extends Parser{
         let cide2index = connections[connindex].CID_endpoint2!.length - 1
         let longheader = {
             header_form: 1,
-            dest_connection_id: line[4] === "rx" ? connections[connindex].CID_endpoint1![cide1index] : connections[connindex].CID_endpoint2![cide2index],
+            dest_connection_id: line[4] === "tx" ? connections[connindex].CID_endpoint1![cide1index] : connections[connindex].CID_endpoint2![cide2index],
             long_packet_type: parseInt(this.splitOnSymbol(line[5], "(").slice(0, -1)),
-            src_connection_id: line[4] === "rx" ? connections[connindex].CID_endpoint2![cide2index] : connections[connindex].CID_endpoint1![cide1index],
+            src_connection_id: line[4] === "tx" ? connections[connindex].CID_endpoint2![cide2index] : connections[connindex].CID_endpoint1![cide1index],
             version: connloginfo.version,
             packet_number: parseInt(line[3])
         }
@@ -270,7 +271,7 @@ export class Ngtcp2LogParser extends Parser{
         
         let shortheader = {
             header_form: 0,
-            dest_connection_id: line[4] === "rx" ? connections[connindex].CID_endpoint1![cide1index] : connections[connindex].CID_endpoint2![cide2index],
+            dest_connection_id: line[4] === "tx" ? connections[connindex].CID_endpoint1![cide1index] : connections[connindex].CID_endpoint2![cide2index],
             short_packet_type: parseInt(this.splitOnSymbol(line[5], "(").slice(0, -1)),
             key_phase: false,
             packet_number: parseInt(line[3])
