@@ -53,7 +53,6 @@ export default {
             return this.$store.state.sequencesettings.getTimeScale()
         },
         clientsend(){
-            console.log(this.packet_conn1.headerinfo.dest_connection_id, this.$store.state.sequencesettings.isPacketClientSend(this.packet_conn1.headerinfo.dest_connection_id))
             return this.$store.state.sequencesettings.isPacketClientSend(this.packet_conn1.headerinfo.dest_connection_id)
         },
         rtt_amount(){
