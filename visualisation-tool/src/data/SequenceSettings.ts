@@ -208,7 +208,7 @@ export default class SequenceSettings {
         let packets_c1 = this._vissettings.getFile(this._traceindex1).getConn(this._connindex1).getSequencePackets()
 
         packets_c1.forEach((packet) => {
-            seqpackets.push({packet_conn1: packet, packet_conn2: null, start_time: 0})
+            seqpackets.push({packet_conn1: packet, packet_conn2: null, start_time: packet.connectioninfo.time_delta})
         })
 
         if (this._traceindex2 >= 0 && this._connindex2 >= 0){
@@ -218,7 +218,13 @@ export default class SequenceSettings {
                 let index = seqpackets.findIndex(seqpacket => seqpacket.packet_conn1.headerinfo.packet_number === packet.headerinfo.packet_number)
                 if (index >= 0){
                     seqpackets[index].packet_conn2 = packet
+                    if (packet.connectioninfo.time_delta < seqpackets[index].start_time)
+                        seqpackets[index].start_time = packet.connectioninfo.time_delta
                 }
+            })
+
+            seqpackets.sort(function(a,b) {
+                return a.start_time - b.start_time
             })
         }
         else {
