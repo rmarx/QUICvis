@@ -2,7 +2,6 @@
     <div id="filesettings" class="container w-50 float-left">
         <div v-for="(file, fileindex) in traces" class="container border w-25 float-left">
             <div v-bind:id="file.filename + '-span'">
-            <button v-bind:id="file.filename + '-close'" class="btn btn-danger btn-sm" @click="removeFile(file.fileindex)">x</button>
             <div class="container border">
                 {{ file.filename}}
             </div>

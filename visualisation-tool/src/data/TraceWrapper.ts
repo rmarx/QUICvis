@@ -84,4 +84,8 @@ export default class TraceWrapper {
         })
         return amount
     }
+
+    public removeConns(){
+        this._conns.splice(0, this._conns.length-1)
+    }
 }
