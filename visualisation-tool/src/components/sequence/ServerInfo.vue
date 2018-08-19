@@ -36,7 +36,6 @@ export default {
             if (this._2filesused) {
                 let t_p1 = parseFloat(this.packet_conn.connectioninfo.time_delta)
                 let t_p2 = parseFloat(this.packet_conn.connectioninfo.time_delta) + ((this.rtt_amount / 2) / 1000)
-                console.log(this.packet_conn)
 
                 if (this.isclient)
                     return t_p1 * 1000 * this.scale
