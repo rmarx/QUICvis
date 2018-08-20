@@ -31,7 +31,7 @@ const router = new VueRouter({
   routes: routes
 });
 
-const request = 'http://localhost:8040/gettestfiles'
+const request = 'http://'+ window.location.hostname +':8040/gettestfiles'
 
 let conncolors = [
   '#f98b7f',

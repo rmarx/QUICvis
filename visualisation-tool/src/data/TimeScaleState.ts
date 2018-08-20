@@ -97,6 +97,6 @@ export default class TimeScaleState{
     }
 
     public calcTranslateX(time: number): number{
-        return this._scale(time - this._start)
+        return this._scale(time)
     }
 }
