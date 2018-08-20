@@ -13,6 +13,7 @@ cd ../
 # install dependencies for the website
 cd ./visualisation-tool
 npm install
+npm install typescript
 ```
 
 ## Run website
