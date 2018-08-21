@@ -77,7 +77,7 @@ export default {
     calcArrowCoords(){
         if (this.validfiles){
             let packets1 = this.sequencePackets1
-            let packets2: Array<QuicPacket>
+            let packets2
             if (this.using2files) {
                 packets2 = this.addDelayForServer(this.sequencePackets2)
             }
@@ -92,7 +92,7 @@ export default {
             let basemargin = 0
 
             while ( i < packets1.length || j < packets2.length){
-                if (i < packets1.length && ((j < packets2.length && packets1[i].connectioninfo.time_delta <= packets2[j].connectioninfo.time_delta) 
+                if (i < packets1.length && ((j < packets2.length && packets1[i].connectioninfo.time_delta <= (packets2[j].packet.connectioninfo.time_delta + packets2[j].delay)) 
                     || (j >= packets2.length)))  {
                     let originalcoord = packets1[i].connectioninfo.time_delta * 1000 * this.scale
                     let diff = originalcoord - basemargin
@@ -120,7 +120,7 @@ export default {
                 }
                 else 
                     if ( j < packets2.length ){
-                        let originalcoord = packets2[j].connectioninfo.time_delta * 1000 * this.scale
+                        let originalcoord = (packets2[j].packet.connectioninfo.time_delta + packets2[j].delay) * 1000 * this.scale
                         let diff = originalcoord - basemargin
 
                         if ((i > 0|| j > 0) && diff < 45){
@@ -128,20 +128,20 @@ export default {
                         }
                         basemargin = originalcoord
 
-                        let s_index = sequencepackets.findIndex(x => x.packet_number === packets2[j].headerinfo.packet_number)
+                        let s_index = sequencepackets.findIndex(x => x.packet_number === packets2[j].packet.headerinfo.packet_number)
                         if (s_index > -1) {
                             sequencepackets[s_index].receive_coord = originalcoord
-                            sequencepackets[s_index].receive_time = packets2[j].connectioninfo.time_delta * 1000
+                            sequencepackets[s_index].receive_time = (packets2[j].packet.connectioninfo.time_delta + packets2[j].delay) * 1000
 
                         }
                         else {
                             sequencepackets.push({
                                 send_coord: originalcoord,
-                                send_time: packets2[j].connectioninfo.time_delta * 1000,
+                                send_time: (packets2[j].packet.connectioninfo.time_delta + packets2[j].delay) * 1000,
                                 receive_coord: -1, 
                                 receive_time: -1,
-                                packet_info: packets2[j],
-                                packet_number: packets2[j].headerinfo.packet_number
+                                packet_info: packets2[j].packet,
+                                packet_number: packets2[j].packet.headerinfo.packet_number
                             })
                         }
                         j++
@@ -151,12 +151,11 @@ export default {
         }
     },
     addDelayForServer(packets){
-        let old_delay = 0 - packets[0].connectioninfo.time_delta
+        let delayedpackets = new Array<{packet: QuicPacket, delay: number}>()
         for (let i = 0; i < packets.length; i++) {
-            packets[i].connectioninfo.time_delta += old_delay
-            packets[i].connectioninfo.time_delta += (this.rtt_amount / 2 / 1000)
+            delayedpackets.push({packet: packets[i], delay: (this.rtt_amount / 2 / 1000)})
         }
-        return packets
+        return delayedpackets
     },
     drawArrows(sequencepackets: Array<SequenceGroup>){
         let compclass = Vue.extend(SequenceArrow)

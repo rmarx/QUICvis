@@ -74,7 +74,6 @@ export default {
             let adj = this.y_receive
 
             let angle = Math.atan(opp/adj) * 180 / Math.PI
-            console.log(angle)
             return 90 - angle
         },
         centerpoint_text(){
