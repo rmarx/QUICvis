@@ -1,8 +1,8 @@
 <template>
-    <g v-bind:transform="'translate(300,' + (y_coord - angle*6.5) + ') rotate(' + angle + ')'" v-if="clientsend">
+    <g v-bind:transform="'translate(200,' + (y_coord - 0.8*angle) + ') rotate(' + angle + ')'" v-if="clientsend">
 
     </g>
-    <g v-bind:transform="'translate(300,' + (y_coord + angle*1.2) + ') rotate(' + -angle + ')'" v-else>
+    <g v-bind:transform="'translate(200,' + (y_coord - 1.8*angle) + ') rotate(' + -angle + ')'" v-else>
     
     </g>
 </template>
@@ -40,56 +40,80 @@ export default {
     methods: {
         framebgcolor(frametype: string){
             return this.$store.state.framecolortables.getFrameColour([frametype])
-        }
-    },
-    mounted() {
-        let compclass = Vue.extend(ArrowInfoSegment)
-        let translate = 0;
+        },
+        addArrowInfo(){
+            let compclass = Vue.extend(ArrowInfoSegment)
+            let translate = 0;
 
-        let packetinstance = new compclass({
-            store: this.$store,
-            propsData: {
-                translate: translate,
-                framebgcolor: 'black',
-                texttoshow: 'header',
-                frameid: -1,
-                packet_conn: this.packet_conn1
-            }
-        })
-        packetinstance.$mount()
-        this.$el.appendChild(packetinstance.$el)
-        translate += packetinstance.$el.clientWidth
-        
-        packetinstance = new compclass({
-            store: this.$store,
-            propsData: {
-                translate: translate,
-                framebgcolor: 'black',
-                texttoshow: 'packetnr',
-                frameid: -1,
-                packet_conn: this.packet_conn1
-            }
-        })
-        packetinstance.$mount()
-        this.$el.appendChild(packetinstance.$el)
-        translate += packetinstance.$el.clientWidth
-
-        for (let i = 0; i < this.packet_conn1.payloadinfo.framelist.length; i++) {
-            let frame = this.packet_conn1.payloadinfo.framelist[i]
-                packetinstance = new compclass({
+            let packetinstance = new compclass({
                 store: this.$store,
                 propsData: {
                     translate: translate,
-                    texttoshow: 'frame',
-                    frameid: i,
-                    framebgcolor: this.framebgcolor(frame.frametype),
+                    framebgcolor: 'black',
+                    texttoshow: 'header',
+                    frameid: -1,
                     packet_conn: this.packet_conn1
                 }
             })
             packetinstance.$mount()
             this.$el.appendChild(packetinstance.$el)
             translate += packetinstance.$el.clientWidth
+            
+            packetinstance = new compclass({
+                store: this.$store,
+                propsData: {
+                    translate: translate,
+                    framebgcolor: 'black',
+                    texttoshow: 'packetnr',
+                    frameid: -1,
+                    packet_conn: this.packet_conn1
+                }
+            })
+            packetinstance.$mount()
+            this.$el.appendChild(packetinstance.$el)
+            translate += packetinstance.$el.clientWidth
+
+            for (let i = 0; i < this.packet_conn1.payloadinfo.framelist.length; i++) {
+                let frame = this.packet_conn1.payloadinfo.framelist[i]
+                    packetinstance = new compclass({
+                    store: this.$store,
+                    propsData: {
+                        translate: translate,
+                        texttoshow: 'frame',
+                        frameid: i,
+                        framebgcolor: this.framebgcolor(frame.frametype),
+                        packet_conn: this.packet_conn1
+                    }
+                })
+                packetinstance.$mount()
+                this.$el.appendChild(packetinstance.$el)
+                translate += packetinstance.$el.clientWidth
+            }
         }
+    },
+    mounted() {
+        this.addArrowInfo()
+        this.$parent.$on('translatedata', () => {
+            let children = (<HTMLElement> this.$el).children
+            let translate = 0;
+
+            for (let i = 0; i < children.length; i++) {
+                let length = children[i].clientWidth
+                
+                children[i].setAttribute('transform', 'translate(' + translate + ', 0)')
+                translate += length
+            }            
+        })
+    },
+    beforeUpdate(){
+        let children = <HTMLElement> this.$el
+        for (let i = 0; i < this.$el.children.length; i++) {
+            children.removeChild(this.$el.children[i])
+            i--
+        }
+    },
+    updated(){
+        this.addArrowInfo()
     }
 }
 </script>

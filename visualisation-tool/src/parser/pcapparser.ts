@@ -31,20 +31,31 @@ export class PcapParser extends Parser{
         let packet: QuicPacket
         let connections = Array<QuicConnection>()
         let connindex = -1
-        let lasttime = 0
+        let lasttimes = new Object();
         let i = 0
+
+        let bunchedUpStartTimes = new Object();
         for (packetnr in tracefile){
             ip_info = tracefile[packetnr]._source.layers.ip
             quic_info = tracefile[packetnr]._source.layers.quic
             udp_info = tracefile[packetnr]._source.layers.udp
             if (!quic_info) continue;
             let currenttime = parseFloat(tracefile[packetnr]._source.layers.frame["frame.time_relative"])
+            let tsharkTime = currenttime;
 
-            // make sure packets are well seperated from each other
-            if (i > 0 && (currenttime - lasttime) < 0.002)
-                currenttime = 0.002 + lasttime
+            if( !bunchedUpStartTimes[udp_info.srcport] )
+                bunchedUpStartTimes[udp_info.srcport] = 0;
+            if( !lasttimes[udp_info.srcport] )
+                lasttimes[udp_info.srcport] = 0;
+
+            if( i > 0 && (currenttime - bunchedUpStartTimes[udp_info.srcport]) < 0.0002 ){
+                currenttime = lasttimes[udp_info.srcport] + 0.0002;
+            }
+            else
+                bunchedUpStartTimes[udp_info.srcport] = currenttime;
+
             i++
-            lasttime = currenttime
+            lasttimes[udp_info.srcport] = currenttime
             packet = this.parsePacket(ip_info, udp_info, quic_info, currenttime)
             connindex = this.addPacketToConnection(packet, connections)
             if (packet.payloadinfo &&  this.isNewConnectionId(packet.payloadinfo))

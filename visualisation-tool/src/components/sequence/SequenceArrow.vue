@@ -1,36 +1,36 @@
 <template>
-     <g v-if="clientsend"  v-bind:transform="'translate(0,' + (ytranslate + baseheight) + ')'" @click="putOnForeground">
-        <line v-bind:y1="0" v-bind:y2="y_server" x1="150" x2="850" stroke="lightgreen" stroke-width="2px" 
+     <g v-if="clientsend"  v-bind:transform="'translate(0,' + (send_coord) + ')'" @click="putOnForeground">
+        <line v-bind:y1="0" v-bind:y2="(y_receive)" x1="150" x2="850" stroke="lightgreen" stroke-width="2px" 
         />
-        <polyline v-bind:points="'830, ' + (y_server - 10) 
-        + ' 850, ' + y_server + ' 830, ' + (y_server + 10)"
+        <polyline v-bind:points="'830, ' + (y_receive - 10) 
+        + ' 850, ' + y_receive + ' 830, ' + (y_receive + 10)"
          stroke="black"  stroke-width="2px" fill="transparent"/>
  
-        <ArrowInfo :packet_conn1="packet_conn1" :angle="angle" :y_coord="centerpoint_text"/>
+        <ArrowInfo :packet_conn1="packet_conn" :angle="angle" :y_coord="centerpoint_text"/>
          <g v-if="showtimestamps">
             <line x1="150" x2="130" y1="0" y2="0" stroke="black"/>
-            <text x="80" y="0">{{ ( ytranslate / scale ).toFixed(2) }} </text>
+            <text x="80" y="0">{{ send_time.toFixed(2) }} </text>
          </g>
          <g v-if="showtimestamps">
-            <line x1="850" x2="870" v-bind:y1="y_server" v-bind:y2="y_server" stroke="black"/>
-            <text x="875" v-bind:y="y_server">{{ ((ytranslate + y_server)/scale).toFixed(2) }} </text>
+            <line x1="850" x2="870" v-bind:y1="y_receive" v-bind:y2="y_receive" stroke="black"/>
+            <text x="875" v-bind:y="y_receive">{{ receivedelta }} </text>
          </g>
     </g>
  
-    <g v-else v-bind:transform="'translate(0,' + (ytranslate + baseheight) + ')'" @click="putOnForeground">
-        <line v-bind:y1="y_client" v-bind:y2="y_server" x1="150" x2="850" stroke="pink" stroke-width="2px" 
+    <g v-else v-bind:transform="'translate(0,' + (send_coord) + ')'" @click="putOnForeground">
+        <line v-bind:y1="y_receive" v-bind:y2="0" x1="150" x2="850" stroke="pink" stroke-width="2px" 
          stroke-dasharray="15 3 5 3"/>
-        <polyline v-bind:points="'170, ' + (y_client -10) 
-        + ' 150, ' + y_client + ' 170, ' + (y_client + 10)"
+        <polyline v-bind:points="'170, ' + (y_receive -10) 
+        + ' 150, ' + y_receive + ' 170, ' + (y_receive + 10)"
          stroke="black"  stroke-width="2px" fill="transparent"/>
-         <ArrowInfo :packet_conn1="packet_conn1" :angle="angle" :y_coord="centerpoint_text"/>
+         <ArrowInfo :packet_conn1="packet_conn" :angle="angle" :y_coord="centerpoint_text"/>
           <g v-if="showtimestamps">
-            <line x1="150" x2="130" v-bind:y1="y_client" v-bind:y2="y_client" stroke="black"/>
-            <text x="80" v-bind:y="y_client">{{ ((ytranslate / scale ) + y_client/scale).toFixed(2) }} </text>
+            <line x1="150" x2="130" v-bind:y1="y_receive" v-bind:y2="y_receive" stroke="black"/>
+            <text x="80" v-bind:y="y_receive">{{ receivedelta }} </text>
          </g>
          <g v-if="showtimestamps">
-            <line x1="850" x2="870" v-bind:y1="y_server" v-bind:y2="y_server" stroke="black"/>
-            <text x="875" v-bind:y="y_server">{{ ((ytranslate / scale ) + y_server/scale).toFixed(2) }} </text>
+            <line x1="850" x2="870" v-bind:y1="0" v-bind:y2="0" stroke="black"/>
+            <text x="875" v-bind:y="0">{{ send_time.toFixed(2) }} </text>
          </g>
     </g>
 </template>
@@ -42,87 +42,50 @@ import { getLongHeaderName, getFrameName } from '../../data/QuicNames'
 import { svg, interpolateBrBG } from 'd3';
 export default {
     name: "SequenceArrow",
-    props: ['packet_conn1', 'baseheight', 'packet_conn2', 'start_time'],
+    props: ['packet_conn', 'send_coord', 'send_time', 'receive_coord', 'receive_time'],
     data() {
         return {
             framename_translate: 100
         }
     },
     computed: {
-        scale() {
-            return this.$store.state.sequencesettings.getTimeScale()
-        },
         clientsend(){
-            return this.$store.state.sequencesettings.isPacketClientSend(this.packet_conn1.headerinfo.dest_connection_id)
-        },
-        rtt_amount(){
-            return this.$store.state.sequencesettings.get1filertt()
-        },
-        ytranslate(){
-            if (this.packet_conn2 !== null) {
-                let t_p1 = parseFloat(this.packet_conn1.connectioninfo.time_delta)
-                let t_p2 = parseFloat(this.packet_conn2.connectioninfo.time_delta) + ((this.rtt_amount / 2) / 1000)
-
-                if (t_p1 < t_p2)
-                    return t_p1 * 1000 * this.scale
-                else
-                    return t_p2 * 1000 * this.scale
-            }
-            if (this.start_time > 0)
-                return parseFloat(this.start_time) * this.scale
-            else
-                return parseFloat(this.packet_conn1.connectioninfo.time_delta) * 1000 * this.scale
+            return this.$store.state.sequencesettings.isPacketClientSend(this.packet_conn.headerinfo.dest_connection_id)
         },
         headername() {
-            if (parseInt(this.packet_conn1.headerinfo.header_form) === 0) return '1-RTT protect'
+            if (parseInt(this.packet_conn.headerinfo.header_form) === 0) return '1-RTT protect'
             else
-                return getLongHeaderName(parseInt(this.packet_conn1.headerinfo.long_packet_type))
+                return getLongHeaderName(parseInt(this.packet_conn.headerinfo.long_packet_type))
         }, 
-        y_server(){
-            if (this.packet_conn2 !== null) {
-                if (this.clientsend) {
-                    let diff = Math.abs(parseFloat(this.packet_conn1.connectioninfo.time_delta) 
-                        - (parseFloat(this.packet_conn2.connectioninfo.time_delta) + (this.rtt_amount / 2) / 1000))
-                    return diff * 1000 * this.scale
-                }
-                else
-                    return 0
-            }
-            else {
-                return (this.rtt_amount / 2) * this.scale
-            }
-        },
-        y_client() {
-            if (this.packet_conn2 !== null) {
-                let diff = Math.abs(parseFloat(this.packet_conn1.connectioninfo.time_delta) - (parseFloat(this.packet_conn2.connectioninfo.time_delta) + (this.rtt_amount / 2) / 1000))
-                return diff * 1000 * this.scale
-            }
+        y_receive(){
+            if (this.receive_coord > -1)
+                return this.receive_coord - this.send_coord
             else
-            return this.rtt_amount * this.scale
+                return 0
+        },
+        receivedelta(){
+            if (this.receive_time > -1)
+                return this.receive_time.toFixed(2)
+            else
+                return 'xx.xx'
         },
         angle(){
             let opp = 700
-            let adj = this.y_server
-
-            if (!this.clientsend && this.packet_conn2 !== null)
-                adj = this.y_client
+            let adj = this.y_receive
 
             let angle = Math.atan(opp/adj) * 180 / Math.PI
+            console.log(angle)
             return 90 - angle
         },
         centerpoint_text(){
             if (this.clientsend)
-                return this.y_server / 1.5
-            else {
-                if (this.packet_conn2 !== null)
-                    return this.y_client / 1.5
-                else
-                    return this.y_client / 1.2
-            }
+                return this.y_receive * 0.1
+            else
+                return this.y_receive
         },
         showtimestamps(){
             return this.$store.state.sequencesettings.getSeqFilter('timestamps')
-        }
+        },
     },
     methods: {
         frameName(frametype: string){

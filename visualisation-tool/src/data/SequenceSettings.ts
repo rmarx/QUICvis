@@ -203,6 +203,21 @@ export default class SequenceSettings {
         return correctfiles
     }
 
+    public isUsing2Files() {
+        if (this._connindex1 >= 0 && this._traceindex1 >= 0 && this._connindex2 >= 0 && this._traceindex2 >= 0)
+            return true
+        else 
+            return false
+    }
+
+    public getPacketsTrace1() {
+        return this._vissettings.getFile(this._traceindex1).getConn(this._connindex1).getSequencePackets()
+    }
+
+    public getPacketsTrace2() {
+        return this._vissettings.getFile(this._traceindex2).getConn(this._connindex2).getSequencePackets()
+    }
+
     public getPackets(): Array<SequencePackets>{
         let seqpackets = new Array<SequencePackets>()
         let packets_c1 = this._vissettings.getFile(this._traceindex1).getConn(this._connindex1).getSequencePackets()
@@ -275,7 +290,10 @@ export default class SequenceSettings {
     }
 
     public isPacketClientSend(dcid: string): boolean{
-        return this._vissettings.getFile(this._traceindex1).getConn(this._connindex1).checkIfClient(dcid)
+        if (this._traceindex1 >= 0 && this._connindex1 >= 0)
+            return this._vissettings.getFile(this._traceindex1).getConn(this._connindex1).checkIfClient(dcid)
+        else
+            return false
     }
 
     public getLargestTime(): number{
