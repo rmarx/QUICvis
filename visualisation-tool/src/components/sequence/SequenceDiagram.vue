@@ -179,6 +179,7 @@ export default {
         let container = d3.select(this.$el).append('svg')
             .attr('id', 'sequencediagram')
             .attr('height', largestcoord + 'px')
+            .on('dblclick', this.removeArrowBackground)
         
         container.append('line').attr('x1', '150').attr('x2', '150').attr('y1', '-100').attr('y2', largestcoord + 100).attr('stroke', 'black')
         container.append('line').attr('x1', '850').attr('x2', '850').attr('y1', '-100').attr('y2', largestcoord + 100).attr('stroke', 'black')
@@ -237,6 +238,11 @@ export default {
     },
     isClientSend(dcid){
         return this.$store.state.sequencesettings.isPacketClientSend(dcid)
+    },
+    removeArrowBackground(){
+        let box = document.getElementById('arrow-background-box')
+        if (box)
+            box.remove()
     }
   },
   beforeUpdate(){

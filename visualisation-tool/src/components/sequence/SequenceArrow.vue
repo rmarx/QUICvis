@@ -95,7 +95,7 @@ export default {
         },
         putOnForeground(ev: any){
             let el: HTMLElement;
-            let svg: HTMLElement
+            let svg: HTMLElement;
             for (let i = 0; i < ev.path.length; i++) {
                 if (i > 0 && ev.path[i].id === 'sequencediagram'){
                     el = ev.path[i - 1]
@@ -103,8 +103,36 @@ export default {
                     break;
                 }
             }
+            this.addHighlightBox(svg, el)
             el.remove()
             svg.appendChild(el)
+        },
+        addHighlightBox(svg: HTMLElement, el: HTMLElement){
+            let box = document.getElementById('arrow-background-box')
+            if (box)
+                box.remove()
+
+            let svgd3 = d3.select(el)
+            let x = parseFloat(el.children[0].getAttribute('x1')) + 2
+            let y = 0
+
+            let width = parseFloat(el.children[0].getAttribute('x2')) - x - 2
+            let height = parseFloat(el.children[0].getAttribute('y2')) > 0 ? parseFloat(el.children[0].getAttribute('y2')) : parseFloat(el.children[0].getAttribute('y1'))
+
+            if (height === 0) {
+                y = -20
+                height = 20
+            }
+
+            svgd3.append('rect').attr('id', 'arrow-background-box').attr('x', x).attr('y', y)
+                .attr('width', width).attr('height', height).attr('fill', 'white')
+        
+            for (let i = 0; i < el.children.length - 1; i++) {
+                let child = el.children[0]
+                child.remove()
+                el.appendChild(child)
+                
+            }
         }
     },
     components: {
