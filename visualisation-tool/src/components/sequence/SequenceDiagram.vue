@@ -30,7 +30,8 @@ export interface SequenceGroup{
     send_time: number
     receive_coord: number
     receive_time: number
-    packet_info: QuicPacket
+    packet_info1: QuicPacket|null
+    packet_info2: QuicPacket|null
     packet_number: number
 }
 export default {
@@ -103,8 +104,13 @@ export default {
                     basemargin = originalcoord
                     let s_index = sequencepackets.findIndex(x => x.packet_number === packets1[i].headerinfo.packet_number)
                     if (s_index > -1) {
-                        sequencepackets[s_index].receive_coord = originalcoord 
                         sequencepackets[s_index].receive_time = packets1[i].connectioninfo.time_delta * 1000
+                        if (sequencepackets[s_index].receive_time === sequencepackets[s_index].send_time) {
+                            originalcoord = sequencepackets[s_index].send_coord
+                            basemargin = originalcoord
+                        }
+                        sequencepackets[s_index].receive_coord = originalcoord
+                        sequencepackets[s_index].packet_info1 = packets1[i]
                     }
                     else {
                         sequencepackets.push({
@@ -112,7 +118,8 @@ export default {
                             send_time: packets1[i].connectioninfo.time_delta * 1000,
                             receive_coord: -1, 
                             receive_time: -1,
-                            packet_info: packets1[i],
+                            packet_info1: packets1[i],
+                            packet_info2: null,
                             packet_number: packets1[i].headerinfo.packet_number
                         })
                     }
@@ -130,9 +137,13 @@ export default {
 
                         let s_index = sequencepackets.findIndex(x => x.packet_number === packets2[j].packet.headerinfo.packet_number)
                         if (s_index > -1) {
-                            sequencepackets[s_index].receive_coord = originalcoord
                             sequencepackets[s_index].receive_time = (packets2[j].packet.connectioninfo.time_delta + packets2[j].delay) * 1000
-
+                            if (sequencepackets[s_index].receive_time === sequencepackets[s_index].send_time) {
+                                originalcoord = sequencepackets[s_index].send_coord
+                                basemargin = originalcoord
+                            }
+                            sequencepackets[s_index].receive_coord = originalcoord
+                            sequencepackets[s_index].packet_info2 = packets2[j].packet
                         }
                         else {
                             sequencepackets.push({
@@ -140,7 +151,8 @@ export default {
                                 send_time: (packets2[j].packet.connectioninfo.time_delta + packets2[j].delay) * 1000,
                                 receive_coord: -1, 
                                 receive_time: -1,
-                                packet_info: packets2[j].packet,
+                                packet_info1: null,
+                                packet_info2: packets2[j].packet,
                                 packet_number: packets2[j].packet.headerinfo.packet_number
                             })
                         }
@@ -158,7 +170,8 @@ export default {
         return delayedpackets
     },
     drawArrows(sequencepackets: Array<SequenceGroup>){
-        let compclass = Vue.extend(SequenceArrow)
+        let arrowclass = Vue.extend(SequenceArrow)
+        let serverinfoclass = Vue.extend(ServerInfo)
 
         let largestcoord = sequencepackets[sequencepackets.length - 1].send_coord > -1 ? sequencepackets[sequencepackets.length - 1].send_coord 
             : sequencepackets[sequencepackets.length - 1].receive_coord
@@ -171,10 +184,11 @@ export default {
         container.append('line').attr('x1', '850').attr('x2', '850').attr('y1', '-100').attr('y2', largestcoord + 100).attr('stroke', 'black')
 
         for (let i = 0; i < sequencepackets.length; i++) {
-            let packetinstance = new compclass({
+            let packet_info = sequencepackets[i].packet_info1 ? sequencepackets[i].packet_info1 : sequencepackets[i].packet_info2
+            let packetinstance = new arrowclass({
                 store: this.$store,
                 propsData: {
-                    packet_conn: sequencepackets[i].packet_info,
+                    packet_conn: packet_info,
                     send_coord: sequencepackets[i].send_coord,
                     send_time: sequencepackets[i].send_time,
                     receive_coord: sequencepackets[i].receive_coord,
@@ -184,6 +198,34 @@ export default {
             packetinstance.$mount()
             this.$el.children[0].appendChild(packetinstance.$el)
             packetinstance.$emit('translatedata')
+
+            //add extra server info is present for packet on client side
+            if (sequencepackets[i].packet_info1 && sequencepackets[i].packet_info1.serverinfo){
+                let ytranslate = this.isClientSend(sequencepackets[i].packet_info1.headerinfo.dest_connection_id) ? sequencepackets[i].send_coord : sequencepackets[i].receive_coord
+                let serverinfoinstance = new serverinfoclass({
+                    propsData: {
+                        packet_conn: sequencepackets[i].packet_info1,
+                        ytranslate: ytranslate,
+                        isclient: true
+                    }
+                })
+                serverinfoinstance.$mount()
+                this.$el.appendChild(serverinfoinstance.$el)
+            }
+
+            //add extra server info is present for packet on server side
+            if (sequencepackets[i].packet_info2 && sequencepackets[i].packet_info2.serverinfo && this.using2files){
+                let ytranslate = this.isClientSend(sequencepackets[i].packet_info1.headerinfo.dest_connection_id) ? sequencepackets[i].receive_coord : sequencepackets[i].send_coord
+                let serverinfoinstance = new serverinfoclass({
+                    propsData: {
+                        packet_conn: sequencepackets[i].packet_info2,
+                        ytranslate: ytranslate,
+                        isclient: false
+                    }
+                })
+                serverinfoinstance.$mount()
+                this.$el.appendChild(serverinfoinstance.$el)
+            }
         }
     },
     removeCurrentDiagram(){
@@ -192,35 +234,14 @@ export default {
             children.removeChild(this.$el.children[i])
             i--
         }
+    },
+    isClientSend(dcid){
+        return this.$store.state.sequencesettings.isPacketClientSend(dcid)
     }
   },
   beforeUpdate(){
       this.removeCurrentDiagram()
       this.calcArrowCoords()
-      /*
-      console.log('updating')
-      console.log(this.sequencepackets)
-      let container = <HTMLElement> this.$el
-      if (container.id !== "nodiagram"){
-        let svgcontainer = container.children[0]
-        let arrows = svgcontainer.children
-        let lasttime = 0
-        let extratranslate = 0
-        let diff = 0
-        for (let i = 2; i < arrows.length; i++) {
-            let transform = arrows[i].getAttribute('transform')
-            let splittf = transform.split(',')
-            let tf_y = parseFloat(splittf[1].slice(0,-1))
-            
-            diff = tf_y - lasttime
-            if( i > 2 &&  diff < 40 ){
-                extratranslate = lasttime + 40;
-                tf_y = extratranslate
-            }
-            lasttime = tf_y
-            arrows[i].setAttribute('transform', splittf[0] + ',' + tf_y + ')')
-        }
-    }*/
   },
 }
 </script>
