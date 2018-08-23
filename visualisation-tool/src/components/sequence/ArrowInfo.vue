@@ -2,7 +2,7 @@
     <g v-bind:transform="'translate(200,' + (y_coord - 0.8*angle) + ') rotate(' + angle + ')'" v-if="clientsend">
 
     </g>
-    <g v-bind:transform="'translate(200,' + (y_coord - 1.8*angle) + ') rotate(' + -angle + ')'" v-else>
+    <g v-bind:transform="'translate(200,' + (y_coord - 1.3*angle) + ') rotate(' + -angle + ')'" v-else>
     
     </g>
 </template>
