@@ -83,7 +83,7 @@ export class Ngtcp2LogParser extends Parser{
                     }
                 }
                 //check if it's an outgoing packet
-                else if (splitline[2] === "frm" && splitline[4] === "tx"){
+                else if (splitline[2] === "frm" && (splitline[4] === "tx" || splitline[4] === "rx")){
                     //check if a new packetnr is present, if so start fresh for new packet
                     if (splitline[3] !== currentpacketnr){
                         packetsinstring.push(currentpacket)
@@ -113,6 +113,7 @@ export class Ngtcp2LogParser extends Parser{
         let packet: QuicPacket
         let connections = Array<QuicConnection>()
         let connindex: number
+        console.log(tracefile)
 
         for (let i = 0; i < tracefile.length; i++) {
             if (tracefile[i] === "") continue;
