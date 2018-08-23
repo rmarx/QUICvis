@@ -1,8 +1,8 @@
 <template>
-    <g v-bind:transform="'translate(200,' + (y_coord - 0.8*angle) + ') rotate(' + angle + ')'" v-if="clientsend">
+    <g class="clickable" v-bind:transform="'translate(200,' + (y_coord - 0.8*angle) + ') rotate(' + angle + ')'" v-if="clientsend">
 
     </g>
-    <g v-bind:transform="'translate(200,' + (y_coord - 1.3*angle) + ') rotate(' + -angle + ')'" v-else>
+    <g class="clickable" v-bind:transform="'translate(200,' + (y_coord - 1.3*angle) + ') rotate(' + -angle + ')'" v-else>
     
     </g>
 </template>
@@ -117,3 +117,8 @@ export default {
     }
 }
 </script>
+<style>
+.clickable{
+    cursor: pointer;
+}
+</style>

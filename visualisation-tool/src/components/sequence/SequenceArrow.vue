@@ -125,7 +125,7 @@ export default {
             }
 
             svgd3.append('rect').attr('id', 'arrow-background-box').attr('x', x).attr('y', y)
-                .attr('width', width).attr('height', height).attr('fill', 'white')
+                .attr('width', width).attr('height', height).attr('fill', 'white').on('dblclick', this.removeHighlightBox)
         
             for (let i = 0; i < el.children.length - 1; i++) {
                 let child = el.children[0]
@@ -133,6 +133,11 @@ export default {
                 el.appendChild(child)
                 
             }
+        },
+        removeHighlightBox(){
+            let box = document.getElementById('arrow-background-box')
+            if (box)
+                box.remove()
         }
     },
     components: {
