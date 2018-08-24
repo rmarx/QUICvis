@@ -45,6 +45,7 @@ export default {
             let compclass = Vue.extend(ArrowInfoSegment)
             let translate = 0;
 
+            //add header name
             let packetinstance = new compclass({
                 store: this.$store,
                 propsData: {
@@ -59,6 +60,7 @@ export default {
             this.$el.appendChild(packetinstance.$el)
             translate += packetinstance.$el.clientWidth
             
+            //add packet number
             packetinstance = new compclass({
                 store: this.$store,
                 propsData: {
@@ -73,6 +75,7 @@ export default {
             this.$el.appendChild(packetinstance.$el)
             translate += packetinstance.$el.clientWidth
 
+            //add all frame names that are contained in the packet
             for (let i = 0; i < this.packet_conn1.payloadinfo.framelist.length; i++) {
                 let frame = this.packet_conn1.payloadinfo.framelist[i]
                     packetinstance = new compclass({
@@ -93,6 +96,7 @@ export default {
     },
     mounted() {
         this.addArrowInfo()
+        //when mounted, position names of packet/frames so that they don't overlap
         this.$parent.$on('translatedata', () => {
             let children = (<HTMLElement> this.$el).children
             let translate = 0;
@@ -106,6 +110,7 @@ export default {
         })
     },
     beforeUpdate(){
+        //when selecting new file, update packet/frame names
         let children = <HTMLElement> this.$el
         for (let i = 0; i < this.$el.children.length; i++) {
             children.removeChild(this.$el.children[i])

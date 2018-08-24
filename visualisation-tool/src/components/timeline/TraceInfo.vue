@@ -28,6 +28,7 @@ export default {
         filteredconns() {
             return this.$store.getters.getFilteredConnsInFile(this.traceid)
         },
+        //calculate height of file name: depending if streams are being displayed
         compheight() {
             let connsettings = this.$store.state.vissettings.getFile(this.traceid).getAmountStreamsToShow();
             let height = 0

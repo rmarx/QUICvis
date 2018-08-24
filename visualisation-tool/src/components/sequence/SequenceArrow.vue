@@ -1,22 +1,28 @@
 <template>
+    <!-- show if packet is send from client -->
      <g v-if="clientsend"  v-bind:transform="'translate(0,' + (send_coord) + ')'" @click="putOnForeground">
         <line v-bind:y1="0" v-bind:y2="(y_receive)" x1="150" x2="850" stroke="lightgreen" stroke-width="2px" 
         />
         <polyline v-bind:points="'830, ' + (y_receive - 10) 
         + ' 850, ' + y_receive + ' 830, ' + (y_receive + 10)"
          stroke="black"  stroke-width="2px" fill="transparent"/>
- 
+
+        <!-- component containing text of header/frame name -->
         <ArrowInfo :packet_conn1="packet_conn" :angle="angle" :y_coord="centerpoint_text"/>
+        
+        <!-- timestamp from client's log -->
          <g v-if="showtimestamps">
             <line x1="150" x2="130" y1="0" y2="0" stroke="black"/>
             <text x="80" y="0">{{ send_time.toFixed(2) }} </text>
          </g>
+
+         <!-- timestamp from server's log -->
          <g v-if="showtimestamps">
             <line x1="850" x2="870" v-bind:y1="y_receive" v-bind:y2="y_receive" stroke="black"/>
             <text x="875" v-bind:y="y_receive">{{ receivedelta }} </text>
          </g>
     </g>
- 
+    <!-- show if packet is send from server -->
     <g v-else v-bind:transform="'translate(0,' + (send_coord) + ')'" @click="putOnForeground">
         <line v-bind:y1="y_receive" v-bind:y2="0" x1="150" x2="850" stroke="pink" stroke-width="2px" 
          stroke-dasharray="15 3 5 3"/>
@@ -117,6 +123,7 @@ export default {
             let y = 0
 
             let width = parseFloat(el.children[0].getAttribute('x2')) - x - 2
+            //get highest y coord for drawing bounding box
             let height = parseFloat(el.children[0].getAttribute('y2')) > 0 ? parseFloat(el.children[0].getAttribute('y2')) : parseFloat(el.children[0].getAttribute('y1'))
 
             if (height === 0) {
@@ -126,7 +133,8 @@ export default {
 
             svgd3.append('rect').attr('id', 'arrow-background-box').attr('x', x).attr('y', y)
                 .attr('width', width).attr('height', height).attr('fill', 'white').on('dblclick', this.removeHighlightBox)
-        
+
+            //position all elements of the packet in front of white box
             for (let i = 0; i < el.children.length - 1; i++) {
                 let child = el.children[0]
                 child.remove()

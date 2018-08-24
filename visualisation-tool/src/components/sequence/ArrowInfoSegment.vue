@@ -25,6 +25,7 @@ export default {
             else
                 packettext = getLongHeaderName(parseInt(this.packet_conn.headerinfo.long_packet_type))
 
+            //add packet size
             if (parseInt(this.packet_conn.size) > 0)
                 packettext += '(' + this.packet_conn.size + 'B)'
             return packettext
@@ -55,7 +56,7 @@ export default {
         getExtraFrameInfo(frame){
             let info = ''
             switch (parseInt(frame.frametype)) {
-                case 13:
+                case 13: //add packet number that is included in ack
                     if (this.showpacketnrs !== 'transparent')
                         info = ' (' + frame.largest_ack + ')'
                     break;
@@ -66,7 +67,7 @@ export default {
                 case 20:
                 case 21:
                 case 22:
-                case 23:
+                case 23: //show stream id of stream frame
                     if (this.showstreamnrs)
                         info = ' (' + frame.stream_id + ')'
                 default:

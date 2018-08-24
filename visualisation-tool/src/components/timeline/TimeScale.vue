@@ -19,6 +19,7 @@ export default {
     }
   },
   mounted() {
+    //display time axis
     let svgcont = d3
       .select("#timelinesvg")
     let width = document.getElementById("timeline")!.clientWidth - 2;

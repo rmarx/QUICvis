@@ -1,17 +1,5 @@
 <template>
     <div v-if="validfiles" id="seq-diagramcontainer">
-        <!--<svg id="sequencediagram" v-if="validfiles" v-bind:height="getLargestTime + 'px'">
-            <line x1="150" y1="-100" x2="150" v-bind:y2="(getLargestTime + 100)"  stroke="black"/>
-            <line x1="850" y1="-100" x2="850" v-bind:y2="(getLargestTime + 100)"  stroke="black"/>
-            <SequenceArrow v-for="(packets, index) in sequencepackets" :packet_conn1="packets.packet_conn1" 
-            :packet_conn2="packets.packet_conn2" :baseheight="(index * margin)" :start_time="packets.start_time" :using2files="using2files"/>
-        </svg>
-        <div v-for="(packets, index) in sequencepackets">
-        <ServerInfo  :packet_conn="packets.packet_conn1" :baseheight="(index * margin)" :start_time="packets.start_time" 
-            :isclient="true" :_2filesused="false"/>
-        <ServerInfo :packet_conn="packets.packet_conn2" :baseheight="(index * margin)" :start_time="packets.start_time" 
-            :isclient="false" :_2filesused="true"/>
-        </div>-->
         <div hidden>{{ rtt_amount + scale }}</div>
     </div>
     <div id="nodiagram" v-else>
@@ -45,6 +33,7 @@ export default {
       scale() {
           return this.$store.state.sequencesettings.getTimeScale()
       },
+      //check if a file is selected or if 2 files are selected: that they both are about the same connection
       validfiles() {
           return this.$store.state.sequencesettings.getValidFiles()
       },
@@ -54,12 +43,15 @@ export default {
       getLargestTime(){
           return ((this.$store.state.sequencesettings.getLargestTime() * 1000 * 10) + (this.sequencepackets.length * this.margin)) *2
       },
+      //check if 2 files are selected
       using2files(){
           return this.$store.state.sequencesettings.isUsing2Files()
       },
+      //get packets of endpoint1
       sequencePackets1(){
           return this.$store.state.sequencesettings.getPacketsTrace1()
       },
+      //get packets of endpoint2
       sequencePackets2(){
           return this.$store.state.sequencesettings.getPacketsTrace2()
       },
@@ -79,9 +71,12 @@ export default {
         if (this.validfiles){
             let packets1 = this.sequencePackets1
             let packets2
+
+            //if 2 files are selected: get packets of second file
             if (this.using2files) {
                 packets2 = this.addDelayForServer(this.sequencePackets2)
             }
+            //if 1 file is selected: get a copy of the packets from file 1
             else
                 packets2 = this.addDelayForServer(this.sequencePackets1)
 
@@ -93,18 +88,24 @@ export default {
             let basemargin = 0
 
             while ( i < packets1.length || j < packets2.length){
+                //check if packet from client is send/received sooner than selected packet of server
                 if (i < packets1.length && ((j < packets2.length && packets1[i].connectioninfo.time_delta <= (packets2[j].packet.connectioninfo.time_delta + packets2[j].delay)) 
                     || (j >= packets2.length)))  {
                     let originalcoord = packets1[i].connectioninfo.time_delta * 1000 * this.scale
                     let diff = originalcoord - basemargin
 
+                    //if coordinate of arrow is too close or above previous coordinate, add margin
                     if ((i > 0|| j > 0) && diff < 45){
                         originalcoord = basemargin + 45
                     }
                     basemargin = originalcoord
+
+                    //check if packet is already processed 
                     let s_index = sequencepackets.findIndex(x => x.packet_number === packets1[i].headerinfo.packet_number)
                     if (s_index > -1) {
+                        //packet is already sent, so add info about when it is received
                         sequencepackets[s_index].receive_time = packets1[i].connectioninfo.time_delta * 1000
+                        //if send and receive time are equal, make arrow horizontal
                         if (sequencepackets[s_index].receive_time === sequencepackets[s_index].send_time) {
                             originalcoord = sequencepackets[s_index].send_coord
                             basemargin = originalcoord
@@ -112,6 +113,7 @@ export default {
                         sequencepackets[s_index].receive_coord = originalcoord
                         sequencepackets[s_index].packet_info1 = packets1[i]
                     }
+                    //packet is not sent: so add info about when packet is sent
                     else {
                         sequencepackets.push({
                             send_coord: originalcoord, 
@@ -125,7 +127,7 @@ export default {
                     }
                     i++
                 }
-                else 
+                else //packet from server is send/received sooner than packet from client
                     if ( j < packets2.length ){
                         let originalcoord = (packets2[j].packet.connectioninfo.time_delta + packets2[j].delay) * 1000 * this.scale
                         let diff = originalcoord - basemargin
@@ -162,6 +164,7 @@ export default {
             this.drawArrows(sequencepackets)
         }
     },
+    //add RTT delay to packets received/sent by server
     addDelayForServer(packets){
         let delayedpackets = new Array<{packet: QuicPacket, delay: number}>()
         for (let i = 0; i < packets.length; i++) {
@@ -173,6 +176,7 @@ export default {
         let arrowclass = Vue.extend(SequenceArrow)
         let serverinfoclass = Vue.extend(ServerInfo)
 
+        //get largest y-coord to determine svg height
         let largestcoord = sequencepackets[sequencepackets.length - 1].send_coord > -1 ? sequencepackets[sequencepackets.length - 1].send_coord 
             : sequencepackets[sequencepackets.length - 1].receive_coord
 
@@ -198,6 +202,7 @@ export default {
             })
             packetinstance.$mount()
             this.$el.children[0].appendChild(packetinstance.$el)
+            //position text of packet so it doesn't overlap
             packetinstance.$emit('translatedata')
 
             //add extra server info is present for packet on client side
@@ -229,6 +234,7 @@ export default {
             }
         }
     },
+    //when selecting new file(s), remove old diagram
     removeCurrentDiagram(){
         let children = <HTMLElement> this.$el
         for (let i = 0; i < this.$el.children.length; i++) {

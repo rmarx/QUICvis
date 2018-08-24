@@ -32,6 +32,7 @@ export default {
     mounted() {
         let compclass = Vue.extend(StreamBlock)
         let streamsvg = []
+        //add svg lane for each stream that is not filtered
         for (let i = 0; i < this.filteredstreams.length; i++){
             let stream = this.filteredstreams[i]
             d3.select(this.$el.children[i]).call(this.zoom)
@@ -41,6 +42,7 @@ export default {
             let frameoffset = [];
             packet.frames.forEach((frame) => {
                 let streamid = 0
+                //if frame has stream id field: get value
                 if (frame.hasOwnProperty('stream_id')) {
                     streamid = frame['stream_id']
                 }

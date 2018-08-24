@@ -31,9 +31,12 @@ export default {
         d3.select(this.$el.children[0]).call(this.zoom)
         d3.select(this.$el.children[1]).call(this.zoom)
         
+        //svg lane for sent packets
         let uppersvgcont = this.$el.children[0]
+        //svg lane for received packets
         let lowersvgcont = this.$el.children[1]
         this.packets.forEach((packet, id) => {
+            //if packet is send by TX
             if (packet.isclient) {
                 let packetinstance = new compclass({
                     store: this.$store,
@@ -47,6 +50,7 @@ export default {
                 packetinstance.$mount()
                 uppersvgcont.appendChild(packetinstance.$el)
             }
+            //if packet is sent by RX
             else {
                 let packetinstance = new compclass({
                     store: this.$store,

@@ -38,6 +38,7 @@ export default class ConnWrapper{
         this.addStreamsToFilter()
     }
 
+    //find all stream ids used in connection
     private addStreamsToFilter(){
         this._conn.packets.forEach((packet) => {
             if (packet.payloadinfo)
@@ -112,6 +113,7 @@ export default class ConnWrapper{
         }
     }
 
+    //get packets for timeline page
     public getTimelinePackets(): Array<TimelinePacket>{
         let packets = new Array<TimelinePacket>()
         let client: boolean
