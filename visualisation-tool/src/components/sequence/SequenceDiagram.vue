@@ -1,6 +1,6 @@
 <template>
     <div v-if="validfiles" id="seq-diagramcontainer">
-        <div hidden>{{ rtt_amount + scale }}</div>
+        <div hidden>{{ userRTT + scale }}</div>
     </div>
     <div id="nodiagram" v-else>
         Current file selection is invalid
@@ -55,9 +55,12 @@ export default {
       sequencePackets2(){
           return this.$store.state.sequencesettings.getPacketsTrace2()
       },
-      rtt_amount(){
+      userRTT(){
             return this.$store.state.sequencesettings.get1filertt()
-        },
+      },
+      calculatedRTT(){
+          return this.$store.state.sequencesettings.getFirstRTT()
+      }
   },
   components: {
       SequenceArrow,
@@ -74,11 +77,11 @@ export default {
 
             //if 2 files are selected: get packets of second file
             if (this.using2files) {
-                packets2 = this.addDelayForServer(this.sequencePackets2)
+                packets2 = this.addDelayForServer(this.sequencePackets2, true)
             }
             //if 1 file is selected: get a copy of the packets from file 1
             else
-                packets2 = this.addDelayForServer(this.sequencePackets1)
+                packets2 = this.addDelayForServer(this.sequencePackets1, false)
 
             let sequencepackets = new Array<SequenceGroup>()
 
@@ -165,10 +168,15 @@ export default {
         }
     },
     //add RTT delay to packets received/sent by server
-    addDelayForServer(packets){
+    addDelayForServer(packets, calcrtt){
         let delayedpackets = new Array<{packet: QuicPacket, delay: number}>()
+        let rtt = this.userRTT
+        if (calcrtt) {
+            rtt = this.calculatedRTT
+        }
+
         for (let i = 0; i < packets.length; i++) {
-            delayedpackets.push({packet: packets[i], delay: (this.rtt_amount / 2 / 1000)})
+            delayedpackets.push({packet: packets[i], delay: (rtt / 2 / 1000)})
         }
         return delayedpackets
     },
