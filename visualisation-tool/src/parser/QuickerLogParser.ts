@@ -13,8 +13,19 @@ export class QuickerLogParser extends Parser {
         let packets = this.divideTextByPackets(tracefile)
 
         trace.connection = this.parsePackets(packets)
+        for (let i = 0; i < trace.connection.length; i++) {
+            if (trace.connection[i].packets[0].connectioninfo.time_delta !== 0)
+                this.translateTimeToZero(trace.connection[i])
+        }
 
         return trace
+    }
+
+    private translateTimeToZero(connection: QuicConnection){
+        let time_delta = connection.packets[0].connectioninfo.time_delta
+        for (let i = 0; i < connection.packets.length; i++) {
+            connection.packets[i].connectioninfo.time_delta -= time_delta
+        }
     }
 
     private removeEscapeCharacters(tracefile: string): string {
