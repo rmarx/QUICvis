@@ -276,10 +276,10 @@ export default class SequenceSettings {
         for (let i = 0; i < packets.length; i++) {
             let frames = packets[i].payloadinfo.framelist
 
-            let index = frames.findIndex(frame => parseFloat(frame.frametype) === 13)
+            let index = frames.findIndex(frame => parseFloat("" + frame.frametype) === 13)
             if (index >= 0){
-                let ackframe = <Ack> frames[index]
-                if (parseInt(ackframe.largest_ack) === parseInt(packet.headerinfo.packet_number)){
+                let ackframe = <Ack> frames[index];
+                if (parseInt("" + ackframe.largest_ack) === parseInt("" + packet.headerinfo.packet_number)){
                     RTT = (packets[i].connectioninfo.time_delta * 1000) -  (packet.connectioninfo.time_delta * 1000)
                     break;
                 }
