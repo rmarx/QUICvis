@@ -49,7 +49,7 @@ export class PcapParser extends Parser{
                 lasttimes[udp_info.srcport] = 0;
 
             if( i > 0 && (currenttime - bunchedUpStartTimes[udp_info.srcport]) < 0.0002 ){
-                currenttime = lasttimes[udp_info.srcport] + 0.0002;
+                currenttime = lasttimes[udp_info.srcport] + 0.0002; // 0.001 for multistream screenshot, 0.0002 for network_off screenshots
             }
             else
                 bunchedUpStartTimes[udp_info.srcport] = currenttime;

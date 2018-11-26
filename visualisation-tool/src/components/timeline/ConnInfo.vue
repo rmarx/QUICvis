@@ -9,7 +9,7 @@
                 </select>-->
                 <button class="btn btn-primary btn-sm" @click="setShowStreams()" v-if="!showstreams">E</button>
                 <button class="btn btn-primary btn-sm" @click="setShowStreams()" v-else>C</button>
-                <button class="btn btn-secondary btn-sm" @click="resetStreamFilters()">Reset Filters</button>
+                <button class="btn btn-secondary btn-sm" @click="resetStreamFilters()">Reset hidden</button>
                 <div class="w-100 x-offset float-left">
                     <label class="w-25" v-bind:for="'x-offset-' + traceid + connid">X0</label>
                     <input  class="w-75" type="number" v-model="xoffset" v-bind:id="'x-offset-' + traceid + connid" @change="setXOffset()" min="0">
@@ -18,8 +18,9 @@
         </div>
         <div class="border" v-for="stream in filteredstreams" v-if="!stream.filtered && showstreams" v-bind:style="{height: streamheight + 'px', 
         'background-color': bgcolor(stream.cl_init, stream.uni_di)}">
-                <div class="conn_name float-right">Stream {{ stream.streamnr}} </div>
-                <button class="btn btn-primary btn-sm float-left" @click="filterStream(stream.streamnr)" >Filter out</button>
+                <div v-if="stream.streamnr != 0" class="stream_name float-right">Stream {{ stream.streamnr}} </div>
+                <div v-if="stream.streamnr == 0" class="stream_name float-right">Control</div>
+                <button class="btn btn-primary btn-sm float-left filter-button" style="line-height: 1; padding: 0 5%;" @click="filterStream(stream.streamnr)" >Hide</button>
         </div> 
     </div>
 </template>
@@ -33,7 +34,7 @@ export default {
             selectedstreams: null,
             streamoptions: [],
             connheight: 62,
-            streamheight: 60,
+            streamheight: 30,
             xoffset: 0
         }
     },
@@ -101,6 +102,11 @@ export default {
     text-align: center;
 }
 
+.stream_name{
+    text-align: center;
+    padding-right: 10px;
+}
+
 .overlap{
     position: absolute;
     width: 256px;
@@ -112,6 +118,10 @@ export default {
 .x-offset{
     height: 20px;
     background-color: lightgray;
+}
+
+.filter-button{
+    height: 30px;
 }
 </style>
 

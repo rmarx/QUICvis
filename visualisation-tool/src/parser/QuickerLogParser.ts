@@ -7,7 +7,10 @@ import {
 
 
 export class QuickerLogParser extends Parser {
+    isClientLog:boolean = true;
+
     public parse(name: string, tracefile: any): Trace {
+        this.isClientLog = (name.indexOf("-se-") < 0);
         let trace = this.createTraceObject(name)
         tracefile = this.removeEscapeCharacters(tracefile)
         let packets = this.divideTextByPackets(tracefile)
@@ -538,6 +541,14 @@ export class QuickerLogParser extends Parser {
                 CID_endpoint1: Array(src_conn_id),
                 CID_endpoint2: Array(dst_conn_id),
                 packets: Array<QuicPacket>(packet)
+            }
+
+            if( !this.isClientLog ){
+                conn = {
+                    CID_endpoint1: Array(dst_conn_id),
+                    CID_endpoint2: Array(src_conn_id),
+                    packets: Array<QuicPacket>(packet)
+                }
             }
 
             index = connections.push(conn) - 1
