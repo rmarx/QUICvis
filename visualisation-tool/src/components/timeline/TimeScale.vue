@@ -2,8 +2,8 @@
 <template>
     <div>
       <div class="float-left w-100">
-        <input type="number" id="startscale" @change="onfieldschange" value="0" v-model="startdom">
-        <input type="number" class="text-right" id="endscale" @change="onfieldschange" value="20" min="0">
+        <input type="number" id="startscale" @change="onfieldschange" v-bind:value="startdom">
+        <input type="number" class="text-right" id="endscale" @change="onfieldschange" v-bind:value="enddom" min="0">
       </div>
     </div>
 </template>
@@ -13,10 +13,12 @@ import * as d3 from "d3";
 import { svg } from "d3";
 export default {
   name: "timescale",
-  data(){
-    return {
-      startdom: this.$store.state.timescalestate.getStartDomain(),
-      enddom: this.$store.state.timescalestate.getEndDomain(),
+  computed: {
+    startdom() {
+      return Math.floor(this.$store.state.timescalestate.getStartDomain());
+    },
+    enddom() {
+      return Math.floor(this.$store.state.timescalestate.getEndDomain());
     }
   },
   mounted() {
@@ -60,13 +62,13 @@ export default {
 
 <style>
 #startscale {
-  width: 60px;
+  width: 100px;
   height: 20px;
   float: left;
 }
 
 #endscale {
-  width: 60px;
+  width: 100px;
   height: 20px;
   float: right;
 }

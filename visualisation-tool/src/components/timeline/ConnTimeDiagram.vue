@@ -42,6 +42,8 @@ export default {
         this.$store.state.timescalestate.addZoomable( uppersvgcont );
         this.$store.state.timescalestate.addZoomable( lowersvgcont );
 
+        let largestTimestamp:number = 0;
+
         this.packets.forEach((packet, id) => {
 
             let packetinstance = new compclass({
@@ -65,7 +67,15 @@ export default {
             }
 
             this.$store.state.timescalestate.addMovableOnZoom( packetinstance );
+
+            if( packet.timestamp > largestTimestamp )
+                largestTimestamp = packet.timestamp;
         });
+
+        let currentDomainEnd:number = this.$store.state.timescalestate.getEndDomain();
+        largestTimestamp = Math.max(largestTimestamp, 10100); // 10.1s is the default
+        if( largestTimestamp > currentDomainEnd )
+            this.$store.state.timescalestate.setDomain( this.$store.state.timescalestate.getStartDomain(), largestTimestamp );
 
         this.$store.state.timescalestate.forceMovableSync();
     },

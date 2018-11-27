@@ -161,9 +161,9 @@ export default class TimeScaleState{
         this._start = start
         this._end = end
 
-        this._refscale.domain([start, end])
+        this._refscale.domain([start, end]);
         this._scale = this._zoomTransform.rescaleX(this._refscale);
-        this._gaxis.call(this._zoom.transform, d3.zoomIdentity)
+        this._gaxis.call(this._zoom.transform, d3.zoomIdentity);
     }
 
     public getStartDomain(): number{
