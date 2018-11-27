@@ -1,6 +1,6 @@
 <template>
     <div>
-        <div v-for="(file, fileindex) in traces" class="w-100 float-left">
+        <div v-for="(file, fileindex) in traces" v-bind:key="fileindex" class="w-100 float-left">
             <TraceInfo v-bind:traceid="fileindex" />
         </div>
     </div>

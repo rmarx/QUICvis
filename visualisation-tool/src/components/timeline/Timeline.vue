@@ -1,27 +1,35 @@
+<!-- Top-level container for the whole time-line visualization -->
+
 <template>
     <div v-bind:style="{width: containerwidth + 'px', height: containerheight + 'px'}">
         <div class="w-75 float-left" :style="{overflow: 'auto', height: 'inherit', position: 'relative'}">
+            <!-- left row with names of traces, connections and streams -->
             <div class="conninfocontainer float-left">
-                <ConnectionInfoList />
+                <TraceInfoList />
             </div>
+            <!-- the actual timeline --> 
             <div class="timelinecontainer">
+                <!-- x-axis controls on top (2 input fields, FROM and TO time) --> 
                 <TimeScale />
                 <div id="timeline">
-                    <svg id="timelinesvg" class="pt-3">
-                    </svg>
+                    <!-- the x-axis SVG on top --> 
+                    <svg id="timelinesvg" class="pt-3"></svg>
+
+                    <!-- The actual timeline svgs (rects for packets/frames, RX and TX lanes, etc.) --> 
                     <ConnectionTimelineList />
                 </div>
             </div>
         </div>
         <div class="w-25 float-left">
+            <!-- Detailed packet info on the currently selected packet (if any) --> 
             <PacketInfo />
         </div>
     </div>
-</template>
+</template> 
 
 <script lang="ts">
 import TimeScale from "./TimeScale.vue";//timescale component
-import ConnectionInfoList from "./ConnectionInfoList.vue"//connectionsettings component //connectioninfo component
+import TraceInfoList from "./TraceInfoList.vue"//connectionsettings component //connectioninfo component
 import ConnectionTimelineList from './ConnectionTimelineList.vue' //connection timeline list component
     //connectiondiagram component
 import * as d3 from 'd3';
@@ -37,7 +45,7 @@ export default {
       },
   },
   components: {
-      ConnectionInfoList,
+      TraceInfoList,
       TimeScale,
       ConnectionTimelineList,
       PacketInfo

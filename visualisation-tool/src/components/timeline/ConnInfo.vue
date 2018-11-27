@@ -1,3 +1,6 @@
+<!-- This file creates one row for one connection and its streams to the left in the TIMELINE view -->
+<!-- This is bundled in ConnectionInfoList for multiple connections -->
+
 <template>
     <div class="conncontainer">
         <div class="d-flex h-100" v-bind:style="{ height: compheight + 'px'}">
@@ -16,9 +19,9 @@
                 </div>
             </div>
         </div>
-        <div class="border" v-for="stream in filteredstreams" v-if="!stream.filtered && showstreams" v-bind:style="{height: streamheight + 'px', 
+        <div class="border" v-for="stream in filteredstreams" v-if="!stream.filtered && showstreams" v-bind:key="stream.streamnr" v-bind:style="{height: streamheight + 'px', 
         'background-color': bgcolor(stream.cl_init, stream.uni_di)}">
-                <div v-if="stream.streamnr != 0" class="stream_name float-right">Stream {{ stream.streamnr}} </div>
+                <div v-if="stream.streamnr != 0" class="stream_name float-right">Stream {{ stream.streamnr }} </div>
                 <div v-if="stream.streamnr == 0" class="stream_name float-right">Control</div>
                 <button class="btn btn-primary btn-sm float-left filter-button" style="line-height: 1; padding: 0 5%;" @click="filterStream(stream.streamnr)" >Hide</button>
         </div> 

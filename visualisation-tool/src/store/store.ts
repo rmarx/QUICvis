@@ -47,14 +47,18 @@ export default new Vuex.Store({
       state.vissettings.getFile(data.traceid).getConn(data.connid).resetStreamFilters()
     },
     setTimeScaleRange(state, data){
+      console.log("Store: setTimescaleRange", this);
       state.timescalestate.setDimensions(data.width, data.height)
     },
     setTimeScaleDomain(state, data){
+      console.log("Store: setTimeScaleDomain", this);
       state.timescalestate.setDomain(data.start, data.end)
     },
+    /*
     setZoom(state){
       state.timescalestate.setZoom();
     },
+    */
     filterTableHeader(state, name){
       state.tablestate.filterHeader(name)
     },
@@ -171,9 +175,11 @@ export default new Vuex.Store({
     setTimeScaleDomain(context, data){
       context.commit('setTimeScaleDomain',data)
     },
+    /*
     setZoom(context){
       context.commit('setZoom')
     },
+    */
     filterTableHeader(context, name){
       context.commit('filterTableHeader', name)
     },

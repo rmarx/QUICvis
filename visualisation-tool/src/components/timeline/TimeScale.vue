@@ -1,3 +1,4 @@
+<!-- input fields to change FROM and TO x-values (time in ms on the timeline) --> 
 <template>
     <div>
       <div class="float-left w-100">
@@ -20,11 +21,10 @@ export default {
   },
   mounted() {
     //display time axis
-    let svgcont = d3
-      .select("#timelinesvg")
+    let svgcont = d3.select("#timelinesvg");
     let width = document.getElementById("timeline")!.clientWidth - 2;
-    this.$store.state.timescalestate.setZoom()
-    this.updateDimensions(width, 500)
+    this.$store.state.timescalestate.setZoom();
+    this.updateDimensions(width, 500);
   },
   methods: {
     onfieldschange: function() {

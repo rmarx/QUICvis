@@ -1,9 +1,12 @@
+<!-- Connection-level timeline: split between TX and RX lines -->
+
 <template>
     <div>
-        <svg class="svgcont-trace send-svg" v-bind:height="svgheight" />
-        <svg class="svgcont-trace receive-svg" v-bind:height="svgheight" />
+        <svg class="svgcont-trace send-svg"     v-bind:height="svgheight" />
+        <svg class="svgcont-trace receive-svg"  v-bind:height="svgheight" />
     </div>
 </template>
+
 <script lang="ts">
 import Vue from 'vue'
 import * as d3 from "d3";
@@ -21,49 +24,50 @@ export default {
     computed: {
         packets() {
             return this.$store.state.vissettings.getFile(this.traceid).getConn(this.connid).getTimelinePackets()
-        },
-        zoom() {
-            return this.$store.state.timescalestate.getZoom()
         }
     },
+    beforeUpdate(){
+        console.log("ConnTimeDiagram : beforeUpdate");
+    },
     mounted() {
-        let compclass = Vue.extend(PacketBlock)
-        d3.select(this.$el.children[0]).call(this.zoom)
-        d3.select(this.$el.children[1]).call(this.zoom)
+
+        let compclass = Vue.extend(PacketBlock);
+        
+        d3.select(this.$el.children[0]).call(this.$store.state.timescalestate.getZoom()).on("wheel", function() { d3.event.preventDefault(); });
+        d3.select(this.$el.children[1]).call(this.$store.state.timescalestate.getZoom()).on("wheel", function() { d3.event.preventDefault(); });
         
         //svg lane for sent packets
-        let uppersvgcont = this.$el.children[0]
+        let uppersvgcont = this.$el.children[0];
         //svg lane for received packets
-        let lowersvgcont = this.$el.children[1]
+        let lowersvgcont = this.$el.children[1];
+
+
+        this.$store.state.timescalestate.addZoomable( uppersvgcont );
+        this.$store.state.timescalestate.addZoomable( lowersvgcont );
+
         this.packets.forEach((packet, id) => {
+
+            let packetinstance = new compclass({
+                store: this.$store,
+                propsData: {
+                    packetinfo: packet,
+                    traceid: this.traceid,
+                    connid: this.connid,
+                    packetid: id
+                }
+            })
+            packetinstance.$mount();
+
             //if packet is send by TX
             if (packet.isclient) {
-                let packetinstance = new compclass({
-                    store: this.$store,
-                    propsData: {
-                        packetinfo: packet,
-                        traceid: this.traceid,
-                        connid: this.connid,
-                        packetid: id,
-                    }
-                })
-                packetinstance.$mount()
-                uppersvgcont.appendChild(packetinstance.$el)
+                uppersvgcont.appendChild(packetinstance.$el);
             }
             //if packet is sent by RX
             else {
-                let packetinstance = new compclass({
-                    store: this.$store,
-                    propsData: {
-                        packetinfo: packet,
-                        traceid: this.traceid,
-                        connid: this.connid,
-                        packetid: id,
-                    }
-                })
-                packetinstance.$mount()
-                lowersvgcont.appendChild(packetinstance.$el)
+                lowersvgcont.appendChild(packetinstance.$el);
             }
+
+            this.$store.state.timescalestate.addMovableOnZoom( packetinstance );
         })
     },
     components: {

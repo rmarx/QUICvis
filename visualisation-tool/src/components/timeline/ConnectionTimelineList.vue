@@ -1,13 +1,17 @@
+
+<!-- The actual timeline renderer with packets/frames and RX/TX lines --> 
+
 <template>
     <div>
-        <div v-for="(file, fileindex) in traces">
-            <div v-for="(conn) in filteredconns(fileindex)" v-bind:id="'conn-svgdiagram-' + fileindex + conn" class="svgcont-trace">
+        <div v-for="(file, fileindex) in traces" v-bind:key="fileindex">
+            <div v-for="(conn) in filteredconns(fileindex)" v-bind:key="conn.connid" v-bind:id="'conn-svgdiagram-' + fileindex + conn" class="svgcont-trace">
                 <ConnTimeDiagram  v-bind:traceid="fileindex" v-bind:connid="conn"/>
                 <StreamTimeDiagram v-bind:traceid="fileindex" v-bind:connid="conn" v-if="showstreams(fileindex, conn)"/>
             </div>
         </div>
     </div>
 </template>
+
 <script lang="ts">
 import Vue from 'vue'
 import ConnTimeDiagram from './ConnTimeDiagram.vue'

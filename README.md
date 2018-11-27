@@ -28,4 +28,6 @@ cd ./visualisation-tool
 npm run serve
 ```
 
-For a detailed explanation on how things work, check out the [guide](http://vuejs-templates.github.io/webpack/) and [docs for vue-loader](http://vuejs.github.io/vue-loader).
+___
+
+Originally developed by Jonas Reynders as part of his Bachelor's thesis at Hasselt University (see https://github.com/moonfalir/quic-visualization)
