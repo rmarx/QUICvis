@@ -12,6 +12,7 @@
                 </select>-->
                 <button class="btn btn-primary btn-sm" @click="setShowStreams()" v-if="!showstreams">E</button>
                 <button class="btn btn-primary btn-sm" @click="setShowStreams()" v-else>C</button>
+                
                 <button class="btn btn-secondary btn-sm" @click="resetStreamFilters()">Reset hidden</button>
                 <div class="w-100 x-offset float-left">
                     <label class="w-25" v-bind:for="'x-offset-' + traceid + connid">X0</label>

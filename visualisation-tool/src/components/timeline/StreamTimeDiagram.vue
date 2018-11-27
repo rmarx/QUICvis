@@ -71,8 +71,10 @@ export default {
                 streamsvg[streamid].appendChild(frameinstance.$el);
 
                 this.$store.state.timescalestate.addMovableOnZoom( frameinstance );
-            })
-        })
+            });
+        });
+
+        this.$store.state.timescalestate.forceMovableSync();
     },
     components: {
         StreamBlock

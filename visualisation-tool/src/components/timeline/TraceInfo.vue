@@ -31,12 +31,13 @@ export default {
         //calculate height of file name: depending if streams are being displayed
         compheight() {
             let connsettings = this.$store.state.vissettings.getFile(this.traceid).getAmountStreamsToShow();
-            let height = 0
+            let height = 0;
+            // TODO: get the default svg height values from the svg lanes, not hardcoded here! 
             connsettings.forEach(element => {
                 if (element.streams > 0)
-                    height += 60 * element.streams
+                    height += 30 * element.streams
                 
-                height += 62;
+                height += 62; // connection is 2 lanes high, so 2 * 30 + 2 (padding)
             });
             return height
         }

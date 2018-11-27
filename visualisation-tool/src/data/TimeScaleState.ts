@@ -57,6 +57,21 @@ export default class TimeScaleState{
         this._zoomables.push(zoomable);
     }
 
+    // use this to force update of the UI before we receive a zoom/pan event 
+    public forceMovableSync(){
+        this.zoomMovables();
+    }
+
+    private zoomMovables(){
+        for( let movable of this._movables ){
+            movable.$options.methods.updateXAfterZoom.bind(movable)( this._scale );
+        }
+
+        for( let zoomable of this._zoomables ){
+            zoomable.__zoom = this._zoomTransform;
+        }
+    }
+
     public setZoom(){
 
         let svgcont = d3.select("#timelinesvg");
@@ -76,14 +91,8 @@ export default class TimeScaleState{
         // If we don't do this, and you start scrolling/panning on 1 svg element, then moved to another, the zooming would jump around
         // because we would suddenly have other reference transforms. 
         // TODO: refactor into 1 big zoom listener overlay 
-        let zoomMovables = () => {
-            for( let movable of this._movables ){
-                movable.$options.methods.updateXAfterZoom.bind(movable)( this._scale );
-            }
-
-            for( let zoomable of this._zoomables ){
-                zoomable.__zoom = this._zoomTransform;
-            }
+        let zoomMovablesWrapper = () => {
+            this.zoomMovables();
         };
 
         // scrolling/panning triggers zoom multiple times. 
@@ -91,8 +100,8 @@ export default class TimeScaleState{
         // to make sure it only triggers once every 50ms.
         // However, when panning, the update rate is a lot higher, and at 50ms lag, this looks very very sloppy
         // so we update the rate UP when panning, but keep low when zooming (much less noticeable)
-        let debouncedZoomMovables = _.debounce( zoomMovables, 50 );
-        let debouncedPanMovables  = _.debounce( zoomMovables, 5 ); 
+        let debouncedZoomMovables = _.debounce( zoomMovablesWrapper, 50 );
+        let debouncedPanMovables  = _.debounce( zoomMovablesWrapper, 5 ); 
 
 
         this._zoom = d3.zoom().scaleExtent([1,400]).on("zoom", () => {

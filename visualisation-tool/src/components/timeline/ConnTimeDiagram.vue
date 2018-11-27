@@ -26,9 +26,6 @@ export default {
             return this.$store.state.vissettings.getFile(this.traceid).getConn(this.connid).getTimelinePackets()
         }
     },
-    beforeUpdate(){
-        console.log("ConnTimeDiagram : beforeUpdate");
-    },
     mounted() {
 
         let compclass = Vue.extend(PacketBlock);
@@ -68,7 +65,9 @@ export default {
             }
 
             this.$store.state.timescalestate.addMovableOnZoom( packetinstance );
-        })
+        });
+
+        this.$store.state.timescalestate.forceMovableSync();
     },
     components: {
         PacketBlock
