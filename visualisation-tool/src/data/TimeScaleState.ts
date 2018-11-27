@@ -110,15 +110,6 @@ export default class TimeScaleState{
             this._start = newdomain[0];
             this._end = newdomain[1];
 
-            setTimeout( () => {
-                // @ts-ignore
-                console.log("zoomUpdate count ", window.zoomUpdateCount, window.betterZoomUpdateCount);
-                // @ts-ignore
-                window.zoomUpdateCount = 0;
-                // @ts-ignore
-                window.betterZoomUpdateCount = 0;
-            }, 500);
-
             if( d3.event.sourceEvent && d3.event.sourceEvent instanceof MouseEvent)
                 debouncedPanMovables();
             else
