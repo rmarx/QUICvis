@@ -207,7 +207,8 @@ export default {
                     receive_coord: sequencepackets[i].receive_coord,
                     receive_time: sequencepackets[i].receive_time
                 }
-            })
+            });
+
             packetinstance.$mount()
             this.$el.children[0].appendChild(packetinstance.$el)
             //position text of packet so it doesn't overlap

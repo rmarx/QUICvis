@@ -164,7 +164,8 @@ export default {
     }
   },
   mounted(){
-      this.loadFile("ngtcp-multistreams-client.ngtcp2-log.js");
+      this.loadFile("ntwrk-off-cl-ngtcp2.quicker-log.js");
+      this.loadFile("ntwrk-off-se-ngtcp2.ngtcp2-log.js");
   },
   methods: {
       toggleFileContainer(){
