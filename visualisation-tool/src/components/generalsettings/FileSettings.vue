@@ -1,18 +1,38 @@
 <template>
     <div id="filesettings" class="container w-50 float-left">
-        <div v-for="(file, fileindex) in traces" class="container border w-25 float-left">
-            <div v-bind:id="file.filename + '-span'">
-            <div class="container border">
-                {{ file.filename}}
+        <div id="filenameSelectContainer">
+            <button @click="toggleFileContainer()">DEBUG</button>
+            <select @change="onfilenameselected()" v-model="selectedFilename" class="ml-1">
+                <option disabled value="">Select a file to load</option>
+                <option v-for="option in filenames" v-bind:key="option" v-bind:value="option">
+                    {{ option }}
+                </option>
+            </select>
+        </div>
+        <br/>
+        <div id="testcaseContainer">
+            <div id="currentTestcaseLabel">Current test case: {{currentTestcaseName}} {{loadingIndicator}}</div>
+            <div v-for="testcase in testcases" v-bind:key="testcase.name" class="float-left ml-1">
+                <button @click="loadTestcase(testcase)">{{testcase.name}}</button>
             </div>
-            <div v-bind:id="file.filename + '-conns'" v-bind:aria-labelledby="file.filename + '-conns'" v-bind:data-parent="file.filename + '-span'">
+        </div>
+        
+        
+        <div id="fileContainer" v-if="fileContainerOpen">
+            <div v-for="(file, fileindex) in traces" v-bind:key="fileindex" class="container border w-25 float-left">
+                <div v-bind:id="file.filename + '-span'">
                 <div class="container border">
-                    <div v-for="(conn, connindex) in file.conns">
-                        <input type="checkbox" class="checkbox" v-bind:name="file.filename + '-conn' + connindex" :checked="!conn" @click="filterConn(fileindex, connindex)">
-                        {{ 'conn' + (connindex + 1) }}
+                    {{ file.filename}}
+                </div>
+                <div v-bind:id="file.filename + '-conns'" v-bind:aria-labelledby="file.filename + '-conns'" v-bind:data-parent="file.filename + '-span'">
+                    <div class="container border">
+                        <div v-for="(conn, connindex) in file.conns" v-bind:key="connindex">
+                            <input type="checkbox" class="checkbox" v-bind:name="file.filename + '-conn' + connindex" :checked="!conn" @click="filterConn(fileindex, connindex)">
+                            {{ 'conn' + (connindex + 1) }}
+                        </div>
                     </div>
                 </div>
-            </div>
+                </div>
             </div>
         </div>
     </div>
@@ -20,23 +40,254 @@
 
 <script lang="ts">
 import { Component, Prop, Vue } from 'vue-property-decorator';
+import TraceWrapper from '../../data/TraceWrapper';
+import { Ngtcp2LogParser } from '../../parser/Ngtcp2LogParser'
+import { QuickerLogParser } from '../../parser/QuickerLogParser';
+import { PcapParser } from '../../parser/pcapparser';
 
 export default {
   name: "FileSettings",
+  data() {
+      return {
+        testcases:[
+            { 
+                name: "Network down",
+                files: [
+                    "ntwrk-off-cl-ngtcp2.quicker-log.js",
+                    "ntwrk-off-se-ngtcp2.ngtcp2-log.js",
+                    "ntwrk-off-ts-ngtcp2.json.js",
+
+                    "ntwrk-off-cl-quicker.quicker-log.js",
+                    "ntwrk-off-se-quicker.quicker-log.js",
+                    "ntwrk-off-ts-quicker.json.js",
+                ]
+            },
+            { 
+                name: "Network down (extended)",
+                files: [
+                    "ntwrk-off-cl-ngtcp2.quicker-log.js",
+                    "ntwrk-off-se-ngtcp2.ngtcp2-log.js",
+                    "ntwrk-off-ts-ngtcp2.json.js",
+                    
+                    "ntwrk-off-cl-quicker.quicker-log.js",
+                    "ntwrk-off-se-quicker.quicker-log.js",
+                    "ntwrk-off-ts-quicker.json.js",
+                    
+                    "ntwrk-off-cl-quant.quicker-log.js",
+                    "ntwrk-off-ts-quant.json.js"
+                ]
+            }
+        ],
+        standaloneFilenames: 
+        [   "inc-0rtt-cl-ngtcp2.quicker-log.js",
+            "inc-0rtt-cl-quant.quicker-log.js",
+            "inc-0rtt-cl-quicker.quicker-log.js",
+            "inc-0rtt-se-ngtcp2.ngtcp2-log.js",
+            "inc-0rtt-se-quicker.quicker-log.js",
+            "inc-0rtt-ts-ngtcp2.json.js",
+            "inc-0rtt-ts-quant.json.js",
+            "inc-0rtt-ts-quicker.json.js",
+            "two-initial-cl-ngtcp2.quicker-log.js",
+            "two-initial-cl-quant.quicker-log.js",
+            "two-initial-cl-quicker.quicker-log.js",
+            "two-initial-se-ngtcp2.ngtcp2-log.js",
+            "two-initial-se-quicker.quicker-log.js",
+            "two-initial-ts-ngtcp2.json.js",
+            "two-initial-ts-quant.json.js",
+            "two-initial-ts-quicker.json.js",
+            "dupli-pkts-cl-ngtcp2.quicker-log.js",
+            "dupli-pkts-cl-quant.quicker-log.js",
+            "dupli-pkts-cl-quicker.quicker-log.js",
+            "dupli-pkts-se-ngtcp2.ngtcp2-log.js",
+            "dupli-pkts-se-quicker.quicker-log.js",
+            "dupli-pkts-ts-ngtcp2.json.js",
+            "dupli-pkts-ts-quant.json.js",
+            "dupli-pkts-ts-quicker.json.js",
+            "exceed-md-cl-ngtcp2.quicker-log.js",
+            "exceed-md-cl-quant.quicker-log.js",
+            "exceed-md-cl-quicker.quicker-log.js",
+            "exceed-md-se-ngtcp2.ngtcp2-log.js",
+            "exceed-md-se-quicker.quicker-log.js",
+            "exceed-md-ts-ngtcp2.json.js",
+            "exceed-md-ts-quant.json.js",
+            "exceed-md-ts-quicker.json.js",
+            "ngtcp-multistreams-client.ngtcp2-log.js",
+            "ngtcp-multistreams-server.ngtcp2-log.js",
+            "ngtcp2-multistreams-tshark.json.js",
+            "ntwrk-off-cl-ngtcp2.quicker-log.js",
+            "ntwrk-off-cl-quant.quicker-log.js",
+            "ntwrk-off-cl-quicker.quicker-log.js",
+            "ntwrk-off-se-ngtcp2.ngtcp2-log.js",
+            "ntwrk-off-se-quicker.quicker-log.js",
+            "ntwrk-off-ts-ngtcp2.json.js",
+            "ntwrk-off-ts-quant.json.js",
+            "ntwrk-off-ts-quicker.json.js",
+            "pkts-reorder-cl-ngtcp2.quicker-log.js",
+            "pkts-reorder-cl-quant.quicker-log.js",
+            "pkts-reorder-cl-quicker.quicker-log.js",
+            "pkts-reorder-se-ngtcp2.ngtcp2-log.js",
+            "pkts-reorder-se-quicker.quicker-log.js",
+            "pkts-reorder-ts-ngtcp2.json.js",
+            "pkts-reorder-ts-quant.json.js",
+            "pkts-reorder-ts-quicker.json.js"
+        ],
+        conncolors: [
+            '#f98b7f',
+            '#f9b97f',
+            '#f2dc8e',
+            '#a5965e',
+            '#e4ef83',
+            '#b1dd6e',
+            '#82d87d',
+            '#7dd8bb',
+            '#7dd4d8',
+            '#9189ff'
+        ],
+        selectedFilename: "",
+        fileContainerOpen: false,
+        currentTestcase: undefined,
+        loading: false
+      }
+  },
   computed:{ 
     traces() {
       return this.$store.getters.getFilesSettings;
-  }},
+    },
+    filenames() {
+        return this.standaloneFilenames;
+    },
+    currentTestcaseName(){
+        return (this.currentTestcase) ? this.currentTestcase.name : "No testcase selected";
+    },
+    loadingIndicator(){
+        return (this.loading) ? "(loading...)" : "";
+    }
+  },
+  mounted(){
+      this.loadFile("ngtcp-multistreams-client.ngtcp2-log.js");
+  },
   methods: {
+      toggleFileContainer(){
+          this.fileContainerOpen = !this.fileContainerOpen;
+      },
       filterConn(fileindex, connindex){
           let data = {
               fileindex,
               connindex
           }
-          this.$store.dispatch('filterConn', data)
+          this.$store.dispatch('filterConn', data);
       },
       removeFile(fileindex){
-          this.$store.dispatch('removeFile', fileindex)
+          this.$store.dispatch('removeFile', fileindex);
+      },
+      loadTestcase(testcase){
+            // we want to hide all currently visible traces, because we're loading new ones! 
+            // TODO: optimize: if one of the newly needed files is already in the cache, don't load it again, obviously 
+            let allFiles = this.$store.getters.getFiles;
+            for( let [index, val] of allFiles.entries() ){
+                for( let [connindex, connval] of val._conns.entries() ){
+                    if( !connval.getIsFiltered() ) // otherwhise we would toggle 
+                        this.filterConn( index, connindex );
+                }
+            }
+
+            // load new traces, but we need to make sure they are in-order.
+            // this is a bit more difficult, as we don't want to load sequentially
+            // so we start loading in parallel, gather everything here, and then append in the correct order.
+            // we tried just adding them and then re-sorting the file-array directly, but this is mega-slow, 
+            // as everything is re-rendered for some reason.
+            console.log("FileSettings:loadTestcase : ", testcase);
+            this.currentTestcase = testcase; 
+            this.loading = true;
+            
+            let amountToLoad = testcase.files.length;
+            let amountLoaded = 0;
+            let traceCache = [];
+            let vm = this;
+
+            let onFileLoaded = (traceWrap) => {
+                amountLoaded++;
+
+                for( let entry of traceCache ){
+                    if( entry.filename.indexOf(traceWrap.getTrace().name) >= 0 ) // filename contains.js, traceWrap.name doesn't, so use substr-check
+                        entry.traceWrap = traceWrap;
+                }
+                
+                console.log("FileSettings:LoadedTrace", amountLoaded, amountToLoad, traceCache);
+                if( amountLoaded == amountToLoad ){
+                    for( let entry of traceCache ){
+                        vm.$store.dispatch('addFile', entry.traceWrap);
+                    }
+
+                    this.loading = false;
+                }
+            };
+
+            for( let file of testcase.files ){
+                traceCache.push( { filename: file, traceWrap: undefined } ); // placeholders, added in correct order, later looked up by .filename
+                this.loadFile( file, onFileLoaded );
+            }
+      },
+      loadFile(filename:string, doneCallback:any){
+
+            let fileIndex = this.standaloneFilenames.indexOf(filename);
+            if( fileIndex >= 0 ){
+                this.standaloneFilenames.splice(fileIndex, 1 );
+            }
+            else
+                console.log("File not found in standalonefilenames was already gone?", filename);
+
+            console.log("FileSettings: Loading file ", filename);
+
+            let filepath = filename;
+
+            let vm = this;
+            let scriptelement = document.createElement('script');
+            scriptelement.onload = function () {
+                // the standalone file has a single variable in it, named after the file, so we can get the contents
+                // e.g., var dupli_pkts_cl_ngtcp2 = {...}
+                // since it's a 'var' and not 'let', we can access it via the window[]
+                let varname = filepath.substr(0, filepath.indexOf(".")); // dupli-pkts-cl-ngtcp2.quicker-log.js -> dupli-pkts-cl-ngtcp2
+                varname = varname.replace(new RegExp("-", 'g'), "_"); // dupli-pkts-cl-ngtcp2 -> dupli_pkts_cl_ngtcp2
+
+                //@ts-ignore 
+                let file = window[varname];
+                window[varname] = "loaded"; // make sure it can be gc'ed if necessary
+
+                let tracewrap = new TraceWrapper();
+                let parsedfile = undefined;
+
+                if (file['fileext'] === '.json') {
+                    let pcapparser = new PcapParser();
+                    parsedfile = pcapparser.parse(file['filename'], file['filecontent'])
+                }
+                if (file['fileext'] === '.ngtcp2-log') {
+                    let ngtcp2parser = new Ngtcp2LogParser();
+                    parsedfile = ngtcp2parser.parse(file['filename'], file['filecontent'])
+                }
+            
+                if (file['fileext'] === '.quicker-log') {
+                    let quickerparser = new QuickerLogParser();
+                    parsedfile = quickerparser.parse(file['filename'], file['filecontent'])
+                }
+
+                tracewrap.setTrace(parsedfile, 0, vm.conncolors);
+                if( !doneCallback )
+                    vm.$store.dispatch('addFile', tracewrap);
+                else
+                    doneCallback(tracewrap);
+
+            };
+
+            scriptelement.src = "standalone/" + filepath;
+
+            document.head.appendChild(scriptelement);
+      },
+      onfilenameselected(){
+          if( this.selectedFilename === undefined )
+            return;
+
+          this.loadFile( this.selectedFilename );
       }
   }
 }

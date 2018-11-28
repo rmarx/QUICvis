@@ -10,10 +10,10 @@
       <div class="card-header">
         <h5 class="mb-0 float-left">
           <button id="headingsettings" class="btn btn-link" @click="expandDataSettings()" >
-            View general settings
+            Toggle menu
           </button>
         </h5>
-      <div class="float-left m-1" v-for="tablename in frametables">
+      <div class="float-left m-1" v-for="tablename in frametables" v-bind:key="tablename">
         <button class="btn btn-primary" v-if="tablename === selectedframetable">{{ tablename }}</button>
         <button class="btn btn-secondary" v-else @click="selectFrameTable(tablename)">{{ tablename }}</button>
       </div>

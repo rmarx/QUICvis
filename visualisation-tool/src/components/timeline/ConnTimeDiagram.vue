@@ -73,7 +73,7 @@ export default {
         });
 
         let currentDomainEnd:number = this.$store.state.timescalestate.getEndDomain();
-        largestTimestamp = Math.max(largestTimestamp, 10100); // 10.1s is the default
+        largestTimestamp = Math.min(largestTimestamp * 1000 + 500, 10100); // 10.1s is the default
         if( largestTimestamp > currentDomainEnd )
             this.$store.state.timescalestate.setDomain( this.$store.state.timescalestate.getStartDomain(), largestTimestamp );
 
