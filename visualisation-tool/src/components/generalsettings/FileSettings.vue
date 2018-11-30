@@ -12,8 +12,14 @@
         <br/>
         <div id="testcaseContainer">
             <div id="currentTestcaseLabel">Current test case: {{currentTestcaseName}} {{loadingIndicator}}</div>
-            <div v-for="testcase in testcases" v-bind:key="testcase.name" class="float-left ml-1">
-                <button @click="loadTestcase(testcase)">{{testcase.name}}</button>
+            <div class="float-left ml-1">Timeline testcases:</div><br/>
+            <div v-for="testcase in testcases" class="float-left ml-1">
+                <button v-if="testcase.type === 'timeline'" @click="loadTestcase(testcase)">{{testcase.name}}</button>
+            </div>
+            <div style="clear: both;" />
+            <div class="float-left ml-1">Sequence Diagram testcases:</div><br/>
+            <div v-for="testcase in testcases" class="float-left ml-1">
+                <button v-if="testcase.type === 'sequence'" @click="loadTestcase(testcase)">{{testcase.name}}</button>
             </div>
         </div>
         
@@ -52,6 +58,7 @@ export default {
         testcases:[
             { 
                 name: "Network down",
+                type: "timeline",
                 files: [
                     "ntwrk-off-cl-ngtcp2.quicker-log.js",
                     "ntwrk-off-se-ngtcp2.ngtcp2-log.js",
@@ -64,6 +71,7 @@ export default {
             },
             { 
                 name: "Network down (extended)",
+                type: "timeline",
                 files: [
                     "ntwrk-off-cl-ngtcp2.quicker-log.js",
                     "ntwrk-off-se-ngtcp2.ngtcp2-log.js",
@@ -76,7 +84,34 @@ export default {
                     "ntwrk-off-cl-quant.quicker-log.js",
                     "ntwrk-off-ts-quant.json.js"
                 ]
+            },
+            { 
+                name: "Multistream",
+                type: "sequence",
+                files: [
+                    "ngtcp-multistreams-client.ngtcp2-log.js",
+                    "ngtcp-multistreams-server.ngtcp2-log.js",
+                ],
+                time_scale: 5
+            },
+            { 
+                name: "Network down (ngtcp2)",
+                type: "sequence",
+                files: [
+                    "ntwrk-off-cl-ngtcp2.quicker-log.js",
+                    "ntwrk-off-se-ngtcp2.ngtcp2-log.js",
+                ],
+                time_scale: 1
+            },
+            { 
+                name: "Conn closers",
+                type: "sequence",
+                files: [
+                    "dupli-pkts-ts-ngtcp2.json.js"
+                ],
+                time_scale: 1
             }
+
         ],
         standaloneFilenames: 
         [   "inc-0rtt-cl-ngtcp2.quicker-log.js",
@@ -190,6 +225,17 @@ export default {
             let allFiles = this.$store.getters.getFiles;
             for( let [index, val] of allFiles.entries() ){
                 for( let [connindex, connval] of val._conns.entries() ){
+
+                    // TODO: this correctly shows stuff, but screws with ordering again... existing files will not be viewed in the correct order for the testcase... aaargh 
+                    // only way to do that for now would be to add things twice, but that would take additional refactoring etc...
+                    // if we add proper naming of the stuffs in front of the rows soon, this should be less of an issue anyway
+                    if( testcase.files.indexOf(val.getTrace().name + ".js") >= 0 ){ // filename contains.js, traceWrap.name doesn't
+                        if( connval.getIsFiltered() ) // if was hidden: re-enable 
+                            this.filterConn( index, connindex );
+                        else
+                            continue; // keep showing files belonging to the selected testcase 
+                    }
+
                     if( !connval.getIsFiltered() ) // otherwhise we would toggle 
                         this.filterConn( index, connindex );
                 }
@@ -227,6 +273,49 @@ export default {
                     for( let entry of traceCache ){
                         if( entry.traceWrap ) // will be undefined if file was already loaded before
                             vm.$store.dispatch('addFile', entry.traceWrap);
+                    }
+
+                    if( testcase.type == "sequence" ){
+
+                        let allFiles = this.$store.state.vissettings.getAllFileNames();
+                        let index1 = allFiles.indexOf( testcase.files[0].replace( new RegExp(/.js$/), "") ); // assume [0] is always the left side, client
+                        let index2 = undefined;
+                        if( testcase.files[1] )
+                            index2 = allFiles.indexOf( testcase.files[1].replace( new RegExp(/.js$/), "") );
+
+                        console.log("Sequence setting ", index1, index2, allFiles, testcase.files);
+                        
+                        let data = {
+                            tracenumber: 1,
+                            traceindex: index1
+                        };
+                        this.$store.dispatch('setSequenceTraceIndex', data);
+
+                        let conndata = {
+                            connnumber: 1,
+                            connindex: 0
+                        };
+                        this.$store.dispatch('setSequenceConnIndex', conndata);
+
+                        if( index2 ){
+                            let vm = this;
+                            setTimeout( () => {
+                                let data = {
+                                    tracenumber: 2,
+                                    traceindex: index2
+                                };
+                                vm.$store.dispatch('setSequenceTraceIndex', data);
+
+                                let conndata = {
+                                    connnumber: 2,
+                                    connindex: 0
+                                };
+                                vm.$store.dispatch('setSequenceConnIndex', conndata);
+                            }, 20);
+                        }
+
+                        if( testcase.time_scale )
+                            this.$store.dispatch('setSequenceScale', testcase.time_scale)
                     }
 
                     this.loading = false;

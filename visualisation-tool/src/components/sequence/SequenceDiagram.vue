@@ -152,13 +152,8 @@ export default {
 
                         if( !retransmitFound )
                             streamRanges.set( frame.stream_id, [{offset: frame.offset, length: frame.length, first_packet_number: packet.headerinfo.packet_number }]);
-
-                        console.log("Frame with offset", frame.frametype, frame.offset, frame.length, frame.stream_id, packet.headerinfo.packet_number, streamRanges);
                     }
                 }
-                // packet.payloadinfo.framelist[0].stream_id/stream_data/length/frametype/offset
-                // only stream_id > 4 for now is good starting point, frame_type 22? maybe just check if offset is present? 
-
             }
         }
 
