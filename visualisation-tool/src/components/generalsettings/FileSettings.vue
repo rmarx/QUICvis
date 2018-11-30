@@ -166,6 +166,8 @@ export default {
   mounted(){
       this.loadFile("ntwrk-off-cl-ngtcp2.quicker-log.js");
       this.loadFile("ntwrk-off-se-ngtcp2.ngtcp2-log.js");
+      this.loadFile("dupli-pkts-se-ngtcp2.ngtcp2-log.js");
+      this.loadFile("dupli-pkts-ts-ngtcp2.json.js");
   },
   methods: {
       toggleFileContainer(){
@@ -209,15 +211,21 @@ export default {
             let onFileLoaded = (traceWrap) => {
                 amountLoaded++;
 
-                for( let entry of traceCache ){
-                    if( entry.filename.indexOf(traceWrap.getTrace().name) >= 0 ) // filename contains.js, traceWrap.name doesn't, so use substr-check
-                        entry.traceWrap = traceWrap;
+                if( traceWrap ) { // is undefined if file was already loaded before 
+                    for( let entry of traceCache ){
+                        if( entry.filename.indexOf(traceWrap.getTrace().name) >= 0 ) // filename contains.js, traceWrap.name doesn't, so use substr-check
+                            entry.traceWrap = traceWrap;
+                    }
+
+                    console.log("FileSettings:LoadedTrace", amountLoaded, amountToLoad, traceCache);
                 }
-                
-                console.log("FileSettings:LoadedTrace", amountLoaded, amountToLoad, traceCache);
+                else    
+                    console.log("FileSettings:LoadedTrace : trace was previously loaded", amountLoaded, amountToLoad);
+
                 if( amountLoaded == amountToLoad ){
                     for( let entry of traceCache ){
-                        vm.$store.dispatch('addFile', entry.traceWrap);
+                        if( entry.traceWrap ) // will be undefined if file was already loaded before
+                            vm.$store.dispatch('addFile', entry.traceWrap);
                     }
 
                     this.loading = false;
@@ -241,6 +249,20 @@ export default {
             console.log("FileSettings: Loading file ", filename);
 
             let filepath = filename;
+
+            // the check to prevent double-loading above is only if this component stays mounted
+            // it gets re-mounted when moving from timeline to seqdiagram, so need to prevent it agai nwith some global state
+            // in a clean application, this would be on this.$store, but WE ARE NOT A CLEAN APPLICATION (at the moment)
+            let varname = filepath.substr(0, filepath.indexOf(".")); // dupli-pkts-cl-ngtcp2.quicker-log.js -> dupli-pkts-cl-ngtcp2
+            varname = varname.replace(new RegExp("-", 'g'), "_"); // dupli-pkts-cl-ngtcp2 -> dupli_pkts_cl_ngtcp2
+
+            if( window[varname] == "loaded" ){
+                console.log("FileSettings:loadFile : file was already loaded, doing nothing");
+                if( doneCallback )
+                    doneCallback(undefined);
+                
+                return;
+            }
 
             let vm = this;
             let scriptelement = document.createElement('script');

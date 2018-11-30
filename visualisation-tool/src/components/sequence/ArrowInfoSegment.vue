@@ -2,10 +2,13 @@
     <text v-if="texttoshow === 'header'" v-bind:transform="'translate(' + translate + ', 0)'" v-bind:fill="showheadername">
         {{ headername}}
     </text>
-    <text v-else-if="texttoshow === 'packetnr'" v-bind:transform="'translate(' + translate + ', 0)'" v-bind:fill="showpacketnrs">
-        {{ packetnr}}
+    <text v-else-if="normalpacketnumber" v-bind:transform="'translate(' + translate + ', 0)'" v-bind:fill="showpacketnrs">
+            {{ packetnr}}
     </text>
-
+    <text v-else-if="duplicatepacketnumber" v-bind:transform="'translate(' + translate + ', 0)'" v-bind:fill="showpacketnrs"
+             style="fill: white; stroke:red; stroke-width: 1px;" >
+            DUPLICATE {{ packetnr}}
+    </text>
     <text v-else-if="texttoshow === 'frame'" v-bind:transform="'translate(' + translate + ', 0)'" v-bind:fill="framebgcolor">
         {{ frameName(packet_conn.payloadinfo.framelist[frameid].frametype)}}
     </text>
@@ -30,8 +33,17 @@ export default {
                 packettext += '(' + this.packet_conn.size + 'B)'
             return packettext
         },
+        normalpacketnumber(){
+            return (this.texttoshow === 'packetnr') && !this.packet_conn.headerinfo.original_packet_number;
+        },
+        duplicatepacketnumber(){
+            return (this.texttoshow === 'packetnr') && this.packet_conn.headerinfo.original_packet_number;
+        },
         packetnr(){
-            return 'PN:' + this.packet_conn.headerinfo.packet_number
+            if( this.packet_conn.headerinfo.original_packet_number ) // this was a duplicate packet 
+                return "PN: " + this.packet_conn.headerinfo.original_packet_number;
+            else
+                return 'PN:' + this.packet_conn.headerinfo.packet_number
         },
         showpacketnrs(){
             if (!this.$store.state.sequencesettings.getSeqFilter('packetnrs'))
