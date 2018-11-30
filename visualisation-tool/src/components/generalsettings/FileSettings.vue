@@ -168,6 +168,7 @@ export default {
       this.loadFile("ntwrk-off-se-ngtcp2.ngtcp2-log.js");
       this.loadFile("dupli-pkts-se-ngtcp2.ngtcp2-log.js");
       this.loadFile("dupli-pkts-ts-ngtcp2.json.js");
+      this.loadFile("ngtcp-multistreams-client.ngtcp2-log.js");
   },
   methods: {
       toggleFileContainer(){

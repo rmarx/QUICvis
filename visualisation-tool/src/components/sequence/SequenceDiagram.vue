@@ -98,6 +98,16 @@ export default {
         let j = 0;
         let basemargin = 0;
 
+        interface StreamRange{
+            offset:number,
+            length:number,
+            first_packet_number:number;
+        };
+
+        // maps stream nr to a list of stream ranges that have been sent for that stream and their packet nr. 
+        // Used for retransmit heuristics. 
+        let streamRanges = new Map<number, Array<StreamRange>>(); 
+
         // we need to deal with duplicate packet numbers somehow
         // we just keep a list and if we encounter them again, give them a new packet number on both sides
         // TODO: current algorithm is relatively stupid, as it doesn't take into account re-orders
@@ -119,6 +129,37 @@ export default {
             }
             else
                 pncache.set( pn, 1 );
+
+            // detect retransmits
+            // TODO: do this for the packetsServer as well. This works for everything except for LOST packets that carry retransmits that never arrive at the client
+            // Since we don't have any of those in our current test scenarios, we postpone that 
+            if( packet.payloadinfo && packet.payloadinfo.framelist && packet.payloadinfo.framelist.length > 0 ){
+                let frames = packet.payloadinfo.framelist;
+                for( let frame of frames ){
+                    if( frame.offset ){ // offset is only set on Stream frames, the ones we want
+
+                        let retransmitFound = false;
+                        if( streamRanges.has(frame.stream_id) ){
+                            let sentRanges = streamRanges.get(frame.stream_id);
+                            for( let range of sentRanges ){
+                                // TODO: add support for partially overlapping segments instead of exact retransmissions
+                                if( range.offset == frame.offset && range.length == frame.length ){
+                                    retransmitFound = true;
+                                    (packet.headerinfo as any).retransmitted_from = range.first_packet_number;
+                                }
+                            }
+                        }
+
+                        if( !retransmitFound )
+                            streamRanges.set( frame.stream_id, [{offset: frame.offset, length: frame.length, first_packet_number: packet.headerinfo.packet_number }]);
+
+                        console.log("Frame with offset", frame.frametype, frame.offset, frame.length, frame.stream_id, packet.headerinfo.packet_number, streamRanges);
+                    }
+                }
+                // packet.payloadinfo.framelist[0].stream_id/stream_data/length/frametype/offset
+                // only stream_id > 4 for now is good starting point, frame_type 22? maybe just check if offset is present? 
+
+            }
         }
 
         pncache.clear();
@@ -183,7 +224,7 @@ export default {
                 else {
                     let time = this.getPacketTime(packetsClient[i]);
                     
-                    console.log("Client Packet " + packetsClient[i].headerinfo.packet_number + " had time_delta ", time * 1000 );
+                    //console.log("Client Packet " + packetsClient[i].headerinfo.packet_number + " had time_delta ", time * 1000 );
                     sequencepackets.push({
                         send_coord: originalcoord, 
                         send_time: time * 1000,
@@ -221,7 +262,7 @@ export default {
                 else {
                     let time = this.getPacketTime(packetsServer[j].packet);
                     
-                    console.log("Server Packet " + packetsServer[j].packet.headerinfo.packet_number + " had time_delta ", time * 1000 );
+                    //console.log("Server Packet " + packetsServer[j].packet.headerinfo.packet_number + " had time_delta ", time * 1000 );
 
                     sequencepackets.push({
                         send_coord: originalcoord,

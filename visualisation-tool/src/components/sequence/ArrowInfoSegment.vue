@@ -2,6 +2,10 @@
     <text v-if="texttoshow === 'header'" v-bind:transform="'translate(' + translate + ', 0)'" v-bind:fill="showheadername">
         {{ headername}}
     </text>
+    <text v-else-if="retransmittedpacket" v-bind:transform="'translate(' + translate + ', 0)'" v-bind:fill="showheadername"
+             style="fill: white; stroke:blue; stroke-width: 1px;" >
+            {{ packetnr}} RETRANSMIT FROM {{first_packet_nr}}
+    </text>
     <text v-else-if="normalpacketnumber" v-bind:transform="'translate(' + translate + ', 0)'" v-bind:fill="showpacketnrs">
             {{ packetnr}}
     </text>
@@ -32,6 +36,12 @@ export default {
             if (parseInt(this.packet_conn.size) > 0)
                 packettext += '(' + this.packet_conn.size + 'B)'
             return packettext
+        },
+        retransmittedpacket(){
+            return (this.texttoshow === 'packetnr') && this.packet_conn.headerinfo.retransmitted_from;
+        },
+        first_packet_nr(){
+            return this.packet_conn.headerinfo.retransmitted_from;
         },
         normalpacketnumber(){
             return (this.texttoshow === 'packetnr') && !this.packet_conn.headerinfo.original_packet_number;
