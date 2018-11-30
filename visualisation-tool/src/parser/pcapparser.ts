@@ -48,15 +48,27 @@ export class PcapParser extends Parser{
             if( !lasttimes[udp_info.srcport] )
                 lasttimes[udp_info.srcport] = 0;
 
+            // TODO: there is a bug here where things start overlapping again
+            // we start at time x, next 5 packets are all within 0.0002 of x, so get offset
+            // 6th packet is a little more offset than 0.0002, so we fallback to the actual time, which is behind packets 3,4,5
+            // packets 7,8,9 are also too close to packet 6, so they get offsets overlapping those of 3,4,5...
+            let originalCurrenttime = currenttime; 
             if( i > 0 && (currenttime - bunchedUpStartTimes[udp_info.srcport]) < 0.0002 ){
-                currenttime = lasttimes[udp_info.srcport] + 0.0002; // 0.001 for multistream screenshot, 0.0002 for network_off screenshots
+                //console.log("PcapParser:parseAllPackets : ", packetnr, currenttime, lasttimes[udp_info.srcport], lasttimes[udp_info.srcport] + 0.0002 );
+                currenttime = lasttimes[udp_info.srcport] + 0.001; // 0.001 for multistream screenshot, 0.0002 for network_off screenshots
             }
-            else
+            else{
+                //console.log("PcapParser:parseAllPackets : large enough : ", packetnr, currenttime, bunchedUpStartTimes[udp_info.srcport]);
+                // possible solution for TODO above: currenttime = Math.max(currenttime, lasttimes[udp_info.srcport])?
+                // but that puts us way ahead again and following timestamps will be bigger in difference again... hmz 
                 bunchedUpStartTimes[udp_info.srcport] = currenttime;
+            }
+            
 
             i++
             lasttimes[udp_info.srcport] = currenttime
-            packet = this.parsePacket(ip_info, udp_info, quic_info, currenttime)
+            packet = this.parsePacket(ip_info, udp_info, quic_info, currenttime);
+            (packet.connectioninfo as any).original_time_delta = originalCurrenttime;
             connindex = this.addPacketToConnection(packet, connections)
             if (packet.payloadinfo &&  this.isNewConnectionId(packet.payloadinfo))
                 this.addAditionalConnId(packet, connections, connindex)

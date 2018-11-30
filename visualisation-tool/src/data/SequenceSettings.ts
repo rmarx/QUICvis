@@ -218,6 +218,7 @@ export default class SequenceSettings {
         return this._vissettings.getFile(this._traceindex2).getConn(this._connindex2).getSequencePackets()
     }
 
+    /*
     public getPackets(): Array<SequencePackets>{
         let seqpackets = new Array<SequencePackets>()
         let packets_c1 = this._vissettings.getFile(this._traceindex1).getConn(this._connindex1).getSequencePackets()
@@ -270,6 +271,7 @@ export default class SequenceSettings {
         }
         return seqpackets
     }
+    */
 
     private getRTTOfPacket(packet: QuicPacket, packets: Array<QuicPacket>): number{
         let RTT = -1

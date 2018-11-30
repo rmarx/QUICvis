@@ -257,7 +257,7 @@ export default {
             varname = varname.replace(new RegExp("-", 'g'), "_"); // dupli-pkts-cl-ngtcp2 -> dupli_pkts_cl_ngtcp2
 
             if( window[varname] == "loaded" ){
-                console.log("FileSettings:loadFile : file was already loaded, doing nothing");
+                console.log("FileSettings:loadFile : file was already loaded, doing nothing", filepath);
                 if( doneCallback )
                     doneCallback(undefined);
                 

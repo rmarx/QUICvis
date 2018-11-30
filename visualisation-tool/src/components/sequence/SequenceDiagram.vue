@@ -70,6 +70,11 @@ export default {
       this.calcArrowCoords()
   },
   methods: {
+    getPacketTime(packet){
+        // we add offsets to the timestamps to prevent them from bunching up in the timeline
+        // however, here in the sequence diagram, we do our own bunching-up prevention (see originalcoord calculation above)
+        return packet.connectioninfo.original_time_delta ? packet.connectioninfo.original_time_delta : packet.connectioninfo.time_delta;
+    },
     calcArrowCoords(){
         if( !this.validfiles )
             return;
@@ -117,23 +122,26 @@ export default {
         }
 
         pncache.clear();
-        for( let packetWrap of packetsServer ){
-            let pn  = packetWrap.packet.headerinfo.packet_number;
-            if( pncache.has(pn) ){
-                let pnOccurenceCount = pncache.get(pn);
-                // we assume there won't be 10000 more packets in the trace
-                // TODO: handle this more cleanly
-                let newpn = pn + 10000 + pnOccurenceCount; 
 
-                console.log("Found duplicate server-side packet ", pn, pnOccurenceCount, newpn);
-                packetWrap.packet.headerinfo.packet_number = newpn;
-                packetWrap.packet.headerinfo.original_packet_number = pn;
+        if (this.using2files) {
+            for( let packetWrap of packetsServer ){
+                let pn  = packetWrap.packet.headerinfo.packet_number;
+                if( pncache.has(pn) ){
+                    let pnOccurenceCount = pncache.get(pn);
+                    // we assume there won't be 10000 more packets in the trace
+                    // TODO: handle this more cleanly
+                    let newpn = pn + 10000 + pnOccurenceCount; 
 
-                pncache.set( pn, pnOccurenceCount + 1);
-                pncache.set( newpn, 1);
+                    console.log("Found duplicate server-side packet ", pn, pnOccurenceCount, newpn);
+                    packetWrap.packet.headerinfo.packet_number = newpn;
+                    packetWrap.packet.headerinfo.original_packet_number = pn;
+
+                    pncache.set( pn, pnOccurenceCount + 1);
+                    pncache.set( newpn, 1);
+                }
+                else
+                    pncache.set( pn, 1 );
             }
-            else
-                pncache.set( pn, 1 );
         }
 
 
@@ -146,23 +154,23 @@ export default {
         // we add each packet the first time we see it. The second time we see it, it must be the receive of that packet. 
         while ( i < packetsClient.length || j < packetsServer.length){
                 //check if packet from client is send/received sooner than selected packet of server
-            if (i < packetsClient.length && ((j < packetsServer.length && packetsClient[i].connectioninfo.time_delta <= (packetsServer[j].packet.connectioninfo.time_delta + packetsServer[j].delay)) 
+            if (i < packetsClient.length && ((j < packetsServer.length && this.getPacketTime(packetsClient[i]) <= (this.getPacketTime(packetsServer[j].packet) + packetsServer[j].delay)) 
                 || (j >= packetsServer.length)))  {
 
-                let originalcoord = packetsClient[i].connectioninfo.time_delta * 1000 * this.scale
-                    let diff = originalcoord - basemargin
+                let originalcoord = this.getPacketTime(packetsClient[i]) * 1000 * this.scale;
+                let diff = originalcoord - basemargin
 
-                    //if coordinate of arrow is too close or above previous coordinate, add margin
-                    if ((i > 0|| j > 0) && diff < 45){
-                        originalcoord = basemargin + 45
-                    }
-                    basemargin = originalcoord
+                //if coordinate of arrow is too close or above previous coordinate, add margin
+                if ((i > 0|| j > 0) && diff < 45){
+                    originalcoord = basemargin + 45
+                }
+                basemargin = originalcoord
 
-                    //check if packet is already processed 
+                //check if packet is already processed 
                 let s_index = sequencepackets.findIndex(x => x.packet_number === packetsClient[i].headerinfo.packet_number)
                 if (s_index > -1){
                     //packet is already sent, so add info about when it is received
-                    sequencepackets[s_index].receive_time = packetsClient[i].connectioninfo.time_delta * 1000
+                    sequencepackets[s_index].receive_time = this.getPacketTime(packetsClient[i]) * 1000
                     //if send and receive time are equal, make arrow horizontal
                     if (sequencepackets[s_index].receive_time === sequencepackets[s_index].send_time) {
                         originalcoord = sequencepackets[s_index].send_coord
@@ -173,10 +181,12 @@ export default {
                 }
                 //packet is not sent: so add info about when packet is sent
                 else {
-
+                    let time = this.getPacketTime(packetsClient[i]);
+                    
+                    console.log("Client Packet " + packetsClient[i].headerinfo.packet_number + " had time_delta ", time * 1000 );
                     sequencepackets.push({
                         send_coord: originalcoord, 
-                        send_time: packetsClient[i].connectioninfo.time_delta * 1000,
+                        send_time: time * 1000,
                         receive_coord: -1, 
                         receive_time: -1,
                         packet_info1: packetsClient[i],
@@ -189,7 +199,7 @@ export default {
             }
             else //packet from server is send/received sooner than packet from client
             if ( j < packetsServer.length ){
-                let originalcoord = (packetsServer[j].packet.connectioninfo.time_delta + packetsServer[j].delay) * 1000 * this.scale
+                let originalcoord = (this.getPacketTime(packetsServer[j].packet) + packetsServer[j].delay) * 1000 * this.scale
                 let diff = originalcoord - basemargin
 
                 if ((i > 0|| j > 0) && diff < 45){
@@ -200,7 +210,7 @@ export default {
                 let s_index = sequencepackets.findIndex(x => x.packet_number === packetsServer[j].packet.headerinfo.packet_number)
                 if (s_index > -1) {
 
-                    sequencepackets[s_index].receive_time = (packetsServer[j].packet.connectioninfo.time_delta + packetsServer[j].delay) * 1000
+                    sequencepackets[s_index].receive_time = (this.getPacketTime(packetsServer[j].packet) + packetsServer[j].delay) * 1000
                     if (sequencepackets[s_index].receive_time === sequencepackets[s_index].send_time) {
                         originalcoord = sequencepackets[s_index].send_coord
                         basemargin = originalcoord
@@ -209,10 +219,13 @@ export default {
                     sequencepackets[s_index].packet_info2 = packetsServer[j].packet
                 }
                 else {
+                    let time = this.getPacketTime(packetsServer[j].packet);
+                    
+                    console.log("Server Packet " + packetsServer[j].packet.headerinfo.packet_number + " had time_delta ", time * 1000 );
 
                     sequencepackets.push({
                         send_coord: originalcoord,
-                        send_time: (packetsServer[j].packet.connectioninfo.time_delta + packetsServer[j].delay) * 1000,
+                        send_time: (time + packetsServer[j].delay) * 1000,
                         receive_coord: -1, 
                         receive_time: -1,
                         packet_info1: null,
@@ -230,7 +243,8 @@ export default {
         let delayedpackets = new Array<{packet: QuicPacket, delay: number}>()
         let rtt = this.userRTT
         if (calcrtt) {
-            rtt = this.calculatedRTT
+            // rtt = this.calculatedRTT
+            rtt = 0; // don't manually add RTT, we just use the timestamps directly 
         }
 
         for (let i = 0; i < packets.length; i++) {
