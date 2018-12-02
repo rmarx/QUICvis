@@ -35,6 +35,10 @@
         <label for="endpoint2-rtt" class="w-25">RTT (ms)</label>
         <input type="number" id="endpoint2-rtt" v-model="rtt_amount" @change="changeRtt()">
       </div>
+
+      <div style="display: none;">
+        {{ sequenceUpdateForcer }}
+      </div>
     </div>
 </template>
 
@@ -48,8 +52,8 @@ export default {
       trace2_index: -1,
       conn1_index: -1,
       conn2_index: -1,
-      rtt_amount: this.$store.state.sequencesettings.get1filertt(),
-      time_scale: this.$store.state.sequencesettings.getTimeScale()
+      rtt_amount: this.$store.state.sequencesettings.get1filertt()//,
+      //time_scale: this.$store.state.sequencesettings.getTimeScale()
     }
   },
   computed: {
@@ -68,12 +72,36 @@ export default {
       else
         return 0
     },
-    test(){
-      return this.$store.state.sequencesettings.getConnindex2()
-    },
     seqfilters(){
       return this.$store.state.sequencesettings.getAllSeqFilters()
+    },
+    sequenceUpdateForcer(){
+      // needed to make sure this updates when we set a testcase manually through FileSettings
+      // TODO: there must be a better, vue-specific way to do this, 
+      // but because we currently use v-model with a local property not directly coupled to the global VueX store, 
+      // this was a quick workaround to get all the needed values updated in 1 place (beforeUpdate)
+      return this.$store.state.sequencesettings.getTraceindex1();
+    },
+    time_scale: {
+      get () {
+        return this.$store.state.sequencesettings.getTimeScale();
+      },
+      set (value) {
+        this.$store.dispatch('setSequenceScale', value); 
+      }
     }
+  },
+  updated(){
+    this.trace1_index = this.$store.state.sequencesettings.getTraceindex1();
+    this.trace2_index = this.$store.state.sequencesettings.getTraceindex2();
+    this.conn1_index  = this.$store.state.sequencesettings.getConnindex1();
+    this.conn2_index  = this.$store.state.sequencesettings.getConnindex2();
+    // Note: setting the time_scale doesn't work, since updated() is called whenever we enter a new number in the input field
+    // yet the @change event listener isn't called until we've done typing... 
+    // so we're constantly overwriting the value with the old one from the store
+    // So for the time_scale, we did already make a proper two-way binding 
+    // see https://vuex.vuejs.org/guide/forms.html
+    //this.time_scale   = this.$store.state.sequencesettings.getTimeScale();
   },
   methods: {
     changeRtt(){
@@ -133,7 +161,7 @@ export default {
       this.$store.dispatch('changeSeqFilter', name)
     },
     changeTimescale(){
-      this.$store.dispatch('setSequenceScale', this.time_scale)
+      //this.$store.dispatch('setSequenceScale', this.time_scale);
     }
   }
 }

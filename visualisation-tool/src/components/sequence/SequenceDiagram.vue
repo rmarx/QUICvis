@@ -37,12 +37,14 @@ export default {
       validfiles() {
           return this.$store.state.sequencesettings.getValidFiles()
       },
+      /*
       sequencepackets() {
           return this.$store.state.sequencesettings.getPackets()
       },
       getLargestTime(){
           return ((this.$store.state.sequencesettings.getLargestTime() * 1000 * 10) + (this.sequencepackets.length * this.margin)) *2
       },
+      */
       //check if 2 files are selected
       using2files(){
           return this.$store.state.sequencesettings.isUsing2Files()
@@ -91,7 +93,7 @@ export default {
                 packetsServer = this.addDelayForServer(this.sequencePackets1, false)
 
 
-        let sequencepackets = new Array<SequenceGroup>()
+        let sequencepackets = new Array<SequenceGroup>();
         let pncache = new Map<number, number>(); 
 
         let i = 0;
@@ -375,8 +377,8 @@ export default {
     }
   },
   beforeUpdate(){
-      this.removeCurrentDiagram()
-      this.calcArrowCoords()
+      this.removeCurrentDiagram();
+      this.calcArrowCoords();
   },
 }
 </script>

@@ -285,6 +285,9 @@ export default {
 
                         console.log("Sequence setting ", index1, index2, allFiles, testcase.files);
                         
+                        if( testcase.time_scale )
+                            this.$store.dispatch('setSequenceScale', testcase.time_scale)
+
                         let data = {
                             tracenumber: 1,
                             traceindex: index1
@@ -297,25 +300,23 @@ export default {
                         };
                         this.$store.dispatch('setSequenceConnIndex', conndata);
 
-                        if( index2 ){
-                            let vm = this;
-                            setTimeout( () => {
-                                let data = {
-                                    tracenumber: 2,
-                                    traceindex: index2
-                                };
-                                vm.$store.dispatch('setSequenceTraceIndex', data);
-
-                                let conndata = {
-                                    connnumber: 2,
-                                    connindex: 0
-                                };
-                                vm.$store.dispatch('setSequenceConnIndex', conndata);
-                            }, 20);
+                        let connindex2 = 0;
+                        if( index2 === undefined || index2 == -1 ){ // item not found
+                            index2 = -1;
+                            connindex2 = -1;
                         }
 
-                        if( testcase.time_scale )
-                            this.$store.dispatch('setSequenceScale', testcase.time_scale)
+                        data = {
+                            tracenumber: 2,
+                            traceindex: index2
+                        };
+                        this.$store.dispatch('setSequenceTraceIndex', data);
+
+                        conndata = {
+                            connnumber: 2,
+                            connindex: connindex2
+                        };
+                        this.$store.dispatch('setSequenceConnIndex', conndata);
                     }
 
                     this.loading = false;
