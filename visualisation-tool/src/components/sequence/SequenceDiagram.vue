@@ -1,6 +1,6 @@
 <template>
     <div v-if="validfiles" id="seq-diagramcontainer">
-        <div hidden>{{ userRTT + scale }}</div>
+        <div hidden>{{ userRTT + scale + showingAckOnlyPackets }}</div>
     </div>
     <div id="nodiagram" v-else>
         Current file selection is invalid
@@ -62,6 +62,9 @@ export default {
       },
       calculatedRTT(){
           return this.$store.state.sequencesettings.getFirstRTT()
+      },
+      showingAckOnlyPackets(){
+          return this.$store.state.sequencesettings.getSeqFilter('ack-only');
       }
   },
   components: {
@@ -72,6 +75,25 @@ export default {
       this.calcArrowCoords()
   },
   methods: {
+    allowForAckOnly(packet){
+        if( this.showingAckOnlyPackets )
+            return true;
+
+        if( !packet || !packet.payloadinfo || !packet.payloadinfo.framelist )
+            return true;
+
+        let ackOnly = true;
+        for( let frame of packet.payloadinfo.framelist ){
+            if( frame.frametype != 13 ){
+                ackOnly = false;
+                break;
+            }
+        }
+        if( ackOnly )
+            return false; 
+        else
+            return true;
+    },
     getPacketTime(packet){
         // we add offsets to the timestamps to prevent them from bunching up in the timeline
         // however, here in the sequence diagram, we do our own bunching-up prevention (see originalcoord calculation above)
@@ -219,6 +241,7 @@ export default {
                 }
                 //packet is not sent: so add info about when packet is sent
                 else {
+
                     let time = this.getPacketTime(packetsClient[i]);
                     
                     //console.log("Client Packet " + packetsClient[i].headerinfo.packet_number + " had time_delta ", time * 1000 );
@@ -269,7 +292,7 @@ export default {
                         packet_info1: null,
                         packet_info2: packetsServer[j].packet,
                         packet_number: packetsServer[j].packet.headerinfo.packet_number
-                    })
+                    });
                 }
                 j++
             }
@@ -314,6 +337,12 @@ export default {
 
         for (let i = 0; i < sequencepackets.length; i++) {
             let packet_info = sequencepackets[i].packet_info1 ? sequencepackets[i].packet_info1 : sequencepackets[i].packet_info2
+
+
+            if( !this.allowForAckOnly(packet_info) )
+                continue;
+
+
             let packetinstance = new arrowclass({
                 store: this.$store,
                 propsData: {

@@ -60,6 +60,11 @@ export default class SequenceSettings {
             name: 'streamnrs',
             toShow: true
         })
+
+        this._seqfilters.push({
+            name: 'ack-only',
+            toShow: true
+        })
     }
 
     public changeFilter(name: string){
