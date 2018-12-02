@@ -33,12 +33,12 @@ export default class FCTable implements TableInterface{
         
         this._colortable.push({
             framecode: Frametypes.MAX_DATA,
-            colour: "#5f0984"
+            colour: "#ff0000"
         })
         
         this._colortable.push({
             framecode: Frametypes.MAX_STREAM_DATA,
-            colour: "#551172"
+            colour: "#fc6262"
         })
 
         this._colortable.push({
@@ -53,18 +53,18 @@ export default class FCTable implements TableInterface{
         
         this._colortable.push({
             framecode: Frametypes.BLOCKED,
-            colour: "#650b7a"
+            colour: "#0000ff"
         })
         
         this._colortable.push({
             framecode: Frametypes.STREAM_BLOCKED,
-            colour: "#650b7a"
+            colour: "#627cfc"
         })
         
 
         this._colortable.push({
             framecode: Frametypes.STREAM_ID_BLOCKED,
-            colour: "#650b7a"
+            colour: "#144460"
         })
 
         this._colortable.push({

@@ -23,8 +23,8 @@ export default class TableState{
         this._filteredheaders.push({name: 'PN',packet_key: 'packet_number', filtered: false});
 
         //short header
-        this._filteredheaders.push({name: 'OC flag',packet_key: 'omit_conn_id', filtered: false});
-        this._filteredheaders.push({name: 'KP flag',packet_key: 'key_phase', filtered: false});
+        //this._filteredheaders.push({name: 'OC flag',packet_key: 'omit_conn_id', filtered: false});
+        this._filteredheaders.push({name: 'Key phase',packet_key: 'key_phase', filtered: false});
         this._filteredheaders.push({name: 'S_packet type',packet_key: 'short_packet_type', filtered: false});
     }
 

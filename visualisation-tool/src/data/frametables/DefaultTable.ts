@@ -14,7 +14,7 @@ export default class DefaultTable implements TableInterface{
     private setInitialColours(){
         this._colortable.push({
             framecode: Frametypes.PADDING,
-            colour: "#30343a"
+            colour: "#FF69B4"
         })
         this._colortable.push({
             framecode: Frametypes.RST_STREAM,

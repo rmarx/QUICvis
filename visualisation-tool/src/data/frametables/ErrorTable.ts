@@ -18,17 +18,17 @@ export default class ErrorTable implements TableInterface{
         })
         this._colortable.push({
             framecode: Frametypes.RST_STREAM,
-            colour: "#870c12"
+            colour: "#0000ff"
         })
 
         this._colortable.push({
             framecode: Frametypes.CONNECTION_CLOSE,
-            colour: "#a80f3a"
+            colour: "#ff0000"
         })
         
         this._colortable.push({
             framecode: Frametypes.APPLICATION_CLOSE,
-            colour: "#961010"
+            colour: "#ee00ff"
         })
         
         this._colortable.push({
@@ -74,7 +74,7 @@ export default class ErrorTable implements TableInterface{
         
         this._colortable.push({
             framecode: Frametypes.STOP_SENDING,
-            colour: "#a80106"
+            colour: "#ff9400"
         })
         
         this._colortable.push({
