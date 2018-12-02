@@ -98,6 +98,10 @@ export default {
 }
 </script>
 <style>
+.conncontainer{
+    clear: both;
+}
+
 .conn_name{
     writing-mode: vertical-rl;
     -webkit-transform: rotate(180deg);

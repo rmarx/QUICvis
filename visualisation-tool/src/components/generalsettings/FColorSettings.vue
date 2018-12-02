@@ -33,6 +33,7 @@ export default {
 .colorpreview{
     height: 20px;
     width: 20px;
+    margin-right: 10px;
     float: left;
 }
 </style>
